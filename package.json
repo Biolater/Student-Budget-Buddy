@@ -1,5 +1,5 @@
 {
-  "name": "studyapp",
+  "name": "my-app",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,10 +9,16 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.3.2",
+    "@nextui-org/react": "^2.4.8",
+    "@prisma/adapter-pg": "^5.22.0",
     "@prisma/client": "^5.22.0",
+    "framer-motion": "^11.11.15",
     "next": "15.0.3",
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106"
+    "pg": "^8.13.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "svix": "^1.40.0"
   },
   "devDependencies": {
     "@types/node": "^20",

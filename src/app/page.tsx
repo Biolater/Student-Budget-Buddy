@@ -1,7 +1,4 @@
-"use client";
 import Image from "next/image";
-import { prisma } from "./lib/prismaClient";
-import { useEffect } from "react";
 
 export default function Home() {
   return (
