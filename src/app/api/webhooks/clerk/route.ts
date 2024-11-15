@@ -55,14 +55,26 @@ export async function POST(req: Request) {
 
   if (eventType === "user.created") {
     const data = evt.data;
-    const { username, email_addresses } = data;
+    const { username, email_addresses, id } = data;
     const email = email_addresses[0].email_address;
-    await prisma.user.create({
-      data: {
-        username: username || "test",
-        email,  
-      }, 
-    });
+    if (username) {
+      await prisma.user.create({
+        data: {
+          id,
+          username,
+          email,
+        },
+      });
+    }
+  } else if (eventType === "user.deleted") {
+    const data = evt.data;
+    const { id } = data;
+    if (id)
+      await prisma.user.delete({
+        where: {
+          id,
+        },
+      });
   }
 
   return new Response("", { status: 200 });
