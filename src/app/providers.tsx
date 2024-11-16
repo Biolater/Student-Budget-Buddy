@@ -2,7 +2,25 @@
 "use client";
 
 import { NextUIProvider } from "@nextui-org/react";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { useEffect, useState } from "react";
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <NextUIProvider>{children}</NextUIProvider>;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
+  return (
+    <NextUIProvider>
+      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+        {children}
+      </NextThemesProvider>
+    </NextUIProvider>
+  );
 }
