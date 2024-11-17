@@ -9,6 +9,7 @@ import {
   UserButton,
 } from "@clerk/nextjs";
 import { Providers } from "./providers";
+import { NavbarComponent } from "./components/index";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -38,13 +39,13 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
           <Providers>
+            <NavbarComponent />
             {/* <SignedOut>
               <SignInButton />
             </SignedOut>
             <SignedIn>
               <UserButton />
             </SignedIn> */}
-            {/* <NavbarComponent /> */}
             {children}
           </Providers>
         </body>
