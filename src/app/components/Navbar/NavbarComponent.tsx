@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Navbar,
   NavbarBrand,
@@ -18,6 +18,7 @@ import {
 } from "@nextui-org/react";
 import { PiggyBank } from "lucide-react";
 import { useClerk, useUser } from "@clerk/nextjs";
+import { ThemeSwitcher } from "../ThemeSwitcher";
 
 export const NavbarComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -45,7 +46,7 @@ export const NavbarComponent = () => {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-        <NavbarBrand className="gap-3">
+        <NavbarBrand as={Link} href="/" className="gap-3">
           <PiggyBank />
           <p className="font-bold text-inherit">Budget Buddy</p>
         </NavbarBrand>
@@ -63,14 +64,20 @@ export const NavbarComponent = () => {
           ))}
         </NavbarContent>
       )}
-      <NavbarContent justify="end">
+      <NavbarContent className="gap-1 lg:gap-4" justify="end">
+        <ThemeSwitcher />
         {isLoaded && !isSignedIn && (
           <>
             <NavbarItem className="hidden lg:flex">
               <Link href="/sign-in">Login</Link>
             </NavbarItem>
             <NavbarItem>
-              <Button as={Link} color="primary" href="/sign-up" variant="flat">
+              <Button
+                as={Link}
+                color="primary"
+                href="/sign-up"
+                variant="flat"
+              >
                 Sign Up
               </Button>
             </NavbarItem>

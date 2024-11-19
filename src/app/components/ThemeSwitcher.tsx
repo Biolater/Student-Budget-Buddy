@@ -1,6 +1,8 @@
 // app/components/ThemeSwitcher.tsx
 "use client";
 
+import { Button } from "@nextui-org/react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
@@ -12,13 +14,20 @@ export function ThemeSwitcher() {
     setMounted(true);
   }, []);
 
+  const handleButtonClick = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
+
   if (!mounted) return null;
 
   return (
-    <div>
-      The current theme is: {theme}
-      <button onClick={() => setTheme("light")}>Light Mode</button>
-      <button onClick={() => setTheme("dark")}>Dark Mode</button>
-    </div>
+    <Button
+      onClick={handleButtonClick}
+      isIconOnly
+      className="bg-transparent p-0 w-[unset] h-[unset] min-w-[unset] min-h-[unset]"
+      aria-label={theme}
+    >
+      {theme === "light" ? <Moon /> : <Sun />}
+    </Button>
   );
 }
