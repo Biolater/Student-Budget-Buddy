@@ -4,7 +4,6 @@ import {
   Navbar,
   NavbarBrand,
   NavbarContent,
-  NavbarItem,
   NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
@@ -15,17 +14,53 @@ import {
   DropdownMenu,
   Avatar,
   DropdownItem,
+  Divider,
 } from "@nextui-org/react";
 import { PiggyBank } from "lucide-react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ThemeSwitcher } from "../ThemeSwitcher";
+
+type ButtonType =
+  | "light"
+  | "bordered"
+  | "solid"
+  | "flat"
+  | "faded"
+  | "shadow"
+  | "ghost"
+  | undefined;
 
 export const NavbarComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const menuItems = ["Profile", "Settings", "Logout"];
-  const menuItemsNotSignedIn = ["About Us", "Features", "Benefits"];
+  const menuItemsNotSignedIn = [
+    {
+      label: "About",
+      href: "/about",
+    },
+    {
+      label: "Features",
+      href: "/features",
+    },
+    {
+      label: "Benefits",
+      href: "/benefits",
+    },
+  ];
+  const menuItemsNotSignedIn2 = [
+    {
+      label: "Login",
+      href: "sign-in",
+      variant: "ghost",
+    },
+    {
+      label: "Sign Up",
+      href: "/sign-up",
+      variant: "solid",
+    },
+  ];
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
@@ -46,7 +81,7 @@ export const NavbarComponent = () => {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="sm:hidden"
         />
-        <NavbarBrand as={Link} href="/" className="gap-3">
+        <NavbarBrand as={Link} href="/" className="gap-3 text-foreground">
           <PiggyBank />
           <p className="font-bold text-inherit">Budget Buddy</p>
         </NavbarBrand>
@@ -64,23 +99,20 @@ export const NavbarComponent = () => {
           ))}
         </NavbarContent>
       )}
-      <NavbarContent className="gap-1 lg:gap-4" justify="end">
+      <NavbarContent justify="end">
         <ThemeSwitcher />
         {isLoaded && !isSignedIn && (
           <>
-            <NavbarItem className="hidden lg:flex">
-              <Link href="/sign-in">Login</Link>
-            </NavbarItem>
-            <NavbarItem>
-              <Button
-                as={Link}
-                color="primary"
-                href="/sign-up"
-                variant="flat"
-              >
+            <Button variant="bordered" className="hidden sm:flex">
+              <Link className="text-foreground" href="/sign-in">
+                Login
+              </Link>
+            </Button>
+            <Button variant="solid" className="hidden sm:flex">
+              <Link className="text-foreground" href="/sign-up">
                 Sign Up
-              </Button>
-            </NavbarItem>
+              </Link>
+            </Button>
           </>
         )}
         {isLoaded && isSignedIn && (
@@ -139,14 +171,37 @@ export const NavbarComponent = () => {
               </Link>
             </NavbarMenuItem>
           ))}
-        {!isSignedIn &&
-          menuItemsNotSignedIn.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <Link color="foreground" className="w-full" size="lg" href={item}>
-                {item}
-              </Link>
-            </NavbarMenuItem>
-          ))}
+        {!isSignedIn && (
+          <>
+            {menuItemsNotSignedIn.map((item, index) => (
+              <NavbarMenuItem key={`${item.href}-${index}`}>
+                <Link
+                  color="foreground"
+                  className="w-full"
+                  size="lg"
+                  href={item.href}
+                >
+                  {item.label}
+                </Link>
+              </NavbarMenuItem>
+            ))}
+            <Divider className="my-2" />
+            {menuItemsNotSignedIn2.map((item, index) => (
+              <Button
+                as={Link}
+                href={item.href}
+                variant={item.variant as ButtonType}
+                key={`${item.href}-${index}`}
+              >
+                <span
+                  className="w-full text-large text-foreground"
+                >
+                  {item.label}
+                </span>
+              </Button>
+            ))}
+          </>
+        )}
       </NavbarMenu>
     </Navbar>
   );
