@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.3.2",
+    "@clerk/themes": "^2.1.45",
     "@nextui-org/react": "^2.4.8",
     "@prisma/adapter-pg": "^5.22.0",
     "@prisma/client": "^5.22.0",
