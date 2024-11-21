@@ -9,8 +9,7 @@ import {
 } from "@clerk/nextjs";
 import { Providers } from "./providers";
 import { Quicksand } from "next/font/google";
-import { dark } from '@clerk/themes'
-
+import { Toaster } from "react-hot-toast";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -50,9 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider appearance={{
-      baseTheme: dark
-    }}>
+    <ClerkProvider>
       <html lang="en">
         <body className={`${quicksand.className} antialiased`}>
           <Providers>
@@ -63,6 +60,7 @@ export default function RootLayout({
               <UserButton />
             </SignedIn> */}
             {children}
+            <Toaster />
           </Providers>
         </body>
       </html>
