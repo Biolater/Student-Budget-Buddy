@@ -15,16 +15,19 @@ import {
   Avatar,
   DropdownItem,
   Divider,
+  NavbarItem,
 } from "@nextui-org/react";
 import { PiggyBank } from "lucide-react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ThemeSwitcher } from "../ThemeSwitcher";
 import toast from "react-hot-toast";
+import { usePathname } from "next/navigation";
 
 export const NavbarComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
+  const pathname = usePathname(); 
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
@@ -46,8 +49,12 @@ export const NavbarComponent = () => {
     <Navbar
       maxWidth="xl"
       isBordered
-      shouldHideOnScroll
       onMenuOpenChange={setIsMenuOpen}
+      classNames={{
+        item: [
+          "data-[active=true]:bg-muted data-[active=true]:text-foreground",
+        ]
+      }}
     >
       <NavbarContent>
         <NavbarMenuToggle
@@ -65,27 +72,29 @@ export const NavbarComponent = () => {
           justify="center"
         >
           {navLinks.map((link) => (
-            <Link
+            <NavbarItem
+              as={Link}
+              isActive={pathname === link.href}
               key={link.href}
               href={link.href}
-              className="text-muted-foreground hover:text-primary px-3 py-2 rounded-md text-sm"
+              className="text-muted-foreground transition-colors hover:text-foreground hover:bg-muted px-3 py-2 rounded-md text-sm"
             >
               {link.label}
-            </Link>
+            </NavbarItem>
           ))}
         </NavbarContent>
       )}
-      <NavbarContent justify="end">
+      <NavbarContent as="div" justify="end">
         <ThemeSwitcher />
         {isLoaded && !isSignedIn && (
-          <>
+          <div className="md:flex gap-4 hidden">
             <Button variant="bordered" as={Link} href="/sign-in">
               Login
             </Button>
             <Button variant="solid" as={Link} href="/sign-up">
               Sign Up
             </Button>
-          </>
+          </div>
         )}
         {isLoaded && isSignedIn && (
           <Dropdown placement="bottom-end">
@@ -161,12 +170,24 @@ export const NavbarComponent = () => {
               </Link>
             </NavbarMenuItem>
             <Divider className="my-2" />
-            <Button variant="bordered" as={Link} href="/sign-in">
-              Login
-            </Button>
-            <Button variant="solid" as={Link} href="/sign-up">
-              Sign Up
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-2 ">
+              <Button
+                className="flex-grow"
+                variant="bordered"
+                as={Link}
+                href="/sign-in"
+              >
+                Login
+              </Button>
+              <Button
+                className="flex-grow"
+                variant="solid"
+                as={Link}
+                href="/sign-up"
+              >
+                Sign Up
+              </Button>
+            </div>
           </>
         )}
       </NavbarMenu>
