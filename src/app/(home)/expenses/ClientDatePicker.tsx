@@ -1,9 +1,16 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import { DatePicker } from "@nextui-org/date-picker";
+import type { DateValue } from "@nextui-org/react";
+import { useEffect, useState } from "react";
 
-export default function ClientDatePicker() {
+interface ClientDatePickerProps {
+  value: DateValue | null;
+  onChange: (value: DateValue) => void;
+}
+
+export default function ClientDatePicker({
+  value,
+  onChange,
+}: ClientDatePickerProps) {
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -12,5 +19,15 @@ export default function ClientDatePicker() {
 
   if (!isClient) return null;
 
-  return <DatePicker size="md" className="w-full" />;
+  const dateValue = value ? value : null;
+  return (
+    <DatePicker
+      aria-label="Select date"
+      value={dateValue}
+      onChange={onChange}
+      isRequired
+      size="md"
+      className="w-full"
+    />
+  );
 }

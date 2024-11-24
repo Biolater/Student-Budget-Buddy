@@ -10,6 +10,8 @@ import {
 import { Providers } from "./providers";
 import { Quicksand } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import type { Viewport } from 'next'
+
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -42,6 +44,13 @@ export const metadata: Metadata = {
     // image: "https://your-domain.com/og-image.jpg",
   },
 };
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false 
+}
 
 export default function RootLayout({
   children,
