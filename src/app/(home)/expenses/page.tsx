@@ -1,14 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import { CalendarIcon, Pencil, Trash2 } from "lucide-react";
+import { CalendarIcon, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import ClientDatePicker from "./ClientDatePicker";
 import { Input, Textarea } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Button } from "@nextui-org/button";
 import { DateValue } from "@nextui-org/react";
-import { prisma } from "@/lib/client";
 import { useAuth } from "@clerk/nextjs";
+import createExpenseAction, { type Category } from "@/actions/createExpense";
+import toast from "react-hot-toast";
 
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -30,24 +31,14 @@ const categories = [
   { code: "Other", symbol: "🤷‍♀️" },
 ];
 
-type Category =
-  | "Food"
-  | "Entertainment"
-  | "Transport"
-  | "Health"
-  | "Education"
-  | "Clothing"
-  | "Pets"
-  | "Travel"
-  | "Other"
-  | "";
-
 const ExpenseTracker = () => {
   const [date, setDate] = useState<DateValue | null>(null);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("");
   const [category, setCategory] = useState<Category>("");
+  const [filterCategory, setFilterCategory] = useState<Category>("");
   const [description, setDescription] = useState("");
+  const [loading, setLoading] = useState(false);
   const { userId } = useAuth();
 
   const clearForm = () => {
@@ -56,30 +47,6 @@ const ExpenseTracker = () => {
     setCurrency("");
     setCategory("");
     setDescription("");
-  };
-
-  const createExpense = async (
-    date: Date,
-    amount: number,
-    currency: string,
-    category: Category,
-    description: string,
-    userId: string
-  ) => {
-    try {
-      const expense = await prisma.expense.create({
-        data: {
-          date,
-          amount,
-          currency,
-          category,
-          description,
-          userId,
-        },
-      });
-
-      console.log("Expense created:", expense);
-    } catch (error) {}
   };
 
   // Error states
@@ -93,7 +60,6 @@ const ExpenseTracker = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted!");
     // Validate form
     let isValid = true;
     const newErrors = {
@@ -114,27 +80,36 @@ const ExpenseTracker = () => {
     setErrors(newErrors);
 
     // If the form is valid, proceed with form submission logic (e.g., save data)
-    if (isValid) {
-      if (
-        date &&
-        amount &&
-        currency &&
-        category &&
-        description.trim() &&
-        userId
-      ) {
-        const { year, month, day } = date;
-        const newDate = new Date(year, month - 1, day);
-        await createExpense(
+    if (
+      isValid &&
+      date &&
+      amount &&
+      currency &&
+      category &&
+      description &&
+      userId
+    ) {
+      const { year, month, day } = date;
+      const newDate = new Date(year, month - 1, day);
+      const correctCategory = category.split("-")[0] as Category;
+      try {
+        setLoading(true);
+        await createExpenseAction(
           newDate,
-          Number(amount),
+          parseFloat(amount),
           currency,
-          category,
+          correctCategory,
           description,
-          userId
+          userId,
+          errors
         );
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Something went wrong"
+        );
+      } finally {
+        setLoading(false);
       }
-
       clearForm();
     }
   };
@@ -151,7 +126,7 @@ const ExpenseTracker = () => {
           </p>
         </CardHeader>
         <CardBody className="p-6">
-          <form className="flex flex-col" onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} className="flex flex-col">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label
@@ -220,8 +195,11 @@ const ExpenseTracker = () => {
                 </label>
                 <Select
                   aria-labelledby="category"
-                  selectedKeys={["Food"]}
-                  onChange={(e)}
+                  selectedKeys={[category]}
+                  onChange={(e) => {
+                    const selectedCategory = e.target.value;
+                    setCategory(selectedCategory as Category);
+                  }}
                   isRequired
                   size="md"
                   placeholder="Select category"
@@ -257,11 +235,40 @@ const ExpenseTracker = () => {
                 )}
               </div>
             </div>
-            <Button type="submit" className="mt-4 w-full sm:w-auto md:self-end">
-              Submit
+            <Button
+              isDisabled={loading}
+              type="submit"
+              className="mt-4 w-full sm:w-auto md:self-start"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-1 animate-spin" />
+                  Adding...
+                </>
+              ) : (
+                "Add Expense"
+              )}
             </Button>
           </form>
         </CardBody>
+        <CardFooter className="gap-3 grid grid-cols-1 sm:grid-cols-3 p-6 pt-0">
+          <Select defaultSelectedKeys={["category"]} aria-labelledby="filter">
+            <SelectItem key="category">Filter by category</SelectItem>
+            <SelectItem key="date">Filter by date</SelectItem>
+          </Select>
+          <Select
+            onChange={(e) => setFilterCategory(e.target.value as Category)}
+            defaultSelectedKeys={[filterCategory]}
+            aria-labelledby="filter"
+          >
+            {categories.map((category) => (
+              <SelectItem key={`${category.code}`} value={category.code}>
+                {`${category.symbol} ${category.code}`}
+              </SelectItem>
+            ))}
+          </Select>
+          <Button>Filter by Date Range</Button>
+        </CardFooter>
       </Card>
     </div>
   );
