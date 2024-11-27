@@ -99,7 +99,7 @@ const ExpenseTracker = () => {
     };
 
     // Check if all required fields are filled
-    for (let key in newErrors) {
+    for (const key in newErrors) {
       if (newErrors[key as keyof typeof newErrors]) {
         isValid = false;
       }
