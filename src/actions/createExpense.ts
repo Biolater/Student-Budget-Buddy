@@ -32,7 +32,7 @@ const createExpense = async (
         userId,
       },
     });
-    console.log("Expense created:", expense);
+    return expense;
   } catch (error) {
     console.log(error);
   }
@@ -66,7 +66,6 @@ export default async function createExpenseAction(
     !noErrors
   ) {
     throw new Error("Invalid input data");
-    return;
   }
 
   // Call the createExpense function with validated and converted data
@@ -79,6 +78,7 @@ export default async function createExpenseAction(
       description,
       userId
     );
+    return expense;
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : "Unknown error");
   }

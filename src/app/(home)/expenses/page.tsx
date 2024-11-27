@@ -1,7 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { CalendarIcon, Loader2, Pencil, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+import {
+  Table,
+  TableHeader,
+  TableColumn,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@nextui-org/react";
+import { DateRangePicker } from "@nextui-org/react";
 import ClientDatePicker from "./ClientDatePicker";
 import { Input, Textarea } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
@@ -10,7 +19,20 @@ import { DateValue } from "@nextui-org/react";
 import { useAuth } from "@clerk/nextjs";
 import createExpenseAction, { type Category } from "@/actions/createExpense";
 import toast from "react-hot-toast";
+import { format } from "date-fns";
+import { pre } from "framer-motion/client";
 
+type Expense = {
+  id: string;
+  userId: string;
+  amount: string;
+  category: string;
+  description: string;
+  currency: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+};
 const currencies = [
   { code: "USD", symbol: "$" },
   { code: "EUR", symbol: "€" },
@@ -31,12 +53,18 @@ const categories = [
   { code: "Other", symbol: "🤷‍♀️" },
 ];
 
+const categories2 = [{ code: "All Categories", symbol: "" }, ...categories];
+
+const TABLE_HEADERS = ["Date", "Amount", "Category", "Description", "Actions"];
+
 const ExpenseTracker = () => {
   const [date, setDate] = useState<DateValue | null>(null);
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState("");
   const [category, setCategory] = useState<Category>("");
-  const [filterCategory, setFilterCategory] = useState<Category>("");
+  // const [filterCategory, setFilterCategory] = useState<Category>("Food");
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const { userId } = useAuth();
@@ -94,7 +122,7 @@ const ExpenseTracker = () => {
       const correctCategory = category.split("-")[0] as Category;
       try {
         setLoading(true);
-        await createExpenseAction(
+        const expense = await createExpenseAction(
           newDate,
           parseFloat(amount),
           currency,
@@ -103,6 +131,17 @@ const ExpenseTracker = () => {
           userId,
           errors
         );
+        if (expense)
+          setExpenses([
+            {
+              ...expense,
+              amount: expense.amount.toString(),
+              date: expense.date.toString(),
+              createdAt: expense.createdAt.toString(),
+              updatedAt: expense.updatedAt.toString(),
+            },
+            ...expenses,
+          ]);
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
@@ -114,9 +153,42 @@ const ExpenseTracker = () => {
     }
   };
 
+  const handleFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const filterCategory = e.target.value;
+    if (filterCategory === "All Categories") {
+      setFilteredExpenses(expenses);
+    } else {
+      setFilteredExpenses(
+        expenses.filter((expense) => expense.category === filterCategory)
+      );
+    }
+  };
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        if (userId) {
+          const response = await fetch(`/api/expenses?userId=${userId}`);
+          if (!response.ok) {
+            throw new Error(response.statusText);
+          }
+          const data: Expense[] = await response.json();
+          setExpenses(data);
+          setFilteredExpenses(data)
+        }
+        // setExpenses(data);
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Something went wrong"
+        );
+      }
+    };
+    fetchExpenses();
+  }, [userId]);
+
   return (
     <div className="container max-w-4xl mx-auto p-4">
-      <Card>
+      <Card aria-labelledby="expense-tracker">
         <CardHeader className="flex-col items-start p-6">
           <h3 className="font-semibold tracking-tight text-2xl sm:text-3xl">
             Expense Tracker
@@ -251,23 +323,69 @@ const ExpenseTracker = () => {
             </Button>
           </form>
         </CardBody>
-        <CardFooter className="gap-3 grid grid-cols-1 sm:grid-cols-3 p-6 pt-0">
-          <Select defaultSelectedKeys={["category"]} aria-labelledby="filter">
-            <SelectItem key="category">Filter by category</SelectItem>
-            <SelectItem key="date">Filter by date</SelectItem>
-          </Select>
-          <Select
-            onChange={(e) => setFilterCategory(e.target.value as Category)}
-            defaultSelectedKeys={[filterCategory]}
-            aria-labelledby="filter"
+        <CardFooter className="p-6 pt-0 flex flex-col gap-4">
+          <div className="gap-3 w-full grid grid-cols-1 sm:grid-cols-2">
+            <Select
+              onChange={handleFilterChange}
+              defaultSelectedKeys={["All Categories"]}
+              aria-labelledby="filter"
+            >
+              {categories2.map((category) => (
+                <SelectItem key={`${category.code}`} value={category.code}>
+                  {`${category.symbol} ${category.code}`}
+                </SelectItem>
+              ))}
+            </Select>
+            <div className="relative">
+              <Button className="relative w-full">Filter by Date Range</Button>
+              <DateRangePicker className="expenses-date-range opacity-0 inset-0" />
+            </div>
+          </div>
+          <Table
+            removeWrapper
+            classNames={{ base: "w-full overflow-auto" }}
+            aria-label="Expense table"
           >
-            {categories.map((category) => (
-              <SelectItem key={`${category.code}`} value={category.code}>
-                {`${category.symbol} ${category.code}`}
-              </SelectItem>
-            ))}
-          </Select>
-          <Button>Filter by Date Range</Button>
+            <TableHeader>
+              {TABLE_HEADERS.map((column, idx) => (
+                <TableColumn key={`${column}-${idx}`}>{column}</TableColumn>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {filteredExpenses.map((expense) => (
+                <TableRow key={expense.id}>
+                  <TableCell>{format(expense.date, "PP")}</TableCell>
+                  <TableCell>
+                    {
+                      currencies.find((c) => c.code === expense.currency)
+                        ?.symbol
+                    }
+                    {parseFloat(expense.amount).toFixed(2)} {expense.currency}
+                  </TableCell>
+                  <TableCell>{expense.category}</TableCell>
+                  <TableCell>{expense.description}</TableCell>
+                  <TableCell className="flex items-center gap-2">
+                    <Button
+                      className="min-w-8 min-h-8 p-3"
+                      // variant=""
+                      size="md"
+                      // onClick={() => handleEdit(expense)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      className="min-w-8 min-h-8 p-3"
+                      // variant="outline"
+                      size="md"
+                      // onClick={() => handleDelete(expense.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </CardFooter>
       </Card>
     </div>

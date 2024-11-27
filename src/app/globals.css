@@ -68,3 +68,17 @@ body{
   height: 10000px;
 }
 
+.expenses-date-range {
+  position: absolute;
+}
+
+.expenses-date-range button[data-slot="selector-button"] {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  left: 0;
+}
+.expenses-date-range button[data-slot="selector-button"]  > * {
+  opacity: 0;
+}
