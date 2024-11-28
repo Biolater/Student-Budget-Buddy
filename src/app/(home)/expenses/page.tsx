@@ -142,6 +142,16 @@ const ExpenseTracker = () => {
             },
             ...expenses,
           ]);
+        setFilteredExpenses([
+          {
+            ...expense,
+            amount: expense.amount.toString(),
+            date: expense.date.toString(),
+            createdAt: expense.createdAt.toString(),
+            updatedAt: expense.updatedAt.toString(),
+          },
+          ...expenses,
+        ]);
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
@@ -174,7 +184,7 @@ const ExpenseTracker = () => {
           }
           const data: Expense[] = await response.json();
           setExpenses(data);
-          setFilteredExpenses(data)
+          setFilteredExpenses(data);
         }
         // setExpenses(data);
       } catch (error) {
