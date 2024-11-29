@@ -12,6 +12,25 @@ export async function GET(request: NextRequest) {
     });
     return new Response(JSON.stringify(expenses));
   } catch (error) {
-    throw new Error(error instanceof Error ? error.message : "Something went wrong");
+    throw new Error(
+      error instanceof Error ? error.message : "Something went wrong"
+    );
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  const id = request.nextUrl.searchParams.get("postId");
+  if (!id) {
+    throw new Error("Missing id");
+  }
+  try {
+    const expense = await prisma.expense.delete({
+      where: { id },
+    });
+    return new Response(JSON.stringify(expense));
+  } catch (error) {
+    throw new Error(
+      error instanceof Error ? error.message : "Something went wrong"
+    );
   }
 }

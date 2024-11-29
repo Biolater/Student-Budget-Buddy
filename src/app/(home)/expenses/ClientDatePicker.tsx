@@ -22,6 +22,7 @@ export default function ClientDatePicker({
   const dateValue = value ? value : null;
   return (
     <DatePicker
+      showMonthAndYearPickers
       aria-label="Select date"
       value={dateValue}
       onChange={onChange}

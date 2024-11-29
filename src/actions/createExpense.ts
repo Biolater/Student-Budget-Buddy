@@ -34,7 +34,7 @@ const createExpense = async (
     });
     return expense;
   } catch (error) {
-    console.log(error);
+    throw error; // re-throw the error
   }
 };
 
