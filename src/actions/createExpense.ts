@@ -14,7 +14,7 @@ export type Category =
   | "";
 
 const createExpense = async (
-  date: Date,
+  date: string,
   amount: number,
   currency: string,
   category: Category,
@@ -39,7 +39,7 @@ const createExpense = async (
 };
 
 export default async function createExpenseAction(
-  date: Date,
+  date: string,
   amount: number,
   currency: string,
   category: Category,
@@ -57,7 +57,7 @@ export default async function createExpenseAction(
 
   // Validate that all required fields are present and of the correct type
   if (
-    typeof date !== "object" ||
+    typeof date !== "string" ||
     typeof amount !== "number" ||
     typeof currency !== "string" ||
     typeof category !== "string" ||
@@ -78,7 +78,7 @@ export default async function createExpenseAction(
       description,
       userId
     );
-    return expense;
+    return { ...expense, amount: expense.amount.toNumber() };
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : "Unknown error");
   }

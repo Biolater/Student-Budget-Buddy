@@ -1,6 +1,6 @@
 "use client";
 import { ChangeEvent, useEffect, useState } from "react";
-import { Loader2, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import {
   Table,
@@ -13,11 +13,8 @@ import {
   useDisclosure,
 } from "@nextui-org/react";
 import { DateRangePicker } from "@nextui-org/react";
-import ClientDatePicker from "./ClientDatePicker";
-import { Input, Textarea } from "@nextui-org/input";
 import { Select, SelectItem } from "@nextui-org/select";
 import { Button } from "@nextui-org/button";
-import { DateValue } from "@nextui-org/react";
 import { useAuth } from "@clerk/nextjs";
 import {
   Modal,
@@ -26,7 +23,6 @@ import {
   ModalBody,
   ModalFooter,
 } from "@nextui-org/modal";
-import createExpenseAction, { type Category } from "@/actions/createExpense";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import ExpenseForm from "./ExpenseForm";
@@ -39,8 +35,8 @@ export type Expense = {
   description: string;
   currency: string;
   date: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 };
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -73,6 +69,8 @@ const ExpenseTracker = () => {
   const [expensesLoading, setExpensesLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
+  const [updateTrigger, setUpdateTrigger] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
 
   const {
     isOpen: editModelOpen,
@@ -111,7 +109,7 @@ const ExpenseTracker = () => {
     };
     try {
       setDeleteLoading(true);
-      const response = await fetch(`/api/expenses?postId=${id}`, options);
+      const response = await fetch(`/api/expenses?expenseId=${id}`, options);
       if (!response.ok) throw new Error(response.statusText);
       const data = await response.json();
       if (data) {
@@ -131,6 +129,26 @@ const ExpenseTracker = () => {
   const handleExpenseCreation = (expense: Expense) => {
     setExpenses((prevExpenses) => [expense, ...prevExpenses]);
     setFilteredExpenses((prevExpenses) => [expense, ...prevExpenses]);
+  };
+
+  const handleUpdateButtonClick = () => {
+    setUpdateTrigger(true);
+    setUpdateLoading(true);
+  };
+
+  const handleExpenseUpdate = (expense: Expense) => {
+    setExpenses((prevExpenses) =>
+      prevExpenses.map((prevExpense) =>
+        prevExpense.id === expense.id ? expense : prevExpense
+      )
+    );
+    setFilteredExpenses((prevExpenses) =>
+      prevExpenses.map((prevExpense) =>
+        prevExpense.id === expense.id ? expense : prevExpense
+      )
+    );
+    setUpdateLoading(false);
+    setUpdateTrigger(false);
   };
 
   useEffect(() => {
@@ -265,10 +283,24 @@ const ExpenseTracker = () => {
                                         onExpenseCreated={handleExpenseCreation}
                                         isEditing={true}
                                         editingExpense={editExpense}
+                                        updateTriggerState={updateTrigger}
+                                        onUpdateExpense={(expense) => {
+                                          handleExpenseUpdate(expense);
+                                          onClose();
+                                        }}
                                       />
                                     </ModalBody>
                                     <ModalFooter>
-                                      <Button>Update Expense</Button>
+                                      <Button variant="light" onPress={onClose}>
+                                        Close
+                                      </Button>
+                                      <Button
+                                        isDisabled={updateLoading}
+                                        isLoading={updateLoading}
+                                        onClick={handleUpdateButtonClick}
+                                      >
+                                        {!updateLoading && "Update Expense"}
+                                      </Button>
                                     </ModalFooter>
                                   </>
                                 )}

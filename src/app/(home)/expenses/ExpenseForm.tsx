@@ -15,6 +15,8 @@ import createExpenseAction from "@/actions/createExpense";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
 import { parseDate } from "@internationalized/date";
+import updateExpenseAction from "@/actions/updateExpense";
+import createIso from "@/lib/createIso";
 
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -41,7 +43,16 @@ const ExpenseForm: React.FC<{
   onExpenseCreated: (expense: Expense) => void;
   isEditing?: boolean;
   editingExpense?: Expense | null;
-}> = ({ userId, onExpenseCreated, isEditing, editingExpense }) => {
+  updateTriggerState?: boolean;
+  onUpdateExpense?: (expense: Expense) => void;
+}> = ({
+  userId,
+  onExpenseCreated,
+  isEditing,
+  editingExpense,
+  updateTriggerState,
+  onUpdateExpense,
+}) => {
   const [date, setDate] = useState<DateValue | null>(
     isEditing ? parseDate(editingExpense?.date.slice(0, 10) as string) : null
   );
@@ -74,17 +85,17 @@ const ExpenseForm: React.FC<{
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Validate form
+
+    // Validate form (same logic as before)
     let isValid = true;
     const newErrors = {
       date: date ? "" : "Date is required.",
       amount: amount ? "" : "Amount is required.",
       currency: currency ? "" : "Currency is required.",
       category: category ? "" : "Category is required.",
-      description: description ? "" : "Description is required.",
+      description: description?.trim() ? "" : "Description is required.",
     };
 
-    // Check if all required fields are filled
     for (const key in newErrors) {
       if (newErrors[key as keyof typeof newErrors]) {
         isValid = false;
@@ -93,7 +104,6 @@ const ExpenseForm: React.FC<{
 
     setErrors(newErrors);
 
-    // If the form is valid, proceed with form submission logic (e.g., save data)
     if (
       isValid &&
       date &&
@@ -104,12 +114,15 @@ const ExpenseForm: React.FC<{
       userId
     ) {
       const { year, month, day } = date;
-      const newDate = new Date(year, month - 1, day);
+
+      const isoDate = createIso(year, month, day);
+
       const correctCategory = category.split("-")[0] as Category;
+
       try {
         setLoading(true);
         const expense = await createExpenseAction(
-          newDate,
+          isoDate, // Pass the ISO string
           parseFloat(amount),
           currency,
           correctCategory,
@@ -121,9 +134,6 @@ const ExpenseForm: React.FC<{
           const correctedExpense = {
             ...expense,
             amount: expense.amount.toString(),
-            date: expense.date.toString(),
-            createdAt: expense.createdAt.toString(),
-            updatedAt: expense.updatedAt.toString(),
           };
           onExpenseCreated(correctedExpense);
         }
@@ -138,6 +148,41 @@ const ExpenseForm: React.FC<{
     }
   };
 
+  useEffect(() => {
+    if (isEditing && editingExpense && updateTriggerState) {
+      const updateExpense = async () => {
+        if (date && amount && currency && category && description && userId) {
+          const { year, month, day } = date;
+
+          const isoDate = createIso(year, month, day);
+          try {
+            const data = {
+              date: isoDate,
+              amount: parseFloat(amount),
+              currency,
+              category,
+              description,
+            };
+            const updatedExpense = await updateExpenseAction(
+              editingExpense.id,
+              data
+            );
+            if (updatedExpense) {
+              onUpdateExpense?.({
+                ...updatedExpense,
+                amount: updatedExpense.amount.toString(),
+              });
+            }
+          } catch (error) {
+            toast.error(
+              error instanceof Error ? error.message : "Something went wrong"
+            );
+          }
+        }
+      };
+      updateExpense()
+    }
+  }, [updateTriggerState]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col">
@@ -149,8 +194,14 @@ const ExpenseForm: React.FC<{
           >
             Date
           </label>
-          <ClientDatePicker value={date} onChange={(value) => setDate(value)} />
-          {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
+          <ClientDatePicker
+            dateError={errors.date}
+            value={date}
+            onChange={(value) => {
+              setDate(value);
+              setErrors({ ...errors, date: "" });
+            }}
+          />
         </div>
         <div className="space-y-2">
           <label
@@ -161,16 +212,20 @@ const ExpenseForm: React.FC<{
           </label>
           <Input
             aria-labelledby="amount"
-            isRequired
             size="md"
             type="number"
             placeholder="Enter amount"
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              setErrors({ ...errors, amount: "" });
+            }}
+            isInvalid={errors.amount !== ""} // Validation logic to mark the input invalid
+            className={
+              errors.amount !== "" ? "[&_*_input]:placeholder:text-danger" : ""
+            }
+            errorMessage={errors.amount}
           />
-          {errors.amount && (
-            <p className="text-red-500 text-sm">{errors.amount}</p>
-          )}
         </div>
         <div className="space-y-2">
           <label
@@ -181,10 +236,13 @@ const ExpenseForm: React.FC<{
           </label>
           <Select
             aria-labelledby="currency"
-            onChange={(e) => setCurrency(e.target.value)}
+            onChange={(e) => {
+              setCurrency(e.target.value);
+              setErrors({ ...errors, currency: "" });
+            }}
             selectedKeys={[currency ?? ""]}
             errorMessage={errors.currency}
-            isRequired
+            isInvalid={errors.currency !== ""}
             size="md"
             placeholder="Select currency"
           >
@@ -194,9 +252,6 @@ const ExpenseForm: React.FC<{
               </SelectItem>
             ))}
           </Select>
-          {errors.currency && (
-            <p className="text-red-500 text-sm">{errors.currency}</p>
-          )}
         </div>
         <div className="space-y-2">
           <label
@@ -211,8 +266,10 @@ const ExpenseForm: React.FC<{
             onChange={(e) => {
               const selectedCategory = e.target.value;
               setCategory(selectedCategory as Category);
+              setErrors({ ...errors, category: "" });
             }}
-            isRequired
+            errorMessage={errors.category}
+            isInvalid={errors.category !== ""}
             size="md"
             placeholder="Select category"
           >
@@ -222,9 +279,6 @@ const ExpenseForm: React.FC<{
               </SelectItem>
             ))}
           </Select>
-          {errors.category && (
-            <p className="text-red-500 text-sm">{errors.category}</p>
-          )}
         </div>
         <div className="space-y-2 sm:col-span-2">
           <label
@@ -234,14 +288,19 @@ const ExpenseForm: React.FC<{
             Description
           </label>
           <Textarea
+            className={
+              errors.description ? "[&_*_textarea]:placeholder:text-danger" : ""
+            }
             aria-labelledby="description"
+            errorMessage={errors.description}
+            isInvalid={errors.description !== ""}
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={(e) => {
+              setDescription(e.target.value);
+              setErrors({ ...errors, description: "" });
+            }}
             placeholder="Enter description"
           />
-          {errors.description && (
-            <p className="text-red-500 text-sm">{errors.description}</p>
-          )}
         </div>
       </div>
       {!isEditing && (

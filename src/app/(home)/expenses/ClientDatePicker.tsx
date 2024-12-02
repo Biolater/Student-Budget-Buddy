@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 interface ClientDatePickerProps {
   value: DateValue | null;
   onChange: (value: DateValue) => void;
+  dateError: string;
 }
 
 export default function ClientDatePicker({
   value,
   onChange,
+  dateError,
 }: ClientDatePickerProps) {
   const [isClient, setIsClient] = useState(false);
 
@@ -26,6 +28,8 @@ export default function ClientDatePicker({
       aria-label="Select date"
       value={dateValue}
       onChange={onChange}
+      errorMessage="Date is required"
+      isInvalid={dateError !== ""}
       isRequired
       size="md"
       className="w-full"
