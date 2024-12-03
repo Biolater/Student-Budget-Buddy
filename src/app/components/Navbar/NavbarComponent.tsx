@@ -27,7 +27,7 @@ export const NavbarComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
@@ -53,10 +53,10 @@ export const NavbarComponent = () => {
       classNames={{
         item: [
           "data-[active=true]:bg-muted data-[active=true]:text-foreground",
-        ]
+        ],
       }}
     >
-      <NavbarContent>
+      <NavbarContent as="div">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="md:hidden"
@@ -72,15 +72,16 @@ export const NavbarComponent = () => {
           justify="center"
         >
           {navLinks.map((link) => (
-            <NavbarItem
-              as={Link}
-              isActive={pathname === link.href}
-              key={link.href}
-              href={link.href}
-              className="text-muted-foreground transition-colors hover:text-foreground hover:bg-muted px-3 py-2 rounded-md text-sm"
-            >
-              {link.label}
-            </NavbarItem>
+            <li key={link.href}>
+              <NavbarItem
+                as={Link}
+                isActive={pathname === link.href}
+                href={link.href}
+                className="text-muted-foreground transition-colors hover:text-foreground hover:bg-muted px-3 py-2 rounded-md text-sm"
+              >
+                {link.label}
+              </NavbarItem>
+            </li>
           ))}
         </NavbarContent>
       )}

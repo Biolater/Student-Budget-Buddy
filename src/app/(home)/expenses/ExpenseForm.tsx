@@ -9,7 +9,7 @@ import {
   Textarea,
   type DateValue,
 } from "@nextui-org/react";
-import { useEffect, useState } from "react";
+import { MutableRefObject, useCallback, useEffect, useState } from "react";
 import ClientDatePicker from "./ClientDatePicker";
 import createExpenseAction from "@/actions/createExpense";
 import toast from "react-hot-toast";
@@ -43,8 +43,9 @@ const ExpenseForm: React.FC<{
   onExpenseCreated: (expense: Expense) => void;
   isEditing?: boolean;
   editingExpense?: Expense | null;
-  updateTriggerState?: boolean;
+  updateTriggerState?: MutableRefObject<boolean>;
   onUpdateExpense?: (expense: Expense) => void;
+  onUpdateFinished?: () => void;
 }> = ({
   userId,
   onExpenseCreated,
@@ -52,6 +53,7 @@ const ExpenseForm: React.FC<{
   editingExpense,
   updateTriggerState,
   onUpdateExpense,
+  onUpdateFinished,
 }) => {
   const [date, setDate] = useState<DateValue | null>(
     isEditing ? parseDate(editingExpense?.date.slice(0, 10) as string) : null
@@ -83,11 +85,7 @@ const ExpenseForm: React.FC<{
     setDescription("");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate form (same logic as before)
-    let isValid = true;
+  const validateForm = useCallback(() => {
     const newErrors = {
       date: date ? "" : "Date is required.",
       amount: amount ? "" : "Amount is required.",
@@ -96,23 +94,16 @@ const ExpenseForm: React.FC<{
       description: description?.trim() ? "" : "Description is required.",
     };
 
-    for (const key in newErrors) {
-      if (newErrors[key as keyof typeof newErrors]) {
-        isValid = false;
-      }
-    }
-
     setErrors(newErrors);
+    return !Object.values(newErrors).some((error) => error);
+  }, [date, amount, currency, category, description]);
 
-    if (
-      isValid &&
-      date &&
-      amount &&
-      currency &&
-      category &&
-      description &&
-      userId
-    ) {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm() || !userId) return;
+
+    if (date && amount && currency && category && description && userId) {
       const { year, month, day } = date;
 
       const isoDate = createIso(year, month, day);
@@ -136,6 +127,7 @@ const ExpenseForm: React.FC<{
             amount: expense.amount.toString(),
           };
           onExpenseCreated(correctedExpense);
+          toast.success("Expense created successfully");
         }
       } catch (error) {
         toast.error(
@@ -149,7 +141,7 @@ const ExpenseForm: React.FC<{
   };
 
   useEffect(() => {
-    if (isEditing && editingExpense && updateTriggerState) {
+    if (isEditing && editingExpense && updateTriggerState?.current) {
       const updateExpense = async () => {
         if (date && amount && currency && category && description && userId) {
           const { year, month, day } = date;
@@ -172,16 +164,24 @@ const ExpenseForm: React.FC<{
                 ...updatedExpense,
                 amount: updatedExpense.amount.toString(),
               });
+              toast.success("Expense updated successfully");
             }
           } catch (error) {
             toast.error(
               error instanceof Error ? error.message : "Something went wrong"
             );
+          } finally {
+            clearForm();
+            onUpdateFinished?.();
           }
         }
       };
-      updateExpense()
+      updateExpense();
     }
+  }, [updateTriggerState?.current]);
+
+  useEffect(() => {
+    console.log("updateTriggerState changed");
   }, [updateTriggerState]);
 
   return (
@@ -312,7 +312,7 @@ const ExpenseForm: React.FC<{
         >
           {!loading && "Add expense"}
         </Button>
-      )}
+      )}=
     </form>
   );
 };

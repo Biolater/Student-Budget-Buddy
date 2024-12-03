@@ -62,12 +62,6 @@ export default function RootLayout({
       <html lang="en">
         <body className={`${quicksand.className} antialiased`}>
           <Providers>
-            {/* <SignedOut>
-              <SignInButton />
-            </SignedOut>
-            <SignedIn>
-              <UserButton />
-            </SignedIn> */}
             {children}
             <Toaster />
           </Providers>

@@ -1,5 +1,5 @@
 "use client";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import {
@@ -64,13 +64,14 @@ const TABLE_HEADERS = ["Date", "Amount", "Category", "Description", "Actions"];
 
 const ExpenseTracker = () => {
   // const [filterCategory, setFilterCategory] = useState<Category>("Food");
+  const updateTriggerRef = useRef(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(true);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
-  const [updateTrigger, setUpdateTrigger] = useState(false);
   const [updateLoading, setUpdateLoading] = useState(false);
+  const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
 
   const {
     isOpen: editModelOpen,
@@ -113,8 +114,12 @@ const ExpenseTracker = () => {
       if (!response.ok) throw new Error(response.statusText);
       const data = await response.json();
       if (data) {
-        setExpenses(expenses.filter((expense) => expense.id !== id));
-        setFilteredExpenses(expenses.filter((expense) => expense.id !== id));
+        setExpenses((prevExpenses) =>
+          prevExpenses.filter((expense) => expense.id !== id)
+        );
+        setFilteredExpenses((prevExpenses) =>
+          prevExpenses.filter((expense) => expense.id !== id)
+        );
         toast.success("Expense deleted successfully");
       }
     } catch (error) {
@@ -126,13 +131,18 @@ const ExpenseTracker = () => {
     }
   };
 
+  const handleDeleteModalOpen = (expense: Expense) => {
+    onDeleteModalOpen();
+    setDeleteExpense(expense);
+  };
+
   const handleExpenseCreation = (expense: Expense) => {
     setExpenses((prevExpenses) => [expense, ...prevExpenses]);
     setFilteredExpenses((prevExpenses) => [expense, ...prevExpenses]);
   };
 
   const handleUpdateButtonClick = () => {
-    setUpdateTrigger(true);
+    updateTriggerRef.current = true;
     setUpdateLoading(true);
   };
 
@@ -147,8 +157,12 @@ const ExpenseTracker = () => {
         prevExpense.id === expense.id ? expense : prevExpense
       )
     );
+  };
+
+  const handleUpdateFinished = () => {
+    updateTriggerRef.current = false;
     setUpdateLoading(false);
-    setUpdateTrigger(false);
+    setEditExpense(null);
   };
 
   useEffect(() => {
@@ -177,6 +191,88 @@ const ExpenseTracker = () => {
 
   return (
     <div className="container max-w-4xl mx-auto p-4">
+      <Modal
+        isOpen={deleteModelOpen}
+        placement="auto"
+        onOpenChange={onDeleteModalChange}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex-col space-y-1.5">
+                <p>Delete Expense</p>
+                <p className="text-sm text-muted-foreground">
+                  Are you sure you want to delete this expense? This action
+                  cannot be undone.
+                </p>
+              </ModalHeader>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose}>
+                  Close
+                </Button>
+                <Button
+                  isDisabled={deleteLoading}
+                  isLoading={deleteLoading}
+                  color="danger"
+                  onClick={async () => {
+                    if (deleteExpense) {
+                      await handleDeleteExpense(deleteExpense?.id); // Fix: Directly pass the correct expense.id here
+                      onClose(); // Close modal after deletion
+                    }
+                  }}
+                >
+                  {deleteLoading ? "Deleting..." : "Delete"}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={editModelOpen}
+        placement="auto"
+        onOpenChange={onEditModalChange}
+      >
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex-col space-y-1.5">
+                <p>Edit Expense</p>
+                <p className="text-sm text-muted-foreground">
+                  Make changes to your expense here. Click save when you&apos;re
+                  done.
+                </p>
+              </ModalHeader>
+              <ModalBody>
+                <ExpenseForm
+                  userId={userId}
+                  onExpenseCreated={handleExpenseCreation}
+                  isEditing={true}
+                  editingExpense={editExpense}
+                  updateTriggerState={updateTriggerRef}
+                  onUpdateExpense={(expense) => {
+                    handleExpenseUpdate(expense);
+                    onClose();
+                  }}
+                  onUpdateFinished={handleUpdateFinished}
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button variant="light" onPress={onClose}>
+                  Close
+                </Button>
+                <Button
+                  isDisabled={updateLoading}
+                  isLoading={updateLoading}
+                  onClick={handleUpdateButtonClick}
+                >
+                  {!updateLoading && "Update Expense"}
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
       <Card aria-labelledby="expense-tracker">
         <CardHeader className="flex-col items-start p-6">
           <h3 className="font-semibold tracking-tight text-2xl sm:text-3xl">
@@ -241,8 +337,14 @@ const ExpenseTracker = () => {
                       </TableCell>
                     </TableRow>
                   ))
-                : filteredExpenses.map((expense) => (
-                    <TableRow key={expense.id}>
+                : filteredExpenses.map((expense, idx) => (
+                    <TableRow
+                      className={`${
+                        idx !== filteredExpenses.length - 1 &&
+                        "border-b border-border"
+                      } hover:bg-muted transition-colors duration-200 ease-in-out`}
+                      key={expense.id}
+                    >
                       <TableCell>{format(expense.date, "PP")}</TableCell>
                       <TableCell>
                         {
@@ -262,96 +364,15 @@ const ExpenseTracker = () => {
                             size="sm"
                             onPress={() => handleEditModalOpen(expense)}
                           >
-                            <Modal
-                              isOpen={editModelOpen}
-                              placement="auto"
-                              onOpenChange={onEditModalChange}
-                            >
-                              <ModalContent>
-                                {(onClose) => (
-                                  <>
-                                    <ModalHeader className="flex-col space-y-1.5">
-                                      <p>Edit Expense</p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Make changes to your expense here. Click
-                                        save when you&apos;re done.
-                                      </p>
-                                    </ModalHeader>
-                                    <ModalBody>
-                                      <ExpenseForm
-                                        userId={userId}
-                                        onExpenseCreated={handleExpenseCreation}
-                                        isEditing={true}
-                                        editingExpense={editExpense}
-                                        updateTriggerState={updateTrigger}
-                                        onUpdateExpense={(expense) => {
-                                          handleExpenseUpdate(expense);
-                                          onClose();
-                                        }}
-                                      />
-                                    </ModalBody>
-                                    <ModalFooter>
-                                      <Button variant="light" onPress={onClose}>
-                                        Close
-                                      </Button>
-                                      <Button
-                                        isDisabled={updateLoading}
-                                        isLoading={updateLoading}
-                                        onClick={handleUpdateButtonClick}
-                                      >
-                                        {!updateLoading && "Update Expense"}
-                                      </Button>
-                                    </ModalFooter>
-                                  </>
-                                )}
-                              </ModalContent>
-                            </Modal>
                             <Pencil className="h-4 w-4" />
                             <span className="sr-only">Edit</span>
                           </Button>
                           <Button
                             className="min-w-8 min-h-8 h-full rounded-xl p-3"
-                            onPress={onDeleteModalOpen}
+                            onPress={() => handleDeleteModalOpen(expense)}
                             color="danger"
                             size="md"
                           >
-                            <Modal
-                              isOpen={deleteModelOpen}
-                              placement="auto"
-                              onOpenChange={onDeleteModalChange}
-                            >
-                              <ModalContent>
-                                {(onClose) => (
-                                  <>
-                                    <ModalHeader className="flex-col space-y-1.5">
-                                      <p>Delete Expense</p>
-                                      <p className="text-sm text-muted-foreground">
-                                        Are you sure you want to delete this
-                                        expense? This action cannot be undone.
-                                      </p>
-                                    </ModalHeader>
-                                    <ModalFooter>
-                                      <Button variant="light" onPress={onClose}>
-                                        Close
-                                      </Button>
-                                      <Button
-                                        isDisabled={deleteLoading}
-                                        isLoading={deleteLoading}
-                                        color="danger"
-                                        onPress={async () => {
-                                          await handleDeleteExpense(expense.id);
-                                          onClose();
-                                        }}
-                                      >
-                                        {deleteLoading
-                                          ? "Deleting..."
-                                          : "Delete"}
-                                      </Button>
-                                    </ModalFooter>
-                                  </>
-                                )}
-                              </ModalContent>
-                            </Modal>
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Delete</span>
                           </Button>
