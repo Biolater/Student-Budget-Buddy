@@ -1,6 +1,6 @@
 "use client";
 
-import type { Category } from "@/actions/createExpense";
+import type { Category } from "@/actions/Expense/createExpense";
 import {
   Button,
   Input,
@@ -11,11 +11,11 @@ import {
 } from "@nextui-org/react";
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
 import ClientDatePicker from "./ClientDatePicker";
-import createExpenseAction from "@/actions/createExpense";
+import createExpenseAction from "@/actions/Expense/createExpense";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
 import { parseDate } from "@internationalized/date";
-import updateExpenseAction from "@/actions/updateExpense";
+import updateExpenseAction from "@/actions/Expense/updateExpense";
 import createIso from "@/lib/createIso";
 
 const currencies = [
@@ -58,7 +58,9 @@ const ExpenseForm: React.FC<{
   const [date, setDate] = useState<DateValue | null>(
     isEditing ? parseDate(editingExpense?.date.slice(0, 10) as string) : null
   );
-  const [amount, setAmount] = useState(isEditing ? editingExpense?.amount : "");
+  const [amount, setAmount] = useState(
+    isEditing ? editingExpense?.amount : null
+  );
   const [currency, setCurrency] = useState(
     isEditing ? editingExpense?.currency : ""
   );
@@ -79,7 +81,7 @@ const ExpenseForm: React.FC<{
 
   const clearForm = () => {
     setDate(null);
-    setAmount("");
+    setAmount(null);
     setCurrency("");
     setCategory("");
     setDescription("");
@@ -114,7 +116,7 @@ const ExpenseForm: React.FC<{
         setLoading(true);
         const expense = await createExpenseAction(
           isoDate, // Pass the ISO string
-          parseFloat(amount),
+          amount,
           currency,
           correctCategory,
           description,
@@ -122,11 +124,7 @@ const ExpenseForm: React.FC<{
           errors
         );
         if (expense) {
-          const correctedExpense = {
-            ...expense,
-            amount: expense.amount.toString(),
-          };
-          onExpenseCreated(correctedExpense);
+          onExpenseCreated(expense);
           toast.success("Expense created successfully");
         }
       } catch (error) {
@@ -150,7 +148,7 @@ const ExpenseForm: React.FC<{
           try {
             const data = {
               date: isoDate,
-              amount: parseFloat(amount),
+              amount,
               currency,
               category,
               description,
@@ -160,10 +158,7 @@ const ExpenseForm: React.FC<{
               data
             );
             if (updatedExpense) {
-              onUpdateExpense?.({
-                ...updatedExpense,
-                amount: updatedExpense.amount.toString(),
-              });
+              onUpdateExpense?.(updatedExpense);
               toast.success("Expense updated successfully");
             }
           } catch (error) {
@@ -179,10 +174,6 @@ const ExpenseForm: React.FC<{
       updateExpense();
     }
   }, [updateTriggerState?.current]);
-
-  useEffect(() => {
-    console.log("updateTriggerState changed");
-  }, [updateTriggerState]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col">
@@ -215,9 +206,9 @@ const ExpenseForm: React.FC<{
             size="md"
             type="number"
             placeholder="Enter amount"
-            value={amount}
+            value={amount?.toString()}
             onChange={(e) => {
-              setAmount(e.target.value);
+              setAmount(parseFloat(e.target.value));
               setErrors({ ...errors, amount: "" });
             }}
             isInvalid={errors.amount !== ""} // Validation logic to mark the input invalid
@@ -312,7 +303,7 @@ const ExpenseForm: React.FC<{
         >
           {!loading && "Add expense"}
         </Button>
-      )}=
+      )}
     </form>
   );
 };
