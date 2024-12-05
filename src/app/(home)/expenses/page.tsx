@@ -1,26 +1,7 @@
 "use client";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
-import {
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Skeleton,
-  useDisclosure,
-} from "@nextui-org/react";
-import { Button } from "@nextui-org/button";
 import { useAuth } from "@clerk/nextjs";
-import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-} from "@nextui-org/modal";
 import toast from "react-hot-toast";
 import { format } from "date-fns";
 import ExpenseForm from "./ExpenseForm";
@@ -68,8 +49,12 @@ const ExpenseTracker = () => {
   };
 
   const handleExpenseCreation = (expense: Expense) => {
-    setExpenses((prevExpenses) => [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date)));
-    setFilteredExpenses((prevExpenses) => [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date)));
+    setExpenses((prevExpenses) =>
+      [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date))
+    );
+    setFilteredExpenses((prevExpenses) =>
+      [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date))
+    );
   };
 
   const handleExpenseDeletion = (expense: Expense) => {
@@ -96,7 +81,6 @@ const ExpenseTracker = () => {
   };
 
   useEffect(() => {
-
     const fetchExpenses = async () => {
       try {
         setExpensesLoading(true);

@@ -7,7 +7,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Skeleton,
   useDisclosure,
   Button,
   Modal,
@@ -15,18 +14,24 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
+  Spinner,
+  type SortDescriptor,
 } from "@nextui-org/react";
 import { Expense } from "./page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Key, useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
 import deleteAnExpense from "@/actions/Expense/deleteExpense";
 import toast from "react-hot-toast";
-import fetchExpensesByUser from "@/actions/Expense/fetchExpenses";
 
-const TABLE_HEADERS = ["Date", "Amount", "Category", "Description", "Actions"];
-
+const TABLE_HEADERS = [
+  { label: "Date", isSortable: true, key: "date" },
+  { label: "Amount", isSortable: true, key: "amount" },
+  { label: "Category", isSortable: true, key: "category" },
+  { label: "Description", isSortable: true, key: "description" },
+  { label: "Actions", key: "actions" },
+];
 const currencies = [
   { code: "USD", symbol: "$" },
   { code: "EUR", symbol: "€" },
@@ -36,18 +41,29 @@ const currencies = [
 ];
 
 const ExpenseItems: React.FC<{
-  userId:string | null | undefined;
+  userId: string | null | undefined;
   expenses: Expense[];
   expensesLoading: boolean;
   onExpenseDeletionFinished: (deletedExpense: Expense) => void;
   onExpenseCreation: (createdExpense: Expense) => void;
   onExpenseUpdate: (updatedExpense: Expense) => void;
-}> = ({ userId, expenses, onExpenseDeletionFinished, onExpenseCreation, onExpenseUpdate, expensesLoading }) => {
+}> = ({
+  userId,
+  expenses,
+  onExpenseDeletionFinished,
+  onExpenseCreation,
+  onExpenseUpdate,
+  expensesLoading,
+}) => {
   const updateTriggerRef = useRef(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
+    column: "date",
+    direction: "descending",
+  });
 
   const {
     isOpen: editModelOpen,
@@ -91,13 +107,22 @@ const ExpenseItems: React.FC<{
     onExpenseCreation(expense);
   };
   const handleExpenseUpdate = (expense: Expense) => {
-    onExpenseUpdate(expense)
+    onExpenseUpdate(expense);
   };
   const handleUpdateFinished = () => {
     updateTriggerRef.current = false;
     setUpdateLoading(false);
     setEditExpense(null);
   };
+  const sortedItems = useMemo(() => {
+    return [...expenses].sort((a, b) => {
+      const first = a[sortDescriptor.column as keyof Expense];
+      const second = b[sortDescriptor.column as keyof Expense];
+      const cmp = first < second ? -1 : first > second ? 1 : 0;
+
+      return sortDescriptor.direction === "descending" ? -cmp : cmp;
+    });
+  }, [sortDescriptor, expenses]);
 
   return (
     <>
@@ -184,77 +209,62 @@ const ExpenseItems: React.FC<{
         </ModalContent>
       </Modal>
       <Table
+        sortDescriptor={sortDescriptor}
+        onSortChange={setSortDescriptor}
         removeWrapper
         classNames={{ base: "w-full overflow-auto" }}
         aria-label="Expense table"
       >
-        <TableHeader>
-          {TABLE_HEADERS.map((column, idx) => (
-            <TableColumn key={`${column}-${idx}`}>{column}</TableColumn>
-          ))}
+        <TableHeader columns={TABLE_HEADERS}>
+          {(column) => (
+            <TableColumn allowsSorting={column?.isSortable} key={column.key}>
+              {column.label}
+            </TableColumn>
+          )}
         </TableHeader>
-        <TableBody>
-          {expensesLoading
-            ? Array.from({ length: 5 }).map((_, idx) => (
-                <TableRow key={idx}>
-                  <TableCell>
-                    <Skeleton className="h-4 w-[100px] rounded-lg" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-[80px] rounded-lg" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-4 w-[100px] rounded-lg" />
-                  </TableCell>
-                  <TableCell className="hidden sm:table-cell">
-                    <Skeleton className="h-4 w-[200px] rounded-lg" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-8 w-[80px] rounded-lg" />
-                  </TableCell>
-                </TableRow>
-              ))
-            : expenses.map((expense, idx) => (
-                <TableRow
-                  className={`${
-                    idx !== expenses.length - 1 && "border-b border-border"
-                  } hover:bg-muted transition-colors duration-200 ease-in-out`}
-                  key={expense.id}
-                >
-                  <TableCell>{format(expense.date, "PP")}</TableCell>
-                  <TableCell>
-                    {
-                      currencies.find((c) => c.code === expense.currency)
-                        ?.symbol
-                    }
-                    {expense.amount.toFixed(2)} {expense.currency}
-                  </TableCell>
-                  <TableCell>{expense.category}</TableCell>
-                  <TableCell>{expense.description}</TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2 items-center">
-                      <Button
-                        className="min-w-8 min-h-8 h-full rounded-xl p-3"
-                        variant="light"
-                        size="sm"
-                        onPress={() => handleEditModalOpen(expense)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                      <Button
-                        className="min-w-8 min-h-8 h-full rounded-xl p-3"
-                        onPress={() => handleDeleteModalOpen(expense)}
-                        color="danger"
-                        size="md"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+        <TableBody
+          items={sortedItems}
+          loadingContent={<Spinner label="Loading..." />}
+          isLoading={expensesLoading}
+        >
+          {sortedItems.map((expense, index) => (
+            <TableRow
+              key={expense.id}
+              className={`${
+                index === sortedItems.length - 1 ? "" : "border-b border-border"
+              } hover:bg-muted transition-colors duration-200 ease-in-out`}
+            >
+              <TableCell>{format(expense.date, "PP")}</TableCell>
+              <TableCell>
+                {currencies.find((c) => c.code === expense.currency)?.symbol}
+                {expense.amount.toFixed(2)} {expense.currency}
+              </TableCell>
+              <TableCell>{expense.category}</TableCell>
+              <TableCell>{expense.description}</TableCell>
+              <TableCell>
+                <div className="flex space-x-2 items-center">
+                  <Button
+                    className="min-w-8 min-h-8 h-full rounded-xl p-3"
+                    variant="light"
+                    size="sm"
+                    onPress={() => handleEditModalOpen(expense)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
+                  </Button>
+                  <Button
+                    className="min-w-8 min-h-8 h-full rounded-xl p-3"
+                    onPress={() => handleDeleteModalOpen(expense)}
+                    color="danger"
+                    size="md"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete</span>
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </>
