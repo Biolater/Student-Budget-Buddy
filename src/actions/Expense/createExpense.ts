@@ -14,7 +14,7 @@ export type Category =
   | "";
 
 const createExpense = async (
-  date: string,
+  date: Date,
   amount: number,
   currency: string,
   category: Category,
@@ -39,7 +39,7 @@ const createExpense = async (
 };
 
 export default async function createExpenseAction(
-  date: string,
+  date: Date,
   amount: number,
   currency: string,
   category: Category,
@@ -57,7 +57,7 @@ export default async function createExpenseAction(
 
   // Validate that all required fields are present and of the correct type
   if (
-    typeof date !== "string" ||
+    typeof date !== "object" ||
     typeof amount !== "number" ||
     typeof currency !== "string" ||
     typeof category !== "string" ||

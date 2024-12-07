@@ -1,15 +1,14 @@
 "use client";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { format } from "date-fns";
 import ExpenseForm from "./ExpenseForm";
-import deleteAnExpense from "@/actions/Expense/deleteExpense";
 import fetchExpensesByUser from "@/actions/Expense/fetchExpenses";
 import ExpenseFilterOptions from "./ExpenseFilterOptions";
 import ExpenseItems from "./ExpenseItems";
-
+import type { RangeValue } from "@nextui-org/react";
+import type { ZonedDateTime } from "@internationalized/date";
 export type Expense = {
   id: string;
   userId: string;
@@ -17,24 +16,17 @@ export type Expense = {
   category: string;
   description: string;
   currency: string;
-  date: string;
+  date: Date;
   createdAt: Date;
   updatedAt: Date;
 };
-const currencies = [
-  { code: "USD", symbol: "$" },
-  { code: "EUR", symbol: "€" },
-  { code: "GBP", symbol: "£" },
-  { code: "TRY", symbol: "₺" },
-  { code: "AZN", symbol: "₼" },
-];
-
-const TABLE_HEADERS = ["Date", "Amount", "Category", "Description", "Actions"];
 
 const ExpenseTracker = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>([]);
   const [expensesLoading, setExpensesLoading] = useState(true);
+  const [dateRangePickerValue, setDateRangePickerValue] =
+    useState<RangeValue<ZonedDateTime> | null>(null);
   const { userId } = useAuth();
 
   const handleFilterChange = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -49,12 +41,14 @@ const ExpenseTracker = () => {
   };
 
   const handleExpenseCreation = (expense: Expense) => {
-    setExpenses((prevExpenses) =>
-      [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date))
-    );
-    setFilteredExpenses((prevExpenses) =>
-      [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date))
-    );
+    // setExpenses((prevExpenses) =>
+    //   [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date))
+    // );
+    // setFilteredExpenses((prevExpenses) =>
+    //   [expense, ...prevExpenses].sort((a, b) => b.date.localeCompare(a.date))
+    // );
+    setExpenses((prevExpenses) => [...prevExpenses, expense]);
+    setFilteredExpenses((prevExpenses) => [...prevExpenses, expense]);
   };
 
   const handleExpenseDeletion = (expense: Expense) => {
@@ -76,6 +70,36 @@ const ExpenseTracker = () => {
     setFilteredExpenses((prevExpenses) =>
       prevExpenses.map((prevExpense) =>
         prevExpense.id === expense.id ? expense : prevExpense
+      )
+    );
+  };
+
+  const handleDateRangePicker = (value: RangeValue<ZonedDateTime>) => {
+    setDateRangePickerValue(value);
+    const { start, end } = value;
+    const {
+      day: startDay,
+      month: startMonth,
+      year: startYear,
+      hour: startHour,
+      minute: startMinute,
+      second: startSecond,
+      offset: startOffset,
+    } = start;
+    const {
+      day: endDay,
+      month: endMonth,
+      year: endYear,
+      hour: endHour,
+      minute: endMinute,
+      second: endSecond,
+      offset: endOffset,
+    } = end;
+    setDateRangePickerValue(value);
+    setFilteredExpenses(
+      expenses.filter(
+        (expense) =>
+          expense.date >= start.toDate() && expense.date <= end.toDate()
       )
     );
   };
@@ -118,7 +142,10 @@ const ExpenseTracker = () => {
           />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
-          <ExpenseFilterOptions onFilterChange={handleFilterChange} />
+          <ExpenseFilterOptions
+            onFilterChange={handleFilterChange}
+            onDateRangePickerChange={handleDateRangePicker}
+          />
           <ExpenseItems
             userId={userId}
             expenses={filteredExpenses}

@@ -27,7 +27,7 @@ model Expense {
   id          String   @id @default(uuid())
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  date        String
+  date        DateTime
   amount      Decimal
   currency    String
   category    String

@@ -1,6 +1,18 @@
-import { Button, DateRangePicker, Select, SelectItem } from "@nextui-org/react";
+import {
+  Button,
+  DateRangePicker,
+  Select,
+  SelectItem,
+  type DateValue,
+  type RangeValue,
+} from "@nextui-org/react";
 import { ChangeEvent } from "react";
-
+import {
+  getLocalTimeZone,
+  now,
+  parseAbsoluteToLocal,
+  type ZonedDateTime,
+} from "@internationalized/date";
 const categories2 = [
   { code: "All Categories", symbol: "" },
   { code: "Food", symbol: "🍔" },
@@ -16,7 +28,8 @@ const categories2 = [
 
 const ExpenseFilterOptions: React.FC<{
   onFilterChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-}> = ({ onFilterChange }) => {
+  onDateRangePickerChange: (value: RangeValue<ZonedDateTime>) => void;
+}> = ({ onFilterChange, onDateRangePickerChange }) => {
   return (
     <div className="gap-3 w-full grid grid-cols-1 sm:grid-cols-2">
       <Select
@@ -32,7 +45,14 @@ const ExpenseFilterOptions: React.FC<{
       </Select>
       <div className="relative">
         <Button className="relative w-full">Filter by Date Range</Button>
-        <DateRangePicker className="expenses-date-range opacity-0 inset-0" />
+        <DateRangePicker
+          onChange={onDateRangePickerChange}
+          defaultValue={{
+            start: now(getLocalTimeZone()),
+            end: now(getLocalTimeZone()),
+          }}
+          className="expenses-date-range opacity-0 inset-0"
+        />
       </div>
     </div>
   );

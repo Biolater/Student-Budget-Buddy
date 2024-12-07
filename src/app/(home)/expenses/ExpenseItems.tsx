@@ -149,7 +149,7 @@ const ExpenseItems: React.FC<{
                   isDisabled={deleteLoading}
                   isLoading={deleteLoading}
                   color="danger"
-                  onClick={async () => {
+                  onPress={async () => {
                     if (deleteExpense) {
                       await handleDeleteExpense(deleteExpense?.id); // Fix: Directly pass the correct expense.id here
                       onClose(); // Close modal after deletion
@@ -234,13 +234,17 @@ const ExpenseItems: React.FC<{
                 index === sortedItems.length - 1 ? "" : "border-b border-border"
               } hover:bg-muted transition-colors duration-200 ease-in-out`}
             >
-              <TableCell>{format(expense.date, "PP")}</TableCell>
+              <TableCell className="whitespace-nowrap">
+                {format(expense.date, "MMM d, yyyy, h:mm a")}
+              </TableCell>
               <TableCell>
                 {currencies.find((c) => c.code === expense.currency)?.symbol}
                 {expense.amount.toFixed(2)} {expense.currency}
               </TableCell>
               <TableCell>{expense.category}</TableCell>
-              <TableCell>{expense.description}</TableCell>
+              <TableCell className="min-w-[200px]">
+                {expense.description}
+              </TableCell>
               <TableCell>
                 <div className="flex space-x-2 items-center">
                   <Button

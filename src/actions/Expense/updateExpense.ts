@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/client";
 
 type updatedExpense = {
-  date: string;
+  date: Date;
   amount: number;
   currency: string;
   category: string;

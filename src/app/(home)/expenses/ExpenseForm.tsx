@@ -3,6 +3,7 @@
 import type { Category } from "@/actions/Expense/createExpense";
 import {
   Button,
+  DatePicker,
   Input,
   Select,
   SelectItem,
@@ -10,13 +11,16 @@ import {
   type DateValue,
 } from "@nextui-org/react";
 import { MutableRefObject, useCallback, useEffect, useState } from "react";
-import ClientDatePicker from "./ClientDatePicker";
 import createExpenseAction from "@/actions/Expense/createExpense";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
-import { parseDate } from "@internationalized/date";
+import {
+  getLocalTimeZone,
+  now,
+  parseAbsoluteToLocal,
+  type ZonedDateTime,
+} from "@internationalized/date";
 import updateExpenseAction from "@/actions/Expense/updateExpense";
-import createIso from "@/lib/createIso";
 
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -55,8 +59,10 @@ const ExpenseForm: React.FC<{
   onUpdateExpense,
   onUpdateFinished,
 }) => {
-  const [date, setDate] = useState<DateValue | null>(
-    isEditing ? parseDate(editingExpense?.date.slice(0, 10) as string) : null
+  const [date, setDate] = useState<ZonedDateTime | null>(
+    isEditing && editingExpense
+      ? parseAbsoluteToLocal(editingExpense.date.toISOString())
+      : now(getLocalTimeZone())
   );
   const [amount, setAmount] = useState(
     isEditing ? editingExpense?.amount : null
@@ -106,16 +112,15 @@ const ExpenseForm: React.FC<{
     if (!validateForm() || !userId) return;
 
     if (date && amount && currency && category && description && userId) {
-      const { year, month, day } = date;
-
-      const isoDate = createIso(year, month, day);
+      const { year, month, day, hour, minute, second, offset } = date;
+      const localDate = new Date(year, month - 1, day, hour, minute, second);
 
       const correctCategory = category.split("-")[0] as Category;
 
       try {
         setLoading(true);
         const expense = await createExpenseAction(
-          isoDate, // Pass the ISO string
+          localDate,
           amount,
           currency,
           correctCategory,
@@ -142,12 +147,19 @@ const ExpenseForm: React.FC<{
     if (isEditing && editingExpense && updateTriggerState?.current) {
       const updateExpense = async () => {
         if (date && amount && currency && category && description && userId) {
-          const { year, month, day } = date;
+          const { year, month, day, hour, minute, second, offset } = date;
+          const localDate = new Date(
+            year,
+            month - 1,
+            day,
+            hour,
+            minute,
+            second
+          );
 
-          const isoDate = createIso(year, month, day);
           try {
             const data = {
-              date: isoDate,
+              date: localDate,
               amount,
               currency,
               category,
@@ -177,7 +189,11 @@ const ExpenseForm: React.FC<{
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div
+        className={`${
+          !isEditing ? "grid grid-cols-1 sm:grid-cols-2" : ""
+        } gap-4`}
+      >
         <div className="space-y-2">
           <label
             htmlFor="date"
@@ -185,13 +201,16 @@ const ExpenseForm: React.FC<{
           >
             Date
           </label>
-          <ClientDatePicker
-            dateError={errors.date}
-            value={date}
-            onChange={(value) => {
-              setDate(value);
-              setErrors({ ...errors, date: "" });
-            }}
+          <DatePicker
+            showMonthAndYearPickers
+            aria-label="Select date"
+            onChange={(value) => setDate(value)}
+            errorMessage="Date is required"
+            defaultValue={isEditing ? date : now(getLocalTimeZone())}
+            isInvalid={errors.date !== ""}
+            isRequired
+            size="md"
+            className="w-full"
           />
         </div>
         <div className="space-y-2">
@@ -206,7 +225,7 @@ const ExpenseForm: React.FC<{
             size="md"
             type="number"
             placeholder="Enter amount"
-            value={amount?.toString()}
+            value={amount ? amount.toString() : ""}
             onChange={(e) => {
               setAmount(parseFloat(e.target.value));
               setErrors({ ...errors, amount: "" });
