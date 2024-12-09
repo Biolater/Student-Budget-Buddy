@@ -74,34 +74,36 @@ const ExpenseTracker = () => {
     );
   };
 
-  const handleDateRangePicker = (value: RangeValue<ZonedDateTime>) => {
-    setDateRangePickerValue(value);
-    const { start, end } = value;
-    const {
-      day: startDay,
-      month: startMonth,
-      year: startYear,
-      hour: startHour,
-      minute: startMinute,
-      second: startSecond,
-      offset: startOffset,
-    } = start;
-    const {
-      day: endDay,
-      month: endMonth,
-      year: endYear,
-      hour: endHour,
-      minute: endMinute,
-      second: endSecond,
-      offset: endOffset,
-    } = end;
-    setDateRangePickerValue(value);
-    setFilteredExpenses(
-      expenses.filter(
-        (expense) =>
-          expense.date >= start.toDate() && expense.date <= end.toDate()
-      )
-    );
+  const handleDateRangePicker = (value: RangeValue<ZonedDateTime> | null) => {
+    if (value) {
+      setDateRangePickerValue(value);
+      const { start, end } = value;
+      const {
+        day: startDay,
+        month: startMonth,
+        year: startYear,
+        hour: startHour,
+        minute: startMinute,
+        second: startSecond,
+        offset: startOffset,
+      } = start;
+      const {
+        day: endDay,
+        month: endMonth,
+        year: endYear,
+        hour: endHour,
+        minute: endMinute,
+        second: endSecond,
+        offset: endOffset,
+      } = end;
+      setDateRangePickerValue(value);
+      setFilteredExpenses(
+        expenses.filter(
+          (expense) =>
+            expense.date >= start.toDate() && expense.date <= end.toDate()
+        )
+      );
+    }
   };
 
   useEffect(() => {

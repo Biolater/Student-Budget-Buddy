@@ -28,7 +28,7 @@ const categories2 = [
 
 const ExpenseFilterOptions: React.FC<{
   onFilterChange: (event: ChangeEvent<HTMLSelectElement>) => void;
-  onDateRangePickerChange: (value: RangeValue<ZonedDateTime>) => void;
+  onDateRangePickerChange: (value: RangeValue<ZonedDateTime> | null) => void;
 }> = ({ onFilterChange, onDateRangePickerChange }) => {
   return (
     <div className="gap-3 w-full grid grid-cols-1 sm:grid-cols-2">
