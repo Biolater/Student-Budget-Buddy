@@ -16,6 +16,8 @@ import {
   ModalFooter,
   Spinner,
   type SortDescriptor,
+  Tooltip,
+  Link,
 } from "@nextui-org/react";
 import { Expense } from "./page";
 import { format } from "date-fns";
@@ -39,6 +41,7 @@ const currencies = [
   { code: "TRY", symbol: "₺" },
   { code: "AZN", symbol: "₼" },
 ];
+const DESCRIPTION_TRUNCATE_LENGTH = 40;
 
 const ExpenseItems: React.FC<{
   userId: string | null | undefined;
@@ -60,6 +63,9 @@ const ExpenseItems: React.FC<{
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showDescriptionFor, setShowDescriptionFor] = useState<Set<string>>(
+    new Set()
+  ); // Set to store expense IDs whose description is expanded
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "date",
     direction: "descending",
@@ -113,6 +119,17 @@ const ExpenseItems: React.FC<{
     updateTriggerRef.current = false;
     setUpdateLoading(false);
     setEditExpense(null);
+  };
+  const handleRead = (expenseId: string) => {
+    setShowDescriptionFor((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(expenseId)) {
+        newSet.delete(expenseId);
+      } else {
+        newSet.add(expenseId);
+      }
+      return newSet;
+    });
   };
   const sortedItems = useMemo(() => {
     return [...expenses].sort((a, b) => {
@@ -243,7 +260,29 @@ const ExpenseItems: React.FC<{
               </TableCell>
               <TableCell>{expense.category}</TableCell>
               <TableCell className="min-w-[200px]">
-                {expense.description}
+                {expense.description.length > DESCRIPTION_TRUNCATE_LENGTH ? (
+                  <>
+                    {showDescriptionFor.has(expense.id)
+                      ? expense.description
+                      : `${expense.description.slice(
+                          0,
+                          DESCRIPTION_TRUNCATE_LENGTH
+                        )}...`}
+                    <Link
+                      onClick={() => handleRead(expense.id)}
+                      className="text-muted-foreground cursor-pointer block"
+                      size="sm"
+                      underline="hover"
+                      aria-expanded={showDescriptionFor.has(expense.id)}
+                    >
+                      {showDescriptionFor.has(expense.id)
+                        ? "Read less"
+                        : "Read more"}
+                    </Link>
+                  </>
+                ) : (
+                  expense.description
+                )}
               </TableCell>
               <TableCell>
                 <div className="flex space-x-2 items-center">
