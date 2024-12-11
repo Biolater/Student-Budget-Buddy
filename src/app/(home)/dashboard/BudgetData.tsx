@@ -76,7 +76,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
               {" "}
               <>
                 <p className="text-sm text-muted-foreground">
-                  No No expenses recorded
+                  No expenses recorded
                 </p>
                 <Link
                   href="/budget"
