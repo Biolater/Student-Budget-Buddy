@@ -1,32 +1,59 @@
 "use client";
 
-import { Button } from "@nextui-org/react";
-import { Moon, Sun } from "lucide-react";
+import React from "react";
 import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import {
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+  Button,
+} from "@nextui-org/react";
+import { SunIcon, MoonIcon, LaptopIcon } from "lucide-react";
+
+const themes = [
+  { key: "light", name: "Light", icon: SunIcon },
+  { key: "dark", name: "Dark", icon: MoonIcon },
+  { key: "system", name: "System", icon: LaptopIcon },
+];
 
 export function ThemeSwitcher() {
-  const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleButtonClick = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
-  };
-
-  if (!mounted) return null;
-
   return (
-    <Button
-      onClick={handleButtonClick}
-      isIconOnly
-      className="bg-transparent p-0 w-[unset] h-[unset] min-w-[unset] min-h-[unset]"
-      aria-label={theme}
-    >
-      {theme === "light" ? <Moon /> : <Sun />}
-    </Button>
+    <Dropdown>
+      <DropdownTrigger>
+        <Button
+          variant="bordered"
+          size="sm"
+          className="min-w-unit-8 w-unit-8 h-unit-8 px-0"
+        >
+          {theme === "light" ? (
+            <SunIcon className="h-4 w-4" />
+          ) : theme === "dark" ? (
+            <MoonIcon className="h-4 w-4" />
+          ) : (
+            <LaptopIcon className="h-4 w-4" />
+          )}
+        </Button>
+      </DropdownTrigger>
+      <DropdownMenu
+        aria-label="Theme selection"
+        variant="flat"
+        selectionMode="single"
+        selectedKeys={new Set([theme || "system"])}
+        onSelectionChange={(keys) => setTheme(Array.from(keys)[0] as string)}
+        className="min-w-[120px]"
+      >
+        {themes.map(({ key, name, icon: Icon }) => (
+          <DropdownItem
+            key={key}
+            startContent={<Icon className="h-4 w-4 mr-2" />}
+          >
+            {name}
+          </DropdownItem>
+        ))}
+      </DropdownMenu>
+    </Dropdown>
   );
 }

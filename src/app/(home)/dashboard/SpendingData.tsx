@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardBody, CardHeader } from "@nextui-org/react";
+import { Button, Card, CardBody, CardHeader } from "@nextui-org/react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,6 +11,8 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
+import { ArrowRight, PlusCircle } from "lucide-react";
+import Link from "next/link";
 import { Bar, Pie } from "react-chartjs-2";
 
 ChartJS.register(
@@ -42,7 +44,7 @@ const spendingData = [
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-const SpendingData = () => {
+const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
   const barChartData = {
     labels: monthlySpendingData.map((data) => data.month),
     datasets: [
@@ -77,9 +79,29 @@ const SpendingData = () => {
           </h3>
         </CardHeader>
         <CardBody className="w-full overflow-x-auto p-6 pt-0">
-          <div style={{ height: "300px" }}>
-            <Bar data={barChartData} options={chartOptions} />
-          </div>
+          {spendings > 0 ? (
+            <div className="h-[18.75rem]">
+              <Bar data={barChartData} options={chartOptions} />
+            </div>
+          ) : (
+            <div className="space-y-4 h-[18.75rem] flex flex-col justify-center items-center">
+              <div className="flex flex-col items-center justify-center space-y-2">
+                <p className="text-muted-foreground" data-id="11">
+                  No spending data available yet
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Start tracking your expenses to see monthly trends
+                </p>
+              </div>
+              <Button
+                as={Link}
+                href="/expenses"
+                startContent={<PlusCircle className="size-4" />}
+              >
+                Add Your First Expense
+              </Button>
+            </div>
+          )}
         </CardBody>
       </Card>
       <Card className="md:col-span-2 lg:col-span-3">
@@ -89,9 +111,30 @@ const SpendingData = () => {
           </h3>
         </CardHeader>
         <CardBody className="w-full overflow-x-auto p-6 pt-0">
-          <div style={{ height: "300px" }}>
-            <Pie data={pieChartData} options={chartOptions} />
-          </div>
+          {spendings > 0 ? (
+            <div className="h-[18.75rem]">
+              <Pie data={pieChartData} options={chartOptions} />
+            </div>
+          ) : (
+            <div className="space-y-4 h-[18.75rem] flex flex-col justify-center items-center">
+              <div className="flex flex-col items-center justify-center space-y-2">
+                <p className="text-muted-foreground" data-id="11">
+                  No category data available
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Add expenses with categories to see your spending distribution
+                </p>
+              </div>
+              <Button
+                variant="light"
+                as={Link}
+                href="/expenses"
+                endContent={<ArrowRight className="size-4" />}
+              >
+                View Expenses
+              </Button>
+            </div>
+          )}
         </CardBody>
       </Card>
     </div>

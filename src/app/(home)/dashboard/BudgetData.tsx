@@ -79,7 +79,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
                   No expenses recorded
                 </p>
                 <Link
-                  href="/budget"
+                  href="/expenses"
                   className="inline-flex self-start items-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 underline-offset-4 hover:underline p-0 h-auto font-normal"
                 >
                   Add expenses
@@ -95,14 +95,31 @@ const BudgetData: React.FC<BudgetDataProps> = ({
           <h3 className="tracking-tight text-sm font-medium">Remaining</h3>
           <BarChart3 className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardBody className="p-6 pt-0">
-          <div className="text-2xl font-bold">$920.00</div>
-          <Progress
-            className="mt-2"
-            aria-label="progress"
-            color="success"
-            value={54}
-          />
+        <CardBody className="p-6 pt-0 space-y-2">
+          {totalBudget ? (
+            <>
+              <div className="text-2xl font-bold">$920.00</div>
+              <Progress
+                className="mt-2"
+                aria-label="progress"
+                color="success"
+                value={54}
+              />
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Set a budget to track remaining funds
+              </p>
+              <Link
+                href="/budget"
+                className="inline-flex self-start items-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 underline-offset-4 hover:underline p-0 h-auto font-normal"
+              >
+                Set budget
+                <ArrowRight className="size-4 ml-1" />
+              </Link>
+            </>
+          )}
         </CardBody>
       </Card>
       <Card>
@@ -110,15 +127,34 @@ const BudgetData: React.FC<BudgetDataProps> = ({
           <h3 className="tracking-tight text-sm font-medium">Savings Goal</h3>
           <TrendingUp className="size-4 text-muted-foreground" />
         </CardHeader>
-        <CardBody className="p-6 pt-0">
-          <div className="text-2xl font-bold">$500.00</div>
-          <p className="text-xs text-muted-foreground">$350.00 saved so far</p>
-          <Progress
-            className="mt-2"
-            aria-label="progress"
-            color="success"
-            value={65}
-          />
+        <CardBody className="p-6 pt-0 space-y-2">
+          {savingsGoal ? (
+            <>
+              <div className="text-2xl font-bold">$500.00</div>
+              <p className="text-xs text-muted-foreground">
+                $350.00 saved so far
+              </p>
+              <Progress
+                className="mt-2"
+                aria-label="progress"
+                color="success"
+                value={65}
+              />
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                No savings goal set
+              </p>
+              <Link
+                href="/goals"
+                className="inline-flex self-start items-center gap-2 whitespace-nowrap rounded-md text-sm ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 underline-offset-4 hover:underline p-0 h-auto font-normal"
+              >
+                Set a goal
+                <ArrowRight className="size-4 ml-1" />
+              </Link>
+            </>
+          )}
         </CardBody>
       </Card>
     </div>

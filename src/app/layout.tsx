@@ -59,8 +59,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
-        <body className={`${quicksand.className} antialiased`}>
+      <html lang="en" suppressHydrationWarning>
+        <body suppressHydrationWarning className={`${quicksand.className} antialiased`}>
           <Providers>
             {children}
             <Toaster />

@@ -10,7 +10,7 @@ import {
   Textarea,
   type DateValue,
 } from "@nextui-org/react";
-import { MutableRefObject, useCallback, useEffect, useState } from "react";
+import { RefObject, useCallback, useEffect, useState } from "react";
 import createExpenseAction from "@/actions/Expense/createExpense";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
@@ -47,7 +47,7 @@ const ExpenseForm: React.FC<{
   onExpenseCreated: (expense: Expense) => void;
   isEditing?: boolean;
   editingExpense?: Expense | null;
-  updateTriggerState?: MutableRefObject<boolean>;
+  updateTriggerState?: RefObject<boolean>;
   onUpdateExpense?: (expense: Expense) => void;
   onUpdateFinished?: () => void;
 }> = ({
@@ -185,6 +185,7 @@ const ExpenseForm: React.FC<{
       };
       updateExpense();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [updateTriggerState?.current]);
 
   return (

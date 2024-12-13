@@ -13,12 +13,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!mounted) {
-    return <>{children}</>;
+    return <div style={{ visibility: "hidden" }}>{children}</div>;
   }
 
   return (
     <NextUIProvider>
-      <NextThemesProvider attribute="class" defaultTheme="system" enableSystem>
+      <NextThemesProvider disableTransitionOnChange attribute="class" defaultTheme="system">
         {children}
       </NextThemesProvider>
     </NextUIProvider>
