@@ -18,7 +18,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <NextUIProvider>
-      <NextThemesProvider disableTransitionOnChange attribute="class" defaultTheme="system">
+      <NextThemesProvider
+        disableTransitionOnChange
+        attribute="class"
+        defaultTheme="system"
+      >
         {children}
       </NextThemesProvider>
     </NextUIProvider>

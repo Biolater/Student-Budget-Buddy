@@ -10,8 +10,7 @@ import {
 import { Providers } from "./providers";
 import { Quicksand } from "next/font/google";
 import { Toaster } from "react-hot-toast";
-import type { Viewport } from 'next'
-
+import type { Viewport } from "next";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
@@ -49,8 +48,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  userScalable: false 
-}
+  userScalable: false,
+};
 
 export default function RootLayout({
   children,
@@ -60,7 +59,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body suppressHydrationWarning className={`${quicksand.className} antialiased`}>
+        <body
+          suppressHydrationWarning
+          className={`${quicksand.className} antialiased`}
+        >
           <Providers>
             {children}
             <Toaster />

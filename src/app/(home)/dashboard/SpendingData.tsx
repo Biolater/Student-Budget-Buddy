@@ -84,12 +84,12 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
               <Bar data={barChartData} options={chartOptions} />
             </div>
           ) : (
-            <div className="space-y-4 h-[18.75rem] flex flex-col justify-center items-center">
+            <div className="space-y-4 flex flex-col justify-center items-center">
               <div className="flex flex-col items-center justify-center space-y-2">
                 <p className="text-muted-foreground" data-id="11">
                   No spending data available yet
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground text-center">
                   Start tracking your expenses to see monthly trends
                 </p>
               </div>
@@ -116,12 +116,12 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
               <Pie data={pieChartData} options={chartOptions} />
             </div>
           ) : (
-            <div className="space-y-4 h-[18.75rem] flex flex-col justify-center items-center">
+            <div className="space-y-4 flex flex-col justify-center items-center">
               <div className="flex flex-col items-center justify-center space-y-2">
                 <p className="text-muted-foreground" data-id="11">
                   No category data available
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground text-center">
                   Add expenses with categories to see your spending distribution
                 </p>
               </div>
