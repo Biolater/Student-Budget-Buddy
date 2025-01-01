@@ -8,15 +8,9 @@ import {
   // UserButton,
 } from "@clerk/nextjs";
 import { Providers } from "./providers";
-import { Quicksand } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import { Toaster } from "react-hot-toast";
 import type { Viewport } from "next";
-
-const quicksand = Quicksand({
-  subsets: ["latin"],
-  display: "swap",
-  weight: "variable",
-});
 
 export const metadata: Metadata = {
   title: "Student Budget Buddy - Your Personal Finance Assistant",
@@ -61,7 +55,7 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           suppressHydrationWarning
-          className={`${quicksand.className} antialiased`}
+          className={`${GeistSans.className} antialiased`}
         >
           <Providers>
             {children}

@@ -26,7 +26,7 @@ export function ThemeSwitcher() {
         <Button
           variant="bordered"
           size="sm"
-          className="min-w-unit-8 w-unit-8 h-unit-8 px-0"
+          className="size-10 h-10 min-w-[unset] px-0"
         >
           {theme === "light" ? (
             <SunIcon className="h-4 w-4" />
