@@ -19,6 +19,7 @@ model User {
   email     String    @unique
   username  String    @unique
   expenses  Expense[]
+  budgets   Budget[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -37,4 +38,16 @@ model Expense {
 
   @@index([userId])
   @@index([category])
+}
+
+model Budget {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String
+  currency  String
+  amount    Decimal
+  period    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

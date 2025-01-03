@@ -18,18 +18,21 @@ const BudgetOverview = () => {
           Summary of your current budget status
         </p>
       </CardHeader>
-      <CardBody className="p-6 pt-0 flex-col gap-4">
-        <div className="flex flex-col gap-1">
-          <p className="text-muted-foreground text-sm">Total Budget</p>
+      <CardBody style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }} className="p-6 pt-0 grid gap-4">
+        <div className="flex p-4 box-border shadow-medium rounded-lg flex-col gap-1">
+          <p className="text-sm">Total Budget</p>
           <h3 className="text-2xl font-bold">$1000</h3>
+          <p className="text-xs text-muted-foreground">For this semester</p>
         </div>
-        <div className="flex flex-col gap-1">
-          <p className="text-muted-foreground text-sm">Spent</p>
+        <div className="flex p-4 box-border shadow-medium rounded-lg flex-col gap-1">
+          <p className="text-sm">Spent</p>
           <h3 className="text-2xl font-bold">$800</h3>
+          <p className="text-xs text-muted-foreground">66.7% of budget</p>
         </div>
-        <div className="flex flex-col gap-1">
-          <p className="text-muted-foreground text-sm">Remaining</p>
+        <div className="flex p-4 box-border shadow-medium rounded-lg flex-col gap-1">
+          <p className="text-sm">Remaining</p>
           <h3 className="text-2xl font-bold">$200</h3>
+          <p className="text-xs text-muted-foreground">33.3% left</p>
         </div>
       </CardBody>
       <CardFooter className="flex items-center p-6 pt-0">
