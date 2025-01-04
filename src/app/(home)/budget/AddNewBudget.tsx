@@ -17,6 +17,7 @@ import * as z from "zod";
 import { createBudget } from "@/actions/Expense/createBudget";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
+import { type Budget } from "@prisma/client";
 
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
@@ -35,6 +36,12 @@ const schema = z.object({
 });
 
 export type NewBudgetSchema = z.infer<typeof schema>;
+
+export type ClientBudget = Omit<Budget, "amount"> & { amount: number };
+
+type Props = {
+  onBudgetCreated: (budget: ClientBudget) => void;
+};
 
 const categories = [
   { code: "Food", symbol: "🍔" },
@@ -71,7 +78,7 @@ const CURRENCIES = [
   { code: "AZN", symbol: "₼" },
 ];
 
-const AddNewBudget = () => {
+const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
   const {
     register,
     handleSubmit,
@@ -87,6 +94,7 @@ const AddNewBudget = () => {
       try {
         const budget = await createBudget(data);
         if (budget) {
+          onBudgetCreated(budget);
           toast.success("Budget created successfully");
         }
       } catch (error) {

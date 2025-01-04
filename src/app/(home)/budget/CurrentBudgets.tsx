@@ -7,8 +7,10 @@ import {
   Progress,
 } from "@nextui-org/react";
 import Link from "next/link";
+import { type ClientBudget } from "./AddNewBudget";
+import BudgetItem from "./BudgetItem";
 
-const CurrentBudgets = () => {
+const CurrentBudgets: React.FC<{ budgets: ClientBudget[] }> = ({ budgets }) => {
   return (
     <Card>
       <CardHeader className="flex flex-col space-y-1.5 p-6 items-start">
@@ -20,7 +22,7 @@ const CurrentBudgets = () => {
         </p>
       </CardHeader>
       <CardBody className="p-6 pt-0 flex-col gap-4">
-        <div className="flex flex-col gap-2">
+        {/* <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <div>
               <p className="font-medium">Food</p>
@@ -58,7 +60,10 @@ const CurrentBudgets = () => {
             </div>
           </div>
           <Progress aria-label="Loading..." size="md" value={40} />
-        </div>
+        </div> */}
+        {budgets.map((budget) => (
+          <BudgetItem key={budget.id} budgetItem={budget} />
+        ))}
       </CardBody>
       <CardFooter className="flex items-center p-6 pt-0">
         <Button as={Link} className="lg:w-full" href="/expenses">
