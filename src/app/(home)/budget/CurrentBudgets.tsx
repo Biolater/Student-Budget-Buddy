@@ -4,66 +4,108 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-  Progress,
+  Skeleton,
+  Tooltip,
 } from "@nextui-org/react";
 import Link from "next/link";
 import { type ClientBudget } from "./AddNewBudget";
 import BudgetItem from "./BudgetItem";
+import { Info } from "lucide-react";
 
-const CurrentBudgets: React.FC<{ budgets: ClientBudget[] }> = ({ budgets }) => {
+const currencies = [
+  { code: "USD", symbol: "$" },
+  { code: "EUR", symbol: "€" },
+  { code: "GBP", symbol: "£" },
+  { code: "TRY", symbol: "₺" },
+  { code: "AZN", symbol: "₼" },
+];
+
+const exchangeRates = {
+  USD: 1,
+  EUR: 0.92,
+  GBP: 0.79,
+  TRY: 30.43,
+  AZN: 1.7,
+};
+
+const CurrentBudgets: React.FC<{
+  budgets: ClientBudget[];
+  budgetsLoading: boolean;
+}> = ({ budgets, budgetsLoading }) => {
+  function formatCurrency(amount: number, currencyCode: string) {
+    const currency = currencies.find((c) => c.code === currencyCode);
+    return `${currency?.symbol}${amount.toFixed(2)}`;
+  }
+
+  function convertAmount(
+    amount: number,
+    fromCurrency: keyof typeof exchangeRates,
+    toCurrency: keyof typeof exchangeRates
+  ): number {
+    return amount * (exchangeRates[toCurrency] / exchangeRates[fromCurrency]);
+  }
+
+  function calculateTotalSpent(
+    expenses: ClientBudget["expenses"],
+    targetCurrency: string
+  ): number {
+    return expenses.reduce((total, expense) => {
+      const convertedAmount = convertAmount(
+        expense.amount,
+        expense.currency as keyof typeof exchangeRates,
+        targetCurrency as keyof typeof exchangeRates
+      );
+      return total + convertedAmount;
+    }, 0);
+  }
+
   return (
     <Card>
-      <CardHeader className="flex flex-col space-y-1.5 p-6 items-start">
-        <h3 className="text-2xl font-semibold leading-none tracking-tight">
-          Current Budgets
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          View and manage your existing budgets
-        </p>
+      <CardHeader className="flex items-center justify-between  p-6">
+        <div className="flex flex-col space-y-1.5">
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">
+            Current Budgets
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            View and manage your existing budgets
+          </p>
+        </div>
+        <Tooltip
+          content="Hover over spent amounts to see individual expenses in their original currencies"
+          color="foreground"
+          classNames={{
+            content: "rounded-lg max-w-sm sm:max-w-[unset] py-[0.375rem] px-3",
+          }}
+        >
+          <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+        </Tooltip>
       </CardHeader>
-      <CardBody className="p-6 pt-0 flex-col gap-4">
-        {/* <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="font-medium">Food</p>
-              <p className="text-sm text-muted-foreground">Monthly</p>
+      <CardBody className="p-6 pt-0 max-h-96 flex-col gap-4">
+        {budgetsLoading ? (
+          Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="space-y-2">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <Skeleton className="h-5 rounded-lg w-24" />
+                  <Skeleton className="h-4 rounded-lg w-16" />
+                </div>
+                <div className="text-right space-y-1">
+                  <Skeleton className="h-5 rounded-lg w-16" />
+                  <Skeleton className="h-4 rounded-lg w-20" />
+                </div>
+              </div>
+              <Skeleton className="h-2 rounded-lg w-full" />
             </div>
-            <div className="text-right">
-              <p className="font-medium">$300</p>
-              <p className="text-sm text-muted-foreground">$180 spent</p>
-            </div>
-          </div>
-          <Progress aria-label="Loading..." size="md" value={40} />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="font-medium">Food</p>
-              <p className="text-sm text-muted-foreground">Monthly</p>
-            </div>
-            <div className="text-right">
-              <p className="font-medium">$300</p>
-              <p className="text-sm text-muted-foreground">$180 spent</p>
-            </div>
-          </div>
-          <Progress aria-label="Loading..." size="md" value={40} />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="font-medium">Food</p>
-              <p className="text-sm text-muted-foreground">Monthly</p>
-            </div>
-            <div className="text-right">
-              <p className="font-medium">$300</p>
-              <p className="text-sm text-muted-foreground">$180 spent</p>
-            </div>
-          </div>
-          <Progress aria-label="Loading..." size="md" value={40} />
-        </div> */}
-        {budgets.map((budget) => (
-          <BudgetItem key={budget.id} budgetItem={budget} />
-        ))}
+          ))
+        ) : budgets.length > 0 ? (
+          budgets.map((budget) => (
+            <BudgetItem key={budget.id} budgetItem={budget} />
+          ))
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            No budgets found. Create a new budget to get started.
+          </p>
+        )}
       </CardBody>
       <CardFooter className="flex items-center p-6 pt-0">
         <Button as={Link} className="lg:w-full" href="/expenses">

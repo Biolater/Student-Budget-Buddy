@@ -19,7 +19,11 @@ export const createBudget = async (data: NewBudgetSchema) => {
         userId,
       },
     });
-    return { ...budget, amount: budget.amount.toNumber() };
+    return {
+      ...budget,
+      amount: budget.amount.toNumber(),
+      expenses: [],
+    };
   } catch (error) {
     throw error; // re-throw the error
   }

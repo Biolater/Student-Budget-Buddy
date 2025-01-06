@@ -126,7 +126,6 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
                 </p>
               </div>
               <Button
-                variant="light"
                 as={Link}
                 href="/expenses"
                 endContent={<ArrowRight className="size-4" />}

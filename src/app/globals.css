@@ -87,3 +87,13 @@ html[data-theme="dark"] {
 .expenses-date-range button[data-slot="selector-button"] > * {
   opacity: 0;
 }
+
+.budget-overview {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+@media screen and (min-width: 1280px) {
+  .budget-overview {
+    grid-template-columns: 1fr;
+  }
+}

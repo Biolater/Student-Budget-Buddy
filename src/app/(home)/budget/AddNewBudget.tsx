@@ -17,7 +17,8 @@ import * as z from "zod";
 import { createBudget } from "@/actions/Expense/createBudget";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { type Budget } from "@prisma/client";
+import { Expense, type Budget } from "@prisma/client";
+import { useState } from "react";
 
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
@@ -37,7 +38,10 @@ const schema = z.object({
 
 export type NewBudgetSchema = z.infer<typeof schema>;
 
-export type ClientBudget = Omit<Budget, "amount"> & { amount: number };
+export type ClientBudget = Omit<Budget, "amount"> & {
+  amount: number;
+  expenses: (Omit<Expense, "amount"> & { amount: number })[];
+};
 
 type Props = {
   onBudgetCreated: (budget: ClientBudget) => void;
@@ -83,21 +87,28 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<NewBudgetSchema>({
     resolver: zodResolver(schema),
   });
+
+  const [creatingBudget, setCreatingBudget] = useState(false);
 
   const { isSignedIn } = useAuth();
 
   const onSubmit = async (data: NewBudgetSchema) => {
     if (isSignedIn) {
       try {
+        setCreatingBudget(true);
         const budget = await createBudget(data);
         if (budget) {
+          setCreatingBudget(false);
           onBudgetCreated(budget);
           toast.success("Budget created successfully");
+          reset();
         }
       } catch (error) {
+        setCreatingBudget(false);
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
         );
@@ -230,9 +241,11 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
         </CardBody>
         <CardFooter className="p-6 pt-0">
           <Button
+            isDisabled={creatingBudget}
+            isLoading={creatingBudget}
             type="submit"
             className="lg:w-full"
-            startContent={<Plus className="h-4 w-4" />}
+            startContent={!creatingBudget && <Plus />}
           >
             Add Budget
           </Button>
