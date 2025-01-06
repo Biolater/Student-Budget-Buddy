@@ -5,7 +5,7 @@ import AddNewBudget from "./AddNewBudget";
 import BudgetOverview from "./BudgetOverview";
 import CurrentBudgets from "./CurrentBudgets";
 import { type Budget } from "@prisma/client";
-import getBudgets from "@/actions/Expense/getBudgets";
+import { getBudgets } from "@/actions/budget.actions";
 import toast from "react-hot-toast";
 import { type ClientBudget } from "./AddNewBudget";
 

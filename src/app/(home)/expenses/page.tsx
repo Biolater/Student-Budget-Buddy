@@ -5,7 +5,7 @@ import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import ExpenseForm from "./ExpenseForm";
-import fetchExpensesByUser from "@/actions/Expense/fetchExpenses";
+import { fetchExpensesByUser } from "@/actions/expense.actions";
 import ExpenseFilterOptions from "./ExpenseFilterOptions";
 import ExpenseItems from "./ExpenseItems";
 import type { RangeValue } from "@nextui-org/react";
@@ -64,7 +64,7 @@ const ExpenseTracker = () => {
     const fetchExpenses = async () => {
       try {
         if (userId) {
-          const data = await fetchExpensesByUser(userId);
+          const data = await fetchExpensesByUser();
           setExpenses(data);
         }
       } catch (error) {

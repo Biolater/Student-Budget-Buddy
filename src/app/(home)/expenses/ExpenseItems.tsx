@@ -22,9 +22,9 @@ import {
 import { Expense } from "./page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import { Key, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
-import deleteAnExpense from "@/actions/Expense/deleteExpense";
+import { deleteAnExpense } from "@/actions/expense.actions";
 import toast from "react-hot-toast";
 
 const TABLE_HEADERS = [

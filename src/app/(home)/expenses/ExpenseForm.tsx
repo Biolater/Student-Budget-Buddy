@@ -1,6 +1,6 @@
 "use client";
 
-import type { Category } from "@/actions/Expense/createExpense";
+import { Category } from "@/actions/expense.actions";
 import {
   Button,
   DatePicker,
@@ -8,10 +8,9 @@ import {
   Select,
   SelectItem,
   Textarea,
-  type DateValue,
 } from "@nextui-org/react";
 import { RefObject, useCallback, useEffect, useState } from "react";
-import createExpenseAction from "@/actions/Expense/createExpense";
+import { createExpenseAction, updateExpenseAction } from "@/actions/expense.actions";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
 import {
@@ -20,7 +19,7 @@ import {
   parseAbsoluteToLocal,
   type ZonedDateTime,
 } from "@internationalized/date";
-import updateExpenseAction from "@/actions/Expense/updateExpense";
+
 
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -125,7 +124,6 @@ const ExpenseForm: React.FC<{
           currency,
           correctCategory,
           description,
-          userId,
           errors
         );
         if (expense) {
