@@ -25,7 +25,7 @@ const Budget = () => {
       }
     };
     if (!budgets) fetchBudgets();
-  }, []);
+  }, [budgets]);
 
   const handleBudgetCreated = (budget: ClientBudget) => {
     setBudgets((prevBudgets) => [...(prevBudgets || []), budget]);

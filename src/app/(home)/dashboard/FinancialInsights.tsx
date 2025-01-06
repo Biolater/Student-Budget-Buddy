@@ -100,11 +100,11 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
             <div className="space-y-2">
               <div className="flex items-center">
                 <AlertCircle className="h-4 w-4 mr-2 text-yellow-500" />
-                <span>You're 5% over your food budget this month</span>
+                <span>You&apos;re 5% over your food budget this month</span>
               </div>
               <div className="flex items-center">
                 <AlertCircle className="h-4 w-4 mr-2 text-green-500" />
-                <span>Great job! You're under budget for entertainment</span>
+                <span>Great job! You&apos;re under budget for entertainment</span>
               </div>
               <div className="flex items-center">
                 <AlertCircle className="h-4 w-4 mr-2 text-blue-500" />
