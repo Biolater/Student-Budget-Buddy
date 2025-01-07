@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchExpensesByUser } from "@/actions/expense.actions";
 
 // Custom hook for fetching expenses
-const useExpenses = (userId: string) => {
+const useExpenses = (userId: string | undefined | null) => {
   return useQuery({
     queryKey: ["expenses", userId],
     queryFn: () => fetchExpensesByUser(),
@@ -15,3 +15,4 @@ const useExpenses = (userId: string) => {
 };
 
 export default useExpenses;
+  

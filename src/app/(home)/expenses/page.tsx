@@ -3,13 +3,13 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import { useAuth } from "@clerk/nextjs";
-import toast from "react-hot-toast";
 import ExpenseForm from "./ExpenseForm";
-import { fetchExpensesByUser } from "@/actions/expense.actions";
 import ExpenseFilterOptions from "./ExpenseFilterOptions";
 import ExpenseItems from "./ExpenseItems";
 import type { RangeValue } from "@nextui-org/react";
 import type { ZonedDateTime } from "@internationalized/date";
+import useExpenses from "@/hooks/useExpense";
+import toast from "react-hot-toast";
 
 export type Expense = {
   id: string;
@@ -42,39 +42,34 @@ const filterExpenses = (
 };
 
 const ExpenseTracker = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
+  // const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dateRangePickerValue, setDateRangePickerValue] =
     useState<RangeValue<ZonedDateTime> | null>(null);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("All Categories");
   const { userId } = useAuth();
+  const {
+    data: expenses,
+    isPending,
+    isError,
+    refetch,
+    error,
+  } = useExpenses(userId);
 
   // Compute filtered expenses using useMemo
   const filteredExpenses = useMemo(() => {
-    return filterExpenses(expenses, selectedCategory, dateRangePickerValue);
+    return filterExpenses(
+      expenses || [],
+      selectedCategory,
+      dateRangePickerValue
+    );
   }, [expenses, selectedCategory, dateRangePickerValue]);
 
-  // Update expenses and automatically reapply filters
-  const updateExpenses = (newExpenses: Expense[]) => {
-    setExpenses(newExpenses);
-  };
-
-  // Fetch expenses on component mount
-  useEffect(() => {
-    const fetchExpenses = async () => {
-      try {
-        if (userId) {
-          const data = await fetchExpensesByUser();
-          setExpenses(data);
-        }
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Something went wrong"
-        );
-      }
-    };
-    fetchExpenses();
-  }, [userId]);
+  if (isError) {
+    toast.error(
+      error instanceof Error ? error.message : "Something went wrong"
+    );
+  }
 
   return (
     <div className="container max-w-4xl mx-auto p-4 md:py-8">
@@ -88,12 +83,7 @@ const ExpenseTracker = () => {
           </p>
         </CardHeader>
         <CardBody className="p-6 pt-0">
-          <ExpenseForm
-            userId={userId}
-            onExpenseCreated={(expense) =>
-              updateExpenses([...expenses, expense])
-            }
-          />
+          <ExpenseForm userId={userId} onExpenseCreated={() => refetch()} />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
           <ExpenseFilterOptions
@@ -105,18 +95,10 @@ const ExpenseTracker = () => {
           <ExpenseItems
             userId={userId}
             expenses={filteredExpenses}
-            expensesLoading={!expenses.length}
-            onExpenseCreation={(expense) =>
-              updateExpenses([...expenses, expense])
-            }
-            onExpenseDeletionFinished={(expense) =>
-              updateExpenses(expenses.filter((e) => e.id !== expense.id))
-            }
-            onExpenseUpdate={(expense) =>
-              updateExpenses(
-                expenses.map((e) => (e.id === expense.id ? expense : e))
-              )
-            }
+            expensesLoading={isPending}
+            onExpenseCreation={() => refetch()}
+            onExpenseDeletionFinished={() => refetch()}
+            onExpenseUpdate={() => refetch()}
           />
         </CardFooter>
       </Card>

@@ -16,7 +16,7 @@ export type Category =
   | "Other"
   | "";
 
-type TransformedExpense = Omit<Expense, "amount"> & { amount: number };
+export type TransformedExpense = Omit<Expense, "amount"> & { amount: number };
 
 const cache = new Map<
   string,
@@ -99,6 +99,8 @@ const fetchExpensesByUser = async () => {
       const cached = cache.get(user.id)!;
       if (now < cached.expiresAt) {
         return cached.data;
+      } else {
+        invalidateCache(user.id);
       }
     }
 

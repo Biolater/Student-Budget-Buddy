@@ -18,7 +18,7 @@ import { createBudget } from "@/actions/budget.actions";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { Expense, type Budget } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
@@ -44,7 +44,7 @@ export type ClientBudget = Omit<Budget, "amount"> & {
 };
 
 type Props = {
-  onBudgetCreated: (budget: ClientBudget) => void;
+  onBudgetCreated: () => void;
 };
 
 const categories = [
@@ -87,14 +87,35 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
     register,
     handleSubmit,
     formState: { errors },
-    reset,
+    watch,
+    setValue,
   } = useForm<NewBudgetSchema>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      category: "",
+      currency: "",
+      amount: 0,
+      period: "",
+    },
   });
+
+  const [category, period, currency, amount] = watch([
+    "category",
+    "period",
+    "currency",
+    "amount",
+  ]);
 
   const [creatingBudget, setCreatingBudget] = useState(false);
 
   const { isSignedIn } = useAuth();
+
+  const handleFormReset = () => {
+    setValue("category", "");
+    setValue("currency", "");
+    setValue("amount", 0);
+    setValue("period", "");
+  };
 
   const onSubmit = async (data: NewBudgetSchema) => {
     if (isSignedIn) {
@@ -103,9 +124,9 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
         const budget = await createBudget(data);
         if (budget) {
           setCreatingBudget(false);
-          onBudgetCreated(budget);
+          onBudgetCreated();
           toast.success("Budget created successfully");
-          reset();
+          handleFormReset();
         }
       } catch (error) {
         setCreatingBudget(false);
@@ -138,10 +159,11 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
               Category
             </label>
             <Select
+              selectedKeys={new Set([category])}
               {...register("category")}
               aria-labelledby="category"
               errorMessage={errors?.category?.message}
-              isInvalid={errors?.category?.message !== undefined}
+              isInvalid={!!errors?.category?.message}
               name="category"
               size="md"
               placeholder="Select category"
@@ -161,10 +183,11 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
               Currency
             </label>
             <Select
+              selectedKeys={new Set([currency])}
               {...register("currency")}
               aria-labelledby="currency"
               errorMessage={errors?.currency?.message}
-              isInvalid={errors?.currency?.message !== undefined}
+              isInvalid={!!errors?.currency?.message}
               name="currency"
               size="md"
               placeholder="Select currency"
@@ -184,12 +207,13 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
               Amount
             </label>
             <Input
+              value={`${amount}`}
+              {...register("amount")}
               className={
                 errors?.amount?.message !== undefined
                   ? "[&_*_input]:placeholder:text-danger"
                   : ""
               }
-              {...register("amount")}
               startContent={
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -202,7 +226,7 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className={`lucide lucide-dollar-sign h-4 w-4 ${
-                    errors?.amount?.message !== undefined
+                    !!errors?.amount?.message
                       ? "text-danger"
                       : "text-muted-foreground"
                   }`}
@@ -216,7 +240,7 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
               type="number"
               placeholder="Enter amount"
               errorMessage={errors?.amount?.message}
-              isInvalid={errors?.amount?.message !== undefined}
+              isInvalid={!!errors?.amount?.message}
             />
           </div>
           <div className="space-y-2">
@@ -227,10 +251,11 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
               Period
             </label>
             <Select
+              selectedKeys={new Set([period])}
               {...register("period")}
               aria-labelledby="period"
               errorMessage={errors?.period?.message}
-              isInvalid={errors?.period?.message !== undefined}
+              isInvalid={!!errors?.period?.message}
               placeholder="Select period"
             >
               {PERIODS.map((period) => (

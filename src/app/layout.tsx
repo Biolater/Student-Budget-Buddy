@@ -11,6 +11,7 @@ import { Providers } from "./providers";
 import { GeistSans } from "geist/font/sans";
 import { Toaster } from "react-hot-toast";
 import type { Viewport } from "next";
+import TanstackProvider from "./components/TanstackProvider";
 
 export const metadata: Metadata = {
   title: "Student Budget Buddy - Your Personal Finance Assistant",
@@ -58,7 +59,7 @@ export default function RootLayout({
           className={`${GeistSans.className} antialiased`}
         >
           <Providers>
-            {children}
+            <TanstackProvider>{children}</TanstackProvider>
             <Toaster />
           </Providers>
         </body>

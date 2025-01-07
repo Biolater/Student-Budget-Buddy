@@ -2,6 +2,20 @@
 import { prisma } from "@/lib/client";
 import { type NewBudgetSchema } from "@/app/(home)/budget/AddNewBudget";
 import { currentUser } from "@clerk/nextjs/server";
+import { type Budget } from "@prisma/client";
+import { type TransformedExpense } from "./expense.actions";
+
+type TransformedBudget = Omit<Budget, "amount" | "expenses"> & {
+  amount: number;
+  expenses: TransformedExpense[];
+};
+
+const cache: Map<string, { data: TransformedBudget[]; expiresAt: number }> =
+  new Map();
+
+const invalidateCache = (userId: string) => {
+  cache.delete(userId);
+};
 
 const createBudget = async (data: NewBudgetSchema) => {
   const { category, currency, amount, period } = data;
@@ -18,6 +32,8 @@ const createBudget = async (data: NewBudgetSchema) => {
         userId,
       },
     });
+
+    invalidateCache(userId);
     return {
       ...budget,
       amount: budget.amount.toNumber(),
@@ -33,6 +49,18 @@ const getBudgets = async () => {
   if (!user) throw new Error("You must be signed in to get budgets");
 
   const userId = user.id;
+
+  // Check if data is in cache and still valid
+  const now = Date.now();
+  if (cache.has(userId)) {
+    const cached = cache.get(userId)!;
+    if (now < cached.expiresAt) {
+      return cached.data;
+    } else {
+      cache.delete(userId);
+    }
+  }
+
   try {
     const budgets = await prisma.budget.findMany({ where: { userId } });
     const formattedBudgets = await Promise.all(
@@ -52,6 +80,7 @@ const getBudgets = async () => {
         return formattedBudget;
       })
     );
+    cache.set(userId, { data: formattedBudgets, expiresAt: now + 600000 });
     return formattedBudgets;
   } catch (error) {
     console.error("Error fetching budgets:", error);

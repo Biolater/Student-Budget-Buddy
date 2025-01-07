@@ -1,34 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import AddNewBudget from "./AddNewBudget";
 import BudgetOverview from "./BudgetOverview";
 import CurrentBudgets from "./CurrentBudgets";
 import { type Budget } from "@prisma/client";
-import { getBudgets } from "@/actions/budget.actions";
-import toast from "react-hot-toast";
-import { type ClientBudget } from "./AddNewBudget";
+import { useAuth } from "@clerk/nextjs";
+import useBudget from "@/hooks/useBudget";
 
 const Budget = () => {
-  const [budgets, setBudgets] = useState<ClientBudget[] | null>(null);
-  const [budgetsLoading, setBudgetsLoading] = useState(true);
-  useEffect(() => {
-    const fetchBudgets = async () => {
-      try {
-        const budgets = await getBudgets();
-        setBudgets(budgets);
-        setBudgetsLoading(false);
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Something went wrong"
-        );
-      }
-    };
-    if (!budgets) fetchBudgets();
-  }, [budgets]);
+  const { userId } = useAuth();
 
-  const handleBudgetCreated = (budget: ClientBudget) => {
-    setBudgets((prevBudgets) => [...(prevBudgets || []), budget]);
+  const {
+    data: budgets,
+    isPending: budgetsLoading,
+    refetch,
+  } = useBudget(userId);
+
+  const handleBudgetCreated = () => {
+    refetch();
   };
   return (
     <main className="container mx-auto px-4 py-8">

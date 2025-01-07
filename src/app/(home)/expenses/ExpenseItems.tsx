@@ -47,9 +47,9 @@ const ExpenseItems: React.FC<{
   userId: string | null | undefined;
   expenses: Expense[];
   expensesLoading: boolean;
-  onExpenseDeletionFinished: (deletedExpense: Expense) => void;
-  onExpenseCreation: (createdExpense: Expense) => void;
-  onExpenseUpdate: (updatedExpense: Expense) => void;
+  onExpenseDeletionFinished: () => void;
+  onExpenseCreation: () => void;
+  onExpenseUpdate: () => void;
 }> = ({
   userId,
   expenses,
@@ -94,7 +94,7 @@ const ExpenseItems: React.FC<{
       setDeleteLoading(true);
       const data = await deleteAnExpense(id);
       if (data) {
-        onExpenseDeletionFinished(data);
+        onExpenseDeletionFinished();
         toast.success("Expense deleted successfully");
       }
     } catch (error) {
@@ -109,11 +109,11 @@ const ExpenseItems: React.FC<{
     updateTriggerRef.current = true;
     setUpdateLoading(true);
   };
-  const handleExpenseCreation = (expense: Expense) => {
-    onExpenseCreation(expense);
+  const handleExpenseCreation = () => {
+    onExpenseCreation();
   };
-  const handleExpenseUpdate = (expense: Expense) => {
-    onExpenseUpdate(expense);
+  const handleExpenseUpdate = () => {
+    onExpenseUpdate();
   };
   const handleUpdateFinished = () => {
     updateTriggerRef.current = false;
@@ -202,10 +202,7 @@ const ExpenseItems: React.FC<{
                   isEditing={true}
                   editingExpense={editExpense}
                   updateTriggerState={updateTriggerRef}
-                  onUpdateExpense={(expense) => {
-                    handleExpenseUpdate(expense);
-                    onClose();
-                  }}
+                  onUpdateExpense={handleExpenseUpdate}
                   onUpdateFinished={handleUpdateFinished}
                 />
               </ModalBody>
