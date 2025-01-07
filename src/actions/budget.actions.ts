@@ -23,6 +23,9 @@ const createBudget = async (data: NewBudgetSchema) => {
   if (!user) return null;
   const userId = user.id;
   try {
+    if (!category || !currency || !amount || !period) {
+      throw new Error("Missing required fields");
+    }
     const budget = await prisma.budget.create({
       data: {
         category,

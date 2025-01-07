@@ -54,7 +54,8 @@ const ExpenseTracker = () => {
     isError,
     refetch,
     error,
-  } = useExpenses(userId);
+  } = useExpenses(userId).query;
+
 
   // Compute filtered expenses using useMemo
   const filteredExpenses = useMemo(() => {

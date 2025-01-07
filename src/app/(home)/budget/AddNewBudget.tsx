@@ -18,21 +18,21 @@ import { createBudget } from "@/actions/budget.actions";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { Expense, type Budget } from "@prisma/client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
   currency: z.string().nonempty("Currency is required"),
   amount: z
-    .string()
-    .nonempty("Amount is required")
-    .refine((value) => !isNaN(parseFloat(value)), {
-      message: "Amount must be a number",
-    })
-    .refine((value) => parseFloat(value) > 0, {
-      message: "Amount must be greater than 0",
-    })
-    .transform((value) => parseFloat(value)),
+    .union([z.string(), z.undefined()])
+    .refine(
+      (value) =>
+        value === undefined ||
+        (value !== undefined &&
+          !isNaN(parseFloat(value)) &&
+          parseFloat(value) > 0 && !/^0\d+$/.test(value)),
+      "Amount must be a number greater than 0 and without leading zeros."
+    ),
   period: z.string().nonempty("Period is required"),
 });
 
@@ -94,7 +94,7 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
     defaultValues: {
       category: "",
       currency: "",
-      amount: 0,
+      amount: undefined,
       period: "",
     },
   });
@@ -113,7 +113,7 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
   const handleFormReset = () => {
     setValue("category", "");
     setValue("currency", "");
-    setValue("amount", 0);
+    setValue("amount", undefined);
     setValue("period", "");
   };
 
