@@ -24,6 +24,7 @@ export function ThemeSwitcher() {
     <Dropdown>
       <DropdownTrigger>
         <Button
+          color="default"
           variant="bordered"
           size="sm"
           className="size-10 h-10 min-w-[unset] px-0"

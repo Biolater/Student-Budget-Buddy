@@ -45,10 +45,10 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Card>
+      <Card className="bg-background border-border">
         <CardHeader className="p-6">
           <h3
-            className="text-2xl font-semibold leading-none tracking-tight"
+            className="text-2xl font-semibold leading-none tracking-tight text-foreground"
             data-id="60"
           >
             Upcoming Financial Events
@@ -57,15 +57,15 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
         <CardBody className="p-6 pt-0">
           {events ? (
             <ul className="space-y-2">
-              <li className="flex items-center justify-between">
+              <li className="flex items-center justify-between text-foreground">
                 <span>Tuition Payment Due</span>
                 <span className="font-medium">Sep 15</span>
               </li>
-              <li className="flex items-center justify-between">
+              <li className="flex items-center justify-between text-foreground">
                 <span>Scholarship Application Deadline</span>
                 <span className="font-medium">Oct 1</span>
               </li>
-              <li className="flex items-center justify-between">
+              <li className="flex items-center justify-between text-foreground">
                 <span>Financial Aid Workshop</span>
                 <span className="font-medium">Oct 10</span>
               </li>
@@ -80,16 +80,19 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
           )}
         </CardBody>
         <CardFooter className="p-6 pt-0">
-          <Button variant="bordered" className="w-full">
+          <Button
+            variant="bordered"
+            className="w-full text-primary bg-background"
+          >
             <Calendar className="mr-2 h-4 w-4" />
             View All Events
           </Button>
         </CardFooter>
       </Card>
-      <Card>
+      <Card className="bg-background border-border">
         <CardHeader className="p-6">
           <h3
-            className="text-2xl font-semibold leading-none tracking-tight"
+            className="text-2xl font-semibold leading-none tracking-tight text-foreground"
             data-id="60"
           >
             Budget Health
@@ -98,15 +101,17 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
         <CardBody className="p-6 pt-0">
           {alerts ? (
             <div className="space-y-2">
-              <div className="flex items-center">
+              <div className="flex items-center text-foreground">
                 <AlertCircle className="h-4 w-4 mr-2 text-yellow-500" />
                 <span>You&apos;re 5% over your food budget this month</span>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center text-foreground">
                 <AlertCircle className="h-4 w-4 mr-2 text-green-500" />
-                <span>Great job! You&apos;re under budget for entertainment</span>
+                <span>
+                  Great job! You&apos;re under budget for entertainment
+                </span>
               </div>
-              <div className="flex items-center">
+              <div className="flex items-center text-foreground">
                 <AlertCircle className="h-4 w-4 mr-2 text-blue-500" />
                 <span>Tip: Check for student discounts on textbooks</span>
               </div>
@@ -121,7 +126,10 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
           )}
         </CardBody>
         <CardFooter className="p-6 pt-0">
-          <Button variant="bordered" className="w-full">
+          <Button
+            variant="bordered"
+            className="w-full text-primary bg-background"
+          >
             <BookOpen className="mr-2 h-4 w-4" />
             View Detailed Analysis
           </Button>

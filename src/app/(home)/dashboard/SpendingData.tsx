@@ -51,7 +51,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
       {
         label: "Monthly Spending",
         data: monthlySpendingData.map((data) => data.amount),
-        backgroundColor: "#8884d8",
+        backgroundColor: "hsl(var(--primary))",
       },
     ],
   };
@@ -69,12 +69,32 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        labels: {
+          color: "hsl(var(--foreground))",
+        },
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: "hsl(var(--foreground))",
+        },
+      },
+      y: {
+        ticks: {
+          color: "hsl(var(--foreground))",
+        },
+      },
+    },
   };
+
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-5 lg:grid-cols-7 mb-8">
-      <Card className="md:col-span-3 lg:col-span-4">
+      <Card className="md:col-span-3 lg:col-span-4 bg-background border-border">
         <CardHeader className="flex flex-col space-y-1.5 p-6">
-          <h3 className="text-2xl self-start font-semibold leading-none tracking-tight">
+          <h3 className="text-2xl self-start font-semibold leading-none tracking-tight text-foreground">
             Monthly Spending Trend
           </h3>
         </CardHeader>
@@ -97,6 +117,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
                 as={Link}
                 href="/expenses"
                 startContent={<PlusCircle className="size-4" />}
+                className="bg-primary text-primary-foreground"
               >
                 Add Your First Expense
               </Button>
@@ -104,9 +125,9 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
           )}
         </CardBody>
       </Card>
-      <Card className="md:col-span-2 lg:col-span-3">
+      <Card className="md:col-span-2 lg:col-span-3 bg-background border-border">
         <CardHeader className="flex flex-col space-y-1.5 p-6">
-          <h3 className="text-2xl self-start font-semibold leading-none tracking-tight">
+          <h3 className="text-2xl self-start font-semibold leading-none tracking-tight text-foreground">
             Spending by Category
           </h3>
         </CardHeader>
@@ -129,6 +150,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
                 as={Link}
                 href="/expenses"
                 endContent={<ArrowRight className="size-4" />}
+                className="bg-primary text-primary-foreground"
               >
                 View Expenses
               </Button>

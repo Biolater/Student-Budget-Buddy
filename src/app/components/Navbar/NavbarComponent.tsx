@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import {
   Navbar,
@@ -52,7 +53,7 @@ export const NavbarComponent = () => {
       onMenuOpenChange={setIsMenuOpen}
       classNames={{
         item: [
-          "data-[active=true]:bg-muted data-[active=true]:text-foreground",
+          "data-[active=true]:bg-secondary data-[active=true]:text-foreground",
         ],
       }}
     >
@@ -61,7 +62,7 @@ export const NavbarComponent = () => {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="md:hidden"
         />
-        <NavbarBrand as={Link} href="/" className="gap-3 text-foreground">
+        <NavbarBrand as={Link} href={isSignedIn ? "/dashboard" : "/"} className="gap-3 text-foreground">
           <PiggyBank />
           <p className="font-bold text-inherit">Budget Buddy</p>
         </NavbarBrand>
@@ -77,7 +78,7 @@ export const NavbarComponent = () => {
                 as={Link}
                 isActive={pathname === link.href}
                 href={link.href}
-                className="text-muted-foreground transition-colors hover:text-foreground hover:bg-muted px-3 py-2 rounded-md text-sm"
+                className="text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary px-3 py-2 rounded-md text-sm"
               >
                 {link.label}
               </NavbarItem>
@@ -89,10 +90,15 @@ export const NavbarComponent = () => {
         <ThemeSwitcher />
         {isLoaded && !isSignedIn && (
           <div className="md:flex gap-4 hidden">
-            <Button variant="bordered" as={Link} href="/sign-in">
+            <Button
+              variant="bordered"
+              color="primary"
+              as={Link}
+              href="/sign-in"
+            >
               Login
             </Button>
-            <Button variant="solid" as={Link} href="/sign-up">
+            <Button color="primary" as={Link} href="/sign-up">
               Sign Up
             </Button>
           </div>
@@ -104,15 +110,17 @@ export const NavbarComponent = () => {
                 isBordered
                 as="button"
                 className="transition-transform"
-                color="secondary"
+                color="primary"
                 src={user.imageUrl || "https://via.placeholder.com/150"}
                 size="sm"
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
               <DropdownItem key="profile" className="h-14 gap-2">
-                <p className="font-semibol">Signed in as</p>
-                <p className="">{user.emailAddresses[0].emailAddress}</p>
+                <p className="font-semibold">Signed in as</p>
+                <p className="text-muted-foreground">
+                  {user.emailAddresses[0].emailAddress}
+                </p>
               </DropdownItem>
               <DropdownItem key="settings">My Settings</DropdownItem>
               <DropdownItem key="help">Help & Support</DropdownItem>
@@ -129,7 +137,7 @@ export const NavbarComponent = () => {
           navLinks.map((item, index) => (
             <NavbarMenuItem key={`${item}-${index}`}>
               <Link
-                className="w-full "
+                className="w-full"
                 color="foreground"
                 href={item.href}
                 size="lg"
@@ -143,7 +151,7 @@ export const NavbarComponent = () => {
             <NavbarMenuItem>
               <Link
                 color="foreground"
-                className="w-full "
+                className="w-full"
                 size="lg"
                 href="/about"
               >
@@ -153,7 +161,7 @@ export const NavbarComponent = () => {
             <NavbarMenuItem>
               <Link
                 color="foreground"
-                className="w-full "
+                className="w-full"
                 size="lg"
                 href="/features"
               >
@@ -163,7 +171,7 @@ export const NavbarComponent = () => {
             <NavbarMenuItem>
               <Link
                 color="foreground"
-                className="w-full "
+                className="w-full"
                 size="lg"
                 href="/benefits"
               >
@@ -171,10 +179,11 @@ export const NavbarComponent = () => {
               </Link>
             </NavbarMenuItem>
             <Divider className="my-2" />
-            <div className="flex flex-col sm:flex-row gap-2 ">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 className="flex-grow"
                 variant="bordered"
+                color="primary"
                 as={Link}
                 href="/sign-in"
               >
@@ -182,7 +191,7 @@ export const NavbarComponent = () => {
               </Button>
               <Button
                 className="flex-grow"
-                variant="solid"
+                color="primary"
                 as={Link}
                 href="/sign-up"
               >

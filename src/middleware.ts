@@ -7,7 +7,15 @@ const isPublicRoute = createRouteMatcher([
   "/(api|trpc)(.*)",
 ]);
 
+const isHomeRoute = createRouteMatcher(["/"]);
+
 export default clerkMiddleware(async (auth, request) => {
+  const { userId } = await auth();
+
+  if (isHomeRoute(request) && userId) {
+    return Response.redirect(new URL("/dashboard", request.url));
+  }
+
   if (!isPublicRoute(request)) {
     await auth.protect();
   }
