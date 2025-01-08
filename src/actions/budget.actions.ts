@@ -47,6 +47,19 @@ const createBudget = async (data: NewBudgetSchema) => {
   }
 };
 
+const deleteBudget = async (budgetId: string) => {
+  const user = await currentUser();
+  if (!user) throw new Error("You must be signed in to delete a budget");
+
+  const userId = user.id;
+  try {
+    await prisma.budget.delete({ where: { id: budgetId, userId } });
+    invalidateCache(userId);
+  } catch (error) {
+    throw error;
+  }
+};
+
 const getBudgets = async () => {
   const user = await currentUser();
   if (!user) throw new Error("You must be signed in to get budgets");
@@ -91,4 +104,4 @@ const getBudgets = async () => {
   }
 };
 
-export { createBudget, getBudgets };
+export { createBudget, getBudgets, deleteBudget };

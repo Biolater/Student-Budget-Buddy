@@ -7,7 +7,7 @@ const DashboardComponent = () => {
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Financial Dashboard</h1>
       <div className="flex flex-col">
-        <BudgetData  />
+        <BudgetData />
         <SpendingData spendings={0} />
         <FinancialInsights />
       </div>

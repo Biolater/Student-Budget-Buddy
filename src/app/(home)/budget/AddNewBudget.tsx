@@ -18,7 +18,8 @@ import { createBudget } from "@/actions/budget.actions";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { Expense, type Budget } from "@prisma/client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useBudget from "@/hooks/useBudget";
 
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
@@ -30,7 +31,8 @@ const schema = z.object({
         value === undefined ||
         (value !== undefined &&
           !isNaN(parseFloat(value)) &&
-          parseFloat(value) > 0 && !/^0\d+$/.test(value)),
+          parseFloat(value) > 0 &&
+          !/^0\d+$/.test(value)),
       "Amount must be a number greater than 0 and without leading zeros."
     ),
   period: z.string().nonempty("Period is required"),
@@ -41,10 +43,6 @@ export type NewBudgetSchema = z.infer<typeof schema>;
 export type ClientBudget = Omit<Budget, "amount"> & {
   amount: number;
   expenses: (Omit<Expense, "amount"> & { amount: number })[];
-};
-
-type Props = {
-  onBudgetCreated: () => void;
 };
 
 const categories = [
@@ -82,7 +80,8 @@ const CURRENCIES = [
   { code: "AZN", symbol: "₼" },
 ];
 
-const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
+const AddNewBudget = () => {
+  const { userId } = useAuth();
   const {
     register,
     handleSubmit,
@@ -106,9 +105,9 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
     "amount",
   ]);
 
-  const [creatingBudget, setCreatingBudget] = useState(false);
-
-  const { isSignedIn } = useAuth();
+  const {
+    create: { mutateAsync: createBudget, isPending: creatingBudget, isSuccess, isError, error },
+  } = useBudget(userId);
 
   const handleFormReset = () => {
     setValue("category", "");
@@ -117,19 +116,21 @@ const AddNewBudget: React.FC<Props> = ({ onBudgetCreated }) => {
     setValue("period", "");
   };
 
+  // useEffect(() => {
+  //   console.log({ isSuccess, isError, error, creatingBudget })
+  //   if(isSuccess){
+  //     toast.success("Budget created successfully");
+
+  //   }
+  // },[isSuccess, isError, error, creatingBudget])
+
   const onSubmit = async (data: NewBudgetSchema) => {
-    if (isSignedIn) {
+    if (userId) {
       try {
-        setCreatingBudget(true);
-        const budget = await createBudget(data);
-        if (budget) {
-          setCreatingBudget(false);
-          onBudgetCreated();
-          toast.success("Budget created successfully");
-          handleFormReset();
-        }
+        // toast.success("Budget created successfully");
+        await createBudget(data);
+        handleFormReset();
       } catch (error) {
-        setCreatingBudget(false);
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
         );

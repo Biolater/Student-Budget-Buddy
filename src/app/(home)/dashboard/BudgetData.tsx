@@ -2,10 +2,6 @@ import {
   Card,
   CardHeader,
   CardBody,
-  CardFooter,
-  Divider,
-  Link as nextUILink,
-  Image,
   Progress,
 } from "@nextui-org/react";
 import {
@@ -160,6 +156,5 @@ const BudgetData: React.FC<BudgetDataProps> = ({
     </div>
   );
 };
-
 
 export default BudgetData;

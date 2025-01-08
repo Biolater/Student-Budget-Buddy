@@ -109,7 +109,7 @@ const ExpenseItems: React.FC<{
     updateTriggerRef.current = true;
     setUpdateLoading(true);
   };
-  const handleExpenseCreation = () => {
+  const handleExpenseCreation = ( ) => {
     onExpenseCreation();
   };
   const handleExpenseUpdate = () => {

@@ -50,12 +50,11 @@ const ExpenseTracker = () => {
   const { userId } = useAuth();
   const {
     data: expenses,
-    isPending,
+    isPending: isFetching,
     isError,
     refetch,
     error,
-  } = useExpenses(userId).query;
-
+  } = useExpenses(userId);
 
   // Compute filtered expenses using useMemo
   const filteredExpenses = useMemo(() => {
@@ -96,7 +95,7 @@ const ExpenseTracker = () => {
           <ExpenseItems
             userId={userId}
             expenses={filteredExpenses}
-            expensesLoading={isPending}
+            expensesLoading={isFetching}
             onExpenseCreation={() => refetch()}
             onExpenseDeletionFinished={() => refetch()}
             onExpenseUpdate={() => refetch()}

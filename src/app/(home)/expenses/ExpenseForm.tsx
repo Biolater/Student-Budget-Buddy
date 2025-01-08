@@ -10,7 +10,10 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import { RefObject, useCallback, useEffect, useState } from "react";
-import { createExpenseAction, updateExpenseAction } from "@/actions/expense.actions";
+import {
+  createExpenseAction,
+  updateExpenseAction,
+} from "@/actions/expense.actions";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
 import {
@@ -19,7 +22,6 @@ import {
   parseAbsoluteToLocal,
   type ZonedDateTime,
 } from "@internationalized/date";
-
 
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -128,7 +130,6 @@ const ExpenseForm: React.FC<{
         );
         if (expense) {
           onExpenseCreated(expense);
-          toast.success("Expense created successfully");
         }
       } catch (error) {
         toast.error(
@@ -204,6 +205,7 @@ const ExpenseForm: React.FC<{
             showMonthAndYearPickers
             aria-label="Select date"
             onChange={(value) => setDate(value)}
+            value={date}
             errorMessage="Date is required"
             defaultValue={isEditing ? date : now(getLocalTimeZone())}
             isInvalid={errors.date !== ""}
