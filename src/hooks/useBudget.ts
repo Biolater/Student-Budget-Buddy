@@ -10,6 +10,7 @@ import type {
   ClientBudget,
   NewBudgetSchema,
 } from "@/app/(home)/budget/AddNewBudget";
+import toast from "react-hot-toast";
 
 const useBudget = (userId: string | undefined | null) => {
   return {
@@ -26,7 +27,6 @@ const useBudget = (userId: string | undefined | null) => {
       mutationKey: ["deleteBudget", userId],
       onMutate: async (budgetId: string) => {
         await queryClient.cancelQueries({ queryKey: ["budgets", userId] });
-
         const previousBudgets = queryClient.getQueryData<ClientBudget[]>([
           "budgets",
           userId,
@@ -36,10 +36,15 @@ const useBudget = (userId: string | undefined | null) => {
           old ? old.filter((budget) => budget.id !== budgetId) : []
         );
 
+        toast.success("Budget deleted successfully");
+
         return { previousBudgets };
       },
       onError: (error, _, context) => {
         queryClient.setQueryData(["budgets", userId], context?.previousBudgets);
+        toast.error(
+          error instanceof Error ? error.message : "Something went wrong"
+        );
       },
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["budgets", userId] });
@@ -50,6 +55,8 @@ const useBudget = (userId: string | undefined | null) => {
       mutationKey: ["createBudget", userId],
       onMutate: async (newBudget) => {
         await queryClient.cancelQueries({ queryKey: ["budgets", userId] });
+        if (!userId)
+          throw new Error("You must be signed in to create a budget");
 
         const previousBudgets = queryClient.getQueryData<ClientBudget[]>([
           "budgets",
@@ -83,9 +90,14 @@ const useBudget = (userId: string | undefined | null) => {
               ]
         );
 
+        toast.success("Budget created successfully");
+
         return { previousBudgets };
       },
-      onError: (error, newBudget, ctx) => {
+      onError: (error, _, ctx) => {
+        toast.error(
+          error instanceof Error ? error.message : "Something went wrong"
+        );
         queryClient.setQueryData(["budgets", userId], ctx?.previousBudgets);
       },
       onSuccess: () => {

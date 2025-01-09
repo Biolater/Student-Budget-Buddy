@@ -14,7 +14,6 @@ import { Plus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createBudget } from "@/actions/budget.actions";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { Expense, type Budget } from "@prisma/client";
@@ -106,7 +105,10 @@ const AddNewBudget = () => {
   ]);
 
   const {
-    create: { mutateAsync: createBudget, isPending: creatingBudget, isSuccess, isError, error },
+    create: {
+      mutateAsync: createBudget,
+      isPending: creatingBudget,
+    },
   } = useBudget(userId);
 
   const handleFormReset = () => {
@@ -116,18 +118,9 @@ const AddNewBudget = () => {
     setValue("period", "");
   };
 
-  // useEffect(() => {
-  //   console.log({ isSuccess, isError, error, creatingBudget })
-  //   if(isSuccess){
-  //     toast.success("Budget created successfully");
-
-  //   }
-  // },[isSuccess, isError, error, creatingBudget])
-
   const onSubmit = async (data: NewBudgetSchema) => {
     if (userId) {
       try {
-        // toast.success("Budget created successfully");
         await createBudget(data);
         handleFormReset();
       } catch (error) {

@@ -39,7 +39,6 @@ const BudgetItem: React.FC<{
   const handleDeleteBudget = async () => {
     try {
       await deleteBudgetMutation(budgetItem.id);
-      toast.success("Budget deleted successfully");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "An unknown error occurred"
