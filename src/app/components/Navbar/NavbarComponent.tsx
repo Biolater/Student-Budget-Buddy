@@ -39,7 +39,7 @@ export const NavbarComponent = () => {
   ];
 
   const handleSignOut = () => {
-    toast.promise(signOut({ redirectUrl: "/" }), {
+    toast.promise(() => signOut({ redirectUrl: "/" }), {
       loading: "Signing out...",
       success: "Signed out successfully",
       error: "Failed to sign out",
