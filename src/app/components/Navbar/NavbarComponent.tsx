@@ -40,7 +40,7 @@ export const NavbarComponent = () => {
 
   const handleSignOut = async () => {
     try {
-      await signOut({ redirectUrl: "/sign-in" });
+      signOut({ redirectUrl: "/sign-in" });
       toast.success("Signed out successfully");
     } catch (error) {
       toast.error("Failed to sign out. Please try again.");
