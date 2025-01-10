@@ -38,24 +38,15 @@ export const NavbarComponent = () => {
     { href: "/analysis", label: "Analysis" },
   ];
 
-  const handleSignOut = () => {
-    toast.promise(
-      new Promise(async (resolve, reject) => {
-        try {
-          await signOut({ redirectUrl: "/" });
-          resolve(void 0);
-        } catch (error) {
-          reject(error);
-        }
-      }),
-      {
-        loading: "Signing out...",
-        success: "Signed out successfully",
-        error: "Failed to sign out. Please try again.",
-      }
-    );
-  };
-  
+const handleSignOut = async () => {
+  try {
+    await signOut({ redirectUrl: "/" });
+    toast.success("Signed out successfully");
+  } catch (error) {
+    toast.error("Failed to sign out. Please try again.");
+  }
+};
+
   return (
     <Navbar
       maxWidth="xl"
