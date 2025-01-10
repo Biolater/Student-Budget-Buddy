@@ -38,14 +38,14 @@ export const NavbarComponent = () => {
     { href: "/analysis", label: "Analysis" },
   ];
 
-const handleSignOut = async () => {
-  try {
-    await signOut({ redirectUrl: "/" });
-    toast.success("Signed out successfully");
-  } catch (error) {
-    toast.error("Failed to sign out. Please try again.");
-  }
-};
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success("Signed out successfully");
+    } catch (error) {
+      toast.error("Failed to sign out. Please try again.");
+    }
+  };
 
   return (
     <Navbar
@@ -63,7 +63,11 @@ const handleSignOut = async () => {
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           className="md:hidden"
         />
-        <NavbarBrand as={Link} href={isSignedIn ? "/dashboard" : "/"} className="gap-3 text-foreground">
+        <NavbarBrand
+          as={Link}
+          href={isSignedIn ? "/dashboard" : "/"}
+          className="gap-3 text-foreground"
+        >
           <PiggyBank />
           <p className="font-bold text-inherit">Budget Buddy</p>
         </NavbarBrand>
@@ -125,7 +129,7 @@ const handleSignOut = async () => {
               </DropdownItem>
               <DropdownItem key="settings">My Settings</DropdownItem>
               <DropdownItem key="help">Help & Support</DropdownItem>
-              <DropdownItem onClick={handleSignOut} key="logout" color="danger">
+              <DropdownItem onPress={handleSignOut} key="logout" color="danger">
                 Log Out
               </DropdownItem>
             </DropdownMenu>
