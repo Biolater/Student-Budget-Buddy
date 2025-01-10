@@ -39,13 +39,23 @@ export const NavbarComponent = () => {
   ];
 
   const handleSignOut = () => {
-    toast.promise(() => signOut({ redirectUrl: "/" }), {
-      loading: "Signing out...",
-      success: "Signed out successfully",
-      error: "Failed to sign out",
-    });
+    toast.promise(
+      new Promise(async (resolve, reject) => {
+        try {
+          await signOut({ redirectUrl: "/" });
+          resolve(void 0);
+        } catch (error) {
+          reject(error);
+        }
+      }),
+      {
+        loading: "Signing out...",
+        success: "Signed out successfully",
+        error: "Failed to sign out. Please try again.",
+      }
+    );
   };
-
+  
   return (
     <Navbar
       maxWidth="xl"
