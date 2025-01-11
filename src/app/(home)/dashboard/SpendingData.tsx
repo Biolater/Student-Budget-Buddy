@@ -72,19 +72,19 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
     plugins: {
       legend: {
         labels: {
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         },
       },
     },
     scales: {
       x: {
         ticks: {
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         },
       },
       y: {
         ticks: {
-          color: "hsl(var(--foreground))",
+          color: "var(--foreground)",
         },
       },
     },
@@ -92,7 +92,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
 
   return (
     <div className="grid gap-4 grid-cols-1 md:grid-cols-5 lg:grid-cols-7 mb-8">
-      <Card className="md:col-span-3 lg:col-span-4 bg-background border-border">
+      <Card className="md:col-span-3 lg:col-span-4 bg-card border-border">
         <CardHeader className="flex flex-col space-y-1.5 p-6">
           <h3 className="text-2xl self-start font-semibold leading-none tracking-tight text-foreground">
             Monthly Spending Trend
@@ -125,7 +125,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
           )}
         </CardBody>
       </Card>
-      <Card className="md:col-span-2 lg:col-span-3 bg-background border-border">
+      <Card className="md:col-span-2 lg:col-span-3 bg-card border-border">
         <CardHeader className="flex flex-col space-y-1.5 p-6">
           <h3 className="text-2xl self-start font-semibold leading-none tracking-tight text-foreground">
             Spending by Category

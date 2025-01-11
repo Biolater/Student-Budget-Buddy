@@ -23,7 +23,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      <Card className="bg-background border-border">
+      <Card className="bg-card border-border">
         <CardHeader className="justify-between p-6 pb-2 items-center">
           <h3 className="tracking-tight text-sm font-medium text-foreground">
             Total Budget
@@ -50,7 +50,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
           )}
         </CardBody>
       </Card>
-      <Card className="bg-background border-border">
+      <Card className="bg-card border-border">
         <CardHeader className="justify-between p-6 pb-2 items-center">
           <h3 className="tracking-tight text-sm font-medium text-foreground">
             Spent
@@ -81,7 +81,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
           )}
         </CardBody>
       </Card>
-      <Card className="bg-background border-border">
+      <Card className="bg-card border-border">
         <CardHeader className="justify-between p-6 pb-2 items-center">
           <h3 className="tracking-tight text-sm font-medium text-foreground">
             Remaining
@@ -115,7 +115,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
           )}
         </CardBody>
       </Card>
-      <Card className="bg-background border-border">
+      <Card className="bg-card border-border">
         <CardHeader className="justify-between p-6 pb-2 items-center">
           <h3 className="tracking-tight text-sm font-medium text-foreground">
             Savings Goal
