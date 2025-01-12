@@ -63,8 +63,9 @@ const ExpenseForm: React.FC<{
   const [date, setDate] = useState<ZonedDateTime | null>(
     isEditing && editingExpense
       ? parseAbsoluteToLocal(editingExpense.date.toISOString())
-      : now(getLocalTimeZone())
+      : null
   );
+
   const [amount, setAmount] = useState(
     isEditing ? editingExpense?.amount : null
   );
@@ -106,6 +107,7 @@ const ExpenseForm: React.FC<{
     setErrors(newErrors);
     return !Object.values(newErrors).some((error) => error);
   }, [date, amount, currency, category, description]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,12 +208,11 @@ const ExpenseForm: React.FC<{
             aria-label="Select date"
             onChange={(value) => setDate(value)}
             value={date}
-            errorMessage="Date is required"
-            defaultValue={isEditing ? date : now(getLocalTimeZone())}
-            isInvalid={errors.date !== ""}
-            isRequired
+            errorMessage={errors.date}
+            isInvalid={!!errors.date}
             size="md"
             className="w-full"
+            granularity="minute" // or "second" if you want to include seconds
           />
         </div>
         <div className="space-y-2">
