@@ -49,7 +49,6 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
         <CardHeader className="p-6">
           <h3
             className="text-2xl font-semibold leading-none tracking-tight text-foreground"
-            data-id="60"
           >
             Upcoming Financial Events
           </h3>

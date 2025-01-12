@@ -4,48 +4,86 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-    --card: #f2f2f2;
-    --card-foreground: #09090b;
-    --popover: #ffffff;
-    --popover-foreground: #09090b;
-    --primary: #22c55e;
-    --primary-foreground: #ffffff;
-    --secondary: #f4f4f5;
-    --secondary-foreground: #09090b;
-    --muted: #f4f4f5;
-    --muted-foreground: #71717a;
-    --accent: #f4f4f5;
-    --accent-foreground: #09090b;
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
-    --border: #e4e4e7;
-    --input: #e4e4e7;
-    --ring: #22c55e;
+    --background: hsl(0, 0%, 100%);
+    /* white */
+    --foreground: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --card: hsl(0, 0%, 95%);
+    /* light gray */
+    --card-foreground: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --popover: hsl(0, 0%, 100%);
+    /* white */
+    --popover-foreground: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --primary: hsl(134, 60%, 53%);
+    /* green */
+    --primary-foreground: hsl(0, 0%, 100%);
+    /* white */
+    --secondary: hsl(0, 0%, 96%);
+    /* light gray */
+    --secondary-foreground: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --muted: hsl(0, 0%, 96%);
+    /* light gray */
+    --muted-foreground: hsl(0, 0%, 45%);
+    /* muted gray */
+    --accent: hsl(0, 0%, 96%);
+    /* light gray */
+    --accent-foreground: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --destructive: hsl(0, 80%, 60%);
+    /* red */
+    --destructive-foreground: hsl(0, 0%, 100%);
+    /* white */
+    --border: hsl(0, 0%, 89%);
+    /* light gray */
+    --input: hsl(0, 0%, 89%);
+    /* light gray */
+    --ring: hsl(134, 60%, 53%);
+    /* green */
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --card: #1c1c1f;
-    --card-foreground: #fafafa;
-    --popover: #09090b;
-    --popover-foreground: #fafafa;
-    --primary: #22c55e;
-    --primary-foreground: #09090b;
-    --secondary: #27272a;
-    --secondary-foreground: #fafafa;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #7f1d1d;
-    --destructive-foreground: #fafafa;
-    --border: #27272a;
-    --input: #27272a;
-    --ring: #22c55e;
+    --background: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --foreground: hsl(0, 0%, 98%);
+    /* light gray */
+    --card: hsl(0, 0%, 12%);
+    /* dark gray */
+    --card-foreground: hsl(0, 0%, 98%);
+    /* light gray */
+    --popover: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --popover-foreground: hsl(0, 0%, 98%);
+    /* light gray */
+    --primary: hsl(134, 60%, 53%);
+    /* green */
+    --primary-foreground: hsl(0, 0%, 5%);
+    /* very dark gray */
+    --secondary: hsl(0, 0%, 16%);
+    /* dark gray */
+    --secondary-foreground: hsl(0, 0%, 98%);
+    /* light gray */
+    --muted: hsl(0, 0%, 16%);
+    /* dark gray */
+    --muted-foreground: hsl(0, 0%, 67%);
+    /* muted gray */
+    --accent: hsl(0, 0%, 16%);
+    /* dark gray */
+    --accent-foreground: hsl(0, 0%, 98%);
+    /* light gray */
+    --destructive: hsl(0, 80%, 40%);
+    /* dark red */
+    --destructive-foreground: hsl(0, 0%, 98%);
+    /* light gray */
+    --border: hsl(0, 0%, 16%);
+    /* dark gray */
+    --input: hsl(0, 0%, 16%);
+    /* dark gray */
+    --ring: hsl(134, 60%, 53%);
+    /* green */
   }
 }
 
@@ -80,26 +118,6 @@ html[data-theme="dark"] {
   opacity: 0;
   left: 0;
 }
-
-.expenses-date-range button[data-slot="selector-button"]>* {
+.expenses-date-range button[data-slot="selector-button"]  > * {
   opacity: 0;
-}
-
-.budget-overview {
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-}
-
-@media screen and (min-width: 1280px) {
-  .budget-overview {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Chart Colors - Modern Dark Theme */
-.dark {
-  --chart-1: #22c55e;
-  --chart-2: #3b82f6;
-  --chart-3: #a855f7;
-  --chart-4: #f59e0b;
-  --chart-5: #94a3b8;
 }

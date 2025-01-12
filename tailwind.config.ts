@@ -17,7 +17,8 @@ export default {
         "card-foreground": "var(--card-foreground)",
         popover: "var(--popover)",
         "popover-foreground": "var(--popover-foreground)",
-        primary: "var(--primary)",
+        primary: "rgba(76, 185, 39, 1)", // RGBA equivalent of hsl(134, 60%, 53%)
+        "primary-opacity": "rgba(76, 185, 39, 0.5)", // Added for opacity
         "primary-foreground": "var(--primary-foreground)",
         secondary: "var(--secondary)",
         "secondary-foreground": "var(--secondary-foreground)",

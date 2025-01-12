@@ -319,6 +319,7 @@ const ExpenseForm: React.FC<{
           isDisabled={loading}
           isLoading={loading}
           type="submit"
+          color="primary"
           className="mt-4 w-full sm:w-auto md:self-start"
         >
           {!loading && "Add expense"}

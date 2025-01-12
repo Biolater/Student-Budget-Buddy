@@ -246,7 +246,7 @@ const ExpenseItems: React.FC<{
               key={expense.id}
               className={`${
                 index === sortedItems.length - 1 ? "" : "border-b border-border"
-              } hover:bg-muted transition-colors duration-200 ease-in-out`}
+              } hover:bg-primary-opacity transition-colors duration-200 ease-in-out`}
             >
               <TableCell className="whitespace-nowrap">
                 {format(expense.date, "MMM d, yyyy, h:mm a")}
