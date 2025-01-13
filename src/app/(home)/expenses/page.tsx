@@ -10,6 +10,7 @@ import type { RangeValue } from "@nextui-org/react";
 import type { ZonedDateTime } from "@internationalized/date";
 import useExpenses from "@/hooks/useExpense";
 import toast from "react-hot-toast";
+import { Category } from "@/actions/expense.actions";
 
 export type Expense = {
   id: string;
@@ -42,19 +43,20 @@ const filterExpenses = (
 };
 
 const ExpenseTracker = () => {
-  // const [expenses, setExpenses] = useState<Expense[]>([]);
   const [dateRangePickerValue, setDateRangePickerValue] =
     useState<RangeValue<ZonedDateTime> | null>(null);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("All Categories");
   const { userId } = useAuth();
   const {
-    data: expenses,
-    isPending: isFetching,
-    isError,
-    refetch,
-    error,
+    query: { data: expenses, isPending: isFetching, error: fetchError },
   } = useExpenses(userId);
+
+  useEffect(() => {
+    if (fetchError) {
+      toast.error(fetchError.message);
+    }
+  }, [fetchError]);
 
   // Compute filtered expenses using useMemo
   const filteredExpenses = useMemo(() => {
@@ -64,12 +66,6 @@ const ExpenseTracker = () => {
       dateRangePickerValue
     );
   }, [expenses, selectedCategory, dateRangePickerValue]);
-
-  if (isError) {
-    toast.error(
-      error instanceof Error ? error.message : "Something went wrong"
-    );
-  }
 
   return (
     <div className="container max-w-4xl mx-auto p-4 md:py-8">
@@ -83,7 +79,9 @@ const ExpenseTracker = () => {
           </p>
         </CardHeader>
         <CardBody className="p-6 pt-0">
-          <ExpenseForm userId={userId} onExpenseCreated={() => refetch()} />
+          <ExpenseForm
+            userId={userId}
+          />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
           <ExpenseFilterOptions
@@ -96,9 +94,9 @@ const ExpenseTracker = () => {
             userId={userId}
             expenses={filteredExpenses}
             expensesLoading={isFetching}
-            onExpenseCreation={() => refetch()}
-            onExpenseDeletionFinished={() => refetch()}
-            onExpenseUpdate={() => refetch()}
+            onExpenseCreation={() => {}}
+            onExpenseDeletionFinished={() => {}}
+            onExpenseUpdate={() => {}}
           />
         </CardFooter>
       </Card>

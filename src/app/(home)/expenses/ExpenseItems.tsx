@@ -26,6 +26,7 @@ import { useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
 import { deleteAnExpense } from "@/actions/expense.actions";
 import toast from "react-hot-toast";
+import useExpenses from "@/hooks/useExpense";
 
 const TABLE_HEADERS = [
   { label: "Date", isSortable: true, key: "date" },
@@ -58,11 +59,13 @@ const ExpenseItems: React.FC<{
   onExpenseUpdate,
   expensesLoading,
 }) => {
+  const {
+    delete: { mutateAsync, isPending: isDeleting },
+  } = useExpenses(userId);
   const updateTriggerRef = useRef(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
   const [updateLoading, setUpdateLoading] = useState(false);
-  const [deleteLoading, setDeleteLoading] = useState(false);
   const [showDescriptionFor, setShowDescriptionFor] = useState<Set<string>>(
     new Set()
   ); // Set to store expense IDs whose description is expanded
@@ -91,26 +94,16 @@ const ExpenseItems: React.FC<{
   };
   const handleDeleteExpense = async (id: string) => {
     try {
-      setDeleteLoading(true);
-      const data = await deleteAnExpense(id);
-      if (data) {
-        onExpenseDeletionFinished();
-        toast.success("Expense deleted successfully");
-      }
+      await mutateAsync(id);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Something went wrong"
       );
-    } finally {
-      setDeleteLoading(false);
     }
   };
   const handleUpdateButtonClick = () => {
     updateTriggerRef.current = true;
     setUpdateLoading(true);
-  };
-  const handleExpenseCreation = ( ) => {
-    onExpenseCreation();
   };
   const handleExpenseUpdate = () => {
     onExpenseUpdate();
@@ -163,8 +156,8 @@ const ExpenseItems: React.FC<{
                   Close
                 </Button>
                 <Button
-                  isDisabled={deleteLoading}
-                  isLoading={deleteLoading}
+                  isDisabled={isDeleting}
+                  isLoading={isDeleting}
                   color="danger"
                   onPress={async () => {
                     if (deleteExpense) {
@@ -173,7 +166,7 @@ const ExpenseItems: React.FC<{
                     }
                   }}
                 >
-                  {deleteLoading ? "Deleting..." : "Delete"}
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </Button>
               </ModalFooter>
             </>
@@ -198,7 +191,6 @@ const ExpenseItems: React.FC<{
               <ModalBody>
                 <ExpenseForm
                   userId={userId}
-                  onExpenseCreated={handleExpenseCreation}
                   isEditing={true}
                   editingExpense={editExpense}
                   updateTriggerState={updateTriggerRef}

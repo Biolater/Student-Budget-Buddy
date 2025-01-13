@@ -22,6 +22,7 @@ import {
   parseAbsoluteToLocal,
   type ZonedDateTime,
 } from "@internationalized/date";
+import useExpenses from "@/hooks/useExpense";
 
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -45,7 +46,6 @@ const categories = [
 
 const ExpenseForm: React.FC<{
   userId: string | undefined | null;
-  onExpenseCreated: (expense: Expense) => void;
   isEditing?: boolean;
   editingExpense?: Expense | null;
   updateTriggerState?: RefObject<boolean>;
@@ -53,13 +53,15 @@ const ExpenseForm: React.FC<{
   onUpdateFinished?: () => void;
 }> = ({
   userId,
-  onExpenseCreated,
   isEditing,
   editingExpense,
   updateTriggerState,
   onUpdateExpense,
   onUpdateFinished,
 }) => {
+  const {
+    create: { mutateAsync: createExpense, isPending: isCreatingExpense },
+  } = useExpenses(userId);
   const [date, setDate] = useState<ZonedDateTime | null>(
     isEditing && editingExpense
       ? parseAbsoluteToLocal(editingExpense.date.toISOString())
@@ -85,7 +87,6 @@ const ExpenseForm: React.FC<{
     category: "",
     description: "",
   });
-  const [loading, setLoading] = useState(false);
 
   const clearForm = () => {
     setDate(null);
@@ -108,37 +109,28 @@ const ExpenseForm: React.FC<{
     return !Object.values(newErrors).some((error) => error);
   }, [date, amount, currency, category, description]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm() || !userId) return;
 
     if (date && amount && currency && category && description && userId) {
-      const { year, month, day, hour, minute, second, offset } = date;
+      const { year, month, day, hour, minute, second } = date;
       const localDate = new Date(year, month - 1, day, hour, minute, second);
 
-      const correctCategory = category.split("-")[0] as Category;
-
       try {
-        setLoading(true);
-        const expense = await createExpenseAction(
-          localDate,
-          amount,
-          currency,
-          correctCategory,
+        await createExpense({
           description,
-          errors
-        );
-        if (expense) {
-          onExpenseCreated(expense);
-        }
+          amount,
+          category,
+          currency,
+          date: localDate,
+        });
       } catch (error) {
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
         );
       } finally {
-        setLoading(false);
         clearForm();
       }
     }
@@ -317,13 +309,13 @@ const ExpenseForm: React.FC<{
       </div>
       {!isEditing && (
         <Button
-          isDisabled={loading}
-          isLoading={loading}
+          isDisabled={isCreatingExpense}
+          isLoading={isCreatingExpense}
           type="submit"
           color="primary"
           className="mt-4 w-full sm:w-auto md:self-start"
         >
-          {!loading && "Add expense"}
+          {!isCreatingExpense && "Add expense"}
         </Button>
       )}
     </form>

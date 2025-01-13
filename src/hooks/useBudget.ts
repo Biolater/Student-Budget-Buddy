@@ -63,33 +63,19 @@ const useBudget = (userId: string | undefined | null) => {
           userId,
         ]);
 
-        queryClient.setQueryData<ClientBudget[]>(["budgets", userId], (old) =>
-          old
-            ? [
-                ...old,
-                {
-                  ...newBudget,
-                  id: "temp-id",
-                  userId: userId!,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  expenses: [],
-                  amount: Number(newBudget.amount),
-                },
-              ]
-            : [
-                {
-                  ...newBudget,
-                  id: "temp-id",
-                  userId: userId!,
-                  createdAt: new Date(),
-                  updatedAt: new Date(),
-                  expenses: [],
-                  amount: Number(newBudget.amount),
-                },
-              ]
-        );
-
+        queryClient.setQueryData<ClientBudget[]>(["budgets", userId], (old) => {
+          const newBudgetWithDefaults = {
+            ...newBudget,
+            id: "temp-id",
+            userId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            expenses: [],
+            amount: Number(newBudget.amount),
+          };
+        
+          return old ? [...old, newBudgetWithDefaults] : [newBudgetWithDefaults];
+        });
         toast.success("Budget created successfully");
 
         return { previousBudgets };

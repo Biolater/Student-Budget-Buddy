@@ -18,6 +18,14 @@ export type Category =
 
 export type TransformedExpense = Omit<Expense, "amount"> & { amount: number };
 
+export type CreateExpenseData = {
+  date: Date;
+  amount: number;
+  currency: string;
+  category: Category;
+  description: string;
+};
+
 const cache = new Map<
   string,
   { data: TransformedExpense[]; expiresAt: number }
@@ -25,31 +33,21 @@ const cache = new Map<
 
 // Helper function to invalidate cache for a user
 const invalidateCache = (userId: string) => {
-  cache.delete(userId); // Remove cached data for the user
+  cache.delete(userId);
 };
 
 // Create Expense
-const createExpense = async (
-  date: Date,
-  amount: number,
-  currency: string,
-  category: Category,
-  description: string
-) => {
+const createExpense = async (data: CreateExpenseData) => {
   try {
-    const user = await currentUser(); // Fetch the current authenticated user from Clerk
+    const user = await currentUser();
     if (!user) {
       throw new Error("User not authenticated");
     }
 
     const expense = await prisma.expense.create({
       data: {
-        date,
-        amount,
-        currency,
-        category,
-        description,
-        userId: user.id, // Use the Clerk user ID
+        ...data,
+        userId: user.id,
       },
     });
 
@@ -63,7 +61,7 @@ const createExpense = async (
 // Delete Expense
 const deleteAnExpense = async (expenseId: string) => {
   try {
-    const user = await currentUser(); // Fetch the current authenticated user
+    const user = await currentUser();
     if (!user) {
       throw new Error("User not authenticated");
     }
@@ -72,7 +70,6 @@ const deleteAnExpense = async (expenseId: string) => {
       where: { id: expenseId },
     });
 
-    // Ensure that the user is deleting their own expense
     if (deletedExpense.userId !== user.id) {
       throw new Error("You are not authorized to delete this expense");
     }
@@ -87,14 +84,13 @@ const deleteAnExpense = async (expenseId: string) => {
 // Fetch Expenses by User
 const fetchExpensesByUser = async () => {
   try {
-    const user = await currentUser(); // Fetch the current authenticated user
+    const user = await currentUser();
     if (!user) {
       throw new Error("User not authenticated");
     }
 
     const now = Date.now();
 
-    // Check if data is in cache and still valid
     if (cache.has(user.id)) {
       const cached = cache.get(user.id)!;
       if (now < cached.expiresAt) {
@@ -104,19 +100,17 @@ const fetchExpensesByUser = async () => {
       }
     }
 
-    // Fetch from database
     const expenses: Expense[] = await prisma.expense.findMany({
       where: { userId: user.id },
       orderBy: { date: "desc" },
     });
 
-    // Process amounts and store in cache
     const processedExpenses: TransformedExpense[] = expenses.map((expense) => ({
       ...expense,
       amount: expense.amount.toNumber(),
     }));
 
-    cache.set(user.id, { data: processedExpenses, expiresAt: now + 600000 }); // Cache for 10 minutes
+    cache.set(user.id, { data: processedExpenses, expiresAt: now + 600000 });
     return processedExpenses;
   } catch (error) {
     throw error;
@@ -135,12 +129,11 @@ const updateExpenseAction = async (
   }
 ) => {
   try {
-    const user = await currentUser(); // Fetch the current authenticated user
+    const user = await currentUser();
     if (!user) {
       throw new Error("User not authenticated");
     }
 
-    // Ensure that the user is updating their own expense
     const expenseToUpdate = await prisma.expense.findUnique({
       where: { id: expenseId },
     });
@@ -179,7 +172,6 @@ const createExpenseAction = async (
 ) => {
   const noErrors = Object.values(errors).every((error) => error === "");
 
-  // Validate that all required fields are present and of the correct type
   if (
     typeof date !== "object" ||
     typeof amount !== "number" ||
@@ -191,15 +183,14 @@ const createExpenseAction = async (
     throw new Error("Invalid input data");
   }
 
-  // Call the createExpense function with validated and converted data
   try {
-    const expense = await createExpense(
+    const expense = await createExpense({
       date,
       amount,
       currency,
-      category as Category,
-      description
-    );
+      category,
+      description,
+    });
     return expense;
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : "Unknown error");
@@ -213,3 +204,4 @@ export {
   updateExpenseAction,
   createExpenseAction,
 };
+
