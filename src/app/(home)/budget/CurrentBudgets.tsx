@@ -56,7 +56,7 @@ const CurrentBudgets: React.FC<{
   );
 
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader className="flex items-center justify-between  p-6">
         <div className="flex flex-col space-y-1.5">
           <h3 className="text-2xl font-semibold leading-none tracking-tight">
