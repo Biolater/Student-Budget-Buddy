@@ -4,7 +4,7 @@ import {
   createBudget,
   deleteBudget,
   getBudgets,
-} from "@/actions/budget.actions";
+} from "@/app/actions/budget.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import type {
   ClientBudget,

@@ -1,6 +1,6 @@
 "use client";
 
-import { Category } from "@/actions/expense.actions";
+import { Category } from "@/app/actions/expense.actions";
 import {
   Button,
   DatePicker,
@@ -11,9 +11,8 @@ import {
 } from "@nextui-org/react";
 import { RefObject, useCallback, useEffect, useState } from "react";
 import {
-  createExpenseAction,
   updateExpenseAction,
-} from "@/actions/expense.actions";
+} from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import type { Expense } from "./page";
 import {

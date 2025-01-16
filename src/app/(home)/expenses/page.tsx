@@ -10,7 +10,6 @@ import type { RangeValue } from "@nextui-org/react";
 import type { ZonedDateTime } from "@internationalized/date";
 import useExpenses from "@/hooks/useExpense";
 import toast from "react-hot-toast";
-import { Category } from "@/actions/expense.actions";
 
 export type Expense = {
   id: string;

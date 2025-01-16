@@ -6,8 +6,6 @@ import CurrentBudgets from "./CurrentBudgets";
 import { type Budget } from "@prisma/client";
 import { useAuth } from "@clerk/nextjs";
 import useBudget from "@/hooks/useBudget";
-import { useEffect } from "react";
-import { getBudgets } from "@/actions/budget.actions";
 
 const Budget = () => {
   const { userId } = useAuth();
@@ -15,14 +13,7 @@ const Budget = () => {
   const {
     query: { data: budgets, isPending: budgetsLoading },
   } = useBudget(userId);
-
-  useEffect(() => {
-    (async () => {
-      const budgets = await getBudgets();
-      console.log(budgets);
-    })()
-    console.log(budgets);
-  },[])
+  
 
   return (
     <main className="container mx-auto px-4 py-8 sm:px-6 md:px-8 lg:px-10 xl:px-12">

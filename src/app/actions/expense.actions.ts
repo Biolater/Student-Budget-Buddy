@@ -1,5 +1,5 @@
 "use server";
-import { prisma } from "@/lib/client";
+import { prisma } from "@/app/lib/client";
 import { type Expense } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 
@@ -26,16 +26,6 @@ export type CreateExpenseData = {
   description: string;
 };
 
-const cache = new Map<
-  string,
-  { data: TransformedExpense[]; expiresAt: number }
->();
-
-// Helper function to invalidate cache for a user
-const invalidateCache = (userId: string) => {
-  cache.delete(userId);
-};
-
 // Create Expense
 const createExpense = async (data: CreateExpenseData) => {
   try {
@@ -51,7 +41,6 @@ const createExpense = async (data: CreateExpenseData) => {
       },
     });
 
-    invalidateCache(user.id);
     return { ...expense, amount: expense.amount.toNumber() };
   } catch (error) {
     throw error;
@@ -74,7 +63,6 @@ const deleteAnExpense = async (expenseId: string) => {
       throw new Error("You are not authorized to delete this expense");
     }
 
-    invalidateCache(user.id);
     return { ...deletedExpense, amount: deletedExpense.amount.toNumber() };
   } catch (error) {
     throw error;
@@ -89,17 +77,6 @@ const fetchExpensesByUser = async () => {
       throw new Error("User not authenticated");
     }
 
-    const now = Date.now();
-
-    if (cache.has(user.id)) {
-      const cached = cache.get(user.id)!;
-      if (now < cached.expiresAt) {
-        return cached.data;
-      } else {
-        invalidateCache(user.id);
-      }
-    }
-
     const expenses: Expense[] = await prisma.expense.findMany({
       where: { userId: user.id },
       orderBy: { date: "desc" },
@@ -110,7 +87,6 @@ const fetchExpensesByUser = async () => {
       amount: expense.amount.toNumber(),
     }));
 
-    cache.set(user.id, { data: processedExpenses, expiresAt: now + 600000 });
     return processedExpenses;
   } catch (error) {
     throw error;
@@ -146,8 +122,6 @@ const updateExpenseAction = async (
       where: { id: expenseId },
       data,
     });
-
-    invalidateCache(user.id);
 
     return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
   } catch (error) {

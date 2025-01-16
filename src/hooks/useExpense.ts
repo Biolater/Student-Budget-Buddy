@@ -6,7 +6,7 @@ import {
   createExpense,
   fetchExpensesByUser,
   deleteAnExpense,
-} from "@/actions/expense.actions";
+} from "@/app/actions/expense.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
 

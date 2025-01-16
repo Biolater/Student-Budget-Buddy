@@ -24,7 +24,7 @@ import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
-import { deleteAnExpense } from "@/actions/expense.actions";
+import { deleteAnExpense } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import useExpenses from "@/hooks/useExpense";
 

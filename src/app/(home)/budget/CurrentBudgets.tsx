@@ -10,8 +10,8 @@ import Link from "next/link";
 import BudgetItem from "./BudgetItem";
 import BudgetSkeleton from "./BudgetSkeleton";
 import { useEffect, useMemo, useState } from "react";
-import fetchExchangeRates from "@/lib/getLatestExchangeRates";
-import { convertAmount } from "@/lib/currencyUtils";
+import fetchExchangeRates from "@/app/lib/getLatestExchangeRates";
+import { convertAmount } from "@/app/lib/currencyUtils";
 import { ClientBudget } from "./AddNewBudget";
 import { Info } from "lucide-react";
 

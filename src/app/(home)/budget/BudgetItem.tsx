@@ -1,5 +1,5 @@
 import { Button, Progress, Tooltip } from "@nextui-org/react";
-import { convertAmount, formatCurrency } from "@/lib/currencyUtils";
+import { convertAmount, formatCurrency } from "@/app/lib/currencyUtils";
 import { type ClientBudget } from "./AddNewBudget";
 import { currencies } from "./CurrentBudgets";
 import { Trash2 } from "lucide-react";
