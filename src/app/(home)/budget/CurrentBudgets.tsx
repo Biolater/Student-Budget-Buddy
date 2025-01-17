@@ -104,7 +104,7 @@ const CurrentBudgets: React.FC<{
         )}
       </CardBody>
       <CardFooter className="flex items-center p-6 pt-0">
-        <Button as={Link} className="lg:w-full" href="/expenses">
+        <Button as={Link} color="primary" className="lg:w-full" href="/expenses">
           View Expenses
         </Button>
       </CardFooter>

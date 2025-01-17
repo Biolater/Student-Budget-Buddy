@@ -17,7 +17,6 @@ import * as z from "zod";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { Expense, type Budget } from "@prisma/client";
-import { useEffect, useState } from "react";
 import useBudget from "@/hooks/useBudget";
 
 const schema = z.object({
@@ -134,7 +133,7 @@ const AddNewBudget = () => {
   };
 
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader className="flex flex-col space-y-1.5 p-6 items-start">
         <h3 className="text-2xl font-semibold leading-none tracking-tight">
           Add New Budget
@@ -260,6 +259,7 @@ const AddNewBudget = () => {
         </CardBody>
         <CardFooter className="p-6 pt-0">
           <Button
+            color="primary"
             isDisabled={creatingBudget}
             isLoading={creatingBudget}
             type="submit"

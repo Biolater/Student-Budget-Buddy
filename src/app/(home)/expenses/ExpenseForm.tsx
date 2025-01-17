@@ -197,7 +197,10 @@ const ExpenseForm: React.FC<{
           <DatePicker
             showMonthAndYearPickers
             aria-label="Select date"
-            onChange={(value) => setDate(value)}
+            onChange={(value) => {
+              setDate(value);
+              setErrors({ ...errors, date: "" });
+            }}
             value={date}
             errorMessage={errors.date}
             isInvalid={!!errors.date}

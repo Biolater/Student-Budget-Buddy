@@ -19,8 +19,6 @@ const useBudget = (userId: string | undefined | null) => {
       queryFn: () => getBudgets(),
       enabled: !!userId,
       staleTime: 600000,
-      refetchOnWindowFocus: false,
-      retry: 2,
     }),
     delete: useMutation({
       mutationFn: (budgetId: string) => deleteBudget(budgetId),

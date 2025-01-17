@@ -9,7 +9,7 @@ import Link from "next/link";
 
 const BudgetOverview = () => {
   return (
-    <Card>
+    <Card className="bg-card">
       <CardHeader className="flex flex-col space-y-1.5 p-6 items-start">
         <h3 className="text-2xl font-semibold leading-none tracking-tight">
           Budget Overview
@@ -36,7 +36,7 @@ const BudgetOverview = () => {
         </div>
       </CardBody>
       <CardFooter className="flex items-center p-6 pt-0">
-        <Button className="lg:w-full" as={Link} href="/dashboard">
+        <Button color="primary" className="lg:w-full" as={Link} href="/dashboard">
           Back to Dashboard{" "}
           <svg
             xmlns="http://www.w3.org/2000/svg"

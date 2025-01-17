@@ -7,24 +7,4 @@ const prisma = new PrismaClient().$extends(
   })
 );
 
-// async function main() {
-//   console.log("ANNE");
-//   try {
-//     const stream = await prisma.expense.stream({ name: "expense-stream" });
-
-//     if (stream instanceof Error) {
-//       console.error(stream);
-//       return;
-      
-//     }
-//     for await (const event of stream) {
-//       console.log(event);
-//     }
-//   } catch (error) {
-//     console.log(error);
-//   }
-// }
-
-// main();
-
 export { prisma };

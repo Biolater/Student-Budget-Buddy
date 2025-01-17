@@ -18,8 +18,6 @@ const useExpenses = (userId: string | undefined | null) => {
       queryFn: () => fetchExpensesByUser(),
       enabled: !!userId,
       staleTime: 600000,
-      refetchOnWindowFocus: false,
-      retry: 2,
     }),
     create: useMutation({
       mutationFn: (data: CreateExpenseData) => createExpense(data),

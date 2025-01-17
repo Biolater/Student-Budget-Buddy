@@ -47,15 +47,14 @@ const deleteBudget = async (budgetId: string) => {
 const getBudgets = async () => {
   const user = await currentUser();
   if (!user) throw new Error("You must be signed in to get budgets");
-
-  const userId = user.id;
+  const userId = user.id; 
 
   try {
     const budgets = await prisma.budget.findMany({ where: { userId } });
     const formattedBudgets = await Promise.all(
       budgets.map(async (budget) => {
         const expenses = await prisma.expense.findMany({
-          where: { category: budget.category },
+          where: { category: budget.category, userId },
         });
         const formattedExpenses = expenses.map((expense) => ({
           ...expense,
@@ -75,6 +74,7 @@ const getBudgets = async () => {
     throw new Error("Failed to fetch budgets. Please try again later.");
   }
 };
+
 
 export { createBudget, getBudgets, deleteBudget };
 
