@@ -19,7 +19,7 @@ import {
   Tooltip,
   Link,
 } from "@nextui-org/react";
-import { Expense } from "./page";
+import { Expense } from "../../(home)/expenses/page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";

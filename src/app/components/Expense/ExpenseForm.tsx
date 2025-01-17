@@ -14,7 +14,7 @@ import {
   updateExpenseAction,
 } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
-import type { Expense } from "./page";
+import type { Expense } from "../../(home)/expenses/page";
 import {
   getLocalTimeZone,
   now,

@@ -1,6 +1,6 @@
 "use server";
 import { prisma } from "@/app/lib/client";
-import { type NewBudgetSchema } from "@/app/(home)/budget/AddNewBudget";
+import { type NewBudgetSchema } from "@/app/components/Budget/AddNewBudget";
 import { currentUser } from "@clerk/nextjs/server";
 
 const createBudget = async (data: NewBudgetSchema) => {
@@ -75,6 +75,19 @@ const getBudgets = async () => {
   }
 };
 
+const getTotalBudgetAmount = async () => {
+  const user = await currentUser();
+  if(!user) throw new Error("You must be signed in to get budgets");
+  const userId = user.id
+  try{
+    const budgets = await prisma.budget.findMany({ where: { userId } })
+    const totalBudgetAmount = budgets.reduce((acc, budget) => acc + budget.amount.toNumber(), 0);
+    return totalBudgetAmount
+  }catch(error){  
+    throw error
+  }
+}
 
-export { createBudget, getBudgets, deleteBudget };
+
+export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount };
 

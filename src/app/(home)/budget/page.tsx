@@ -1,8 +1,8 @@
 "use client";
 
-import AddNewBudget from "./AddNewBudget";
-import BudgetOverview from "./BudgetOverview";
-import CurrentBudgets from "./CurrentBudgets";
+import AddNewBudget from "../../components/Budget/AddNewBudget";
+import BudgetOverview from "../../components/Budget/BudgetOverview";
+import CurrentBudgets from "../../components/Budget/CurrentBudgets";
 import { type Budget } from "@prisma/client";
 import { useAuth } from "@clerk/nextjs";
 import useBudget from "@/hooks/useBudget";

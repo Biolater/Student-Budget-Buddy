@@ -3,9 +3,9 @@
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
 import { useAuth } from "@clerk/nextjs";
-import ExpenseForm from "./ExpenseForm";
-import ExpenseFilterOptions from "./ExpenseFilterOptions";
-import ExpenseItems from "./ExpenseItems";
+import ExpenseForm from "../../components/Expense/ExpenseForm";
+import ExpenseFilterOptions from "../../components/Expense/ExpenseFilterOptions";
+import ExpenseItems from "../../components/Expense/ExpenseItems";
 import type { RangeValue } from "@nextui-org/react";
 import type { ZonedDateTime } from "@internationalized/date";
 import useExpenses from "@/hooks/useExpense";
