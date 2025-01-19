@@ -76,7 +76,7 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
       animate="visible"
     >
       <motion.div variants={cardVariants}>
-        <Card className="bg-card border-border">
+        <Card className="bg-card h-full border-border">
           <CardHeader className="p-6">
             <h3 className="text-2xl font-semibold leading-none tracking-tight text-foreground">
               Upcoming Financial Events
@@ -123,7 +123,7 @@ const FinancialInsights: React.FC<FinancialInsightsProps> = ({
         </Card>
       </motion.div>
       <motion.div variants={cardVariants}>
-        <Card className="bg-card border-border">
+        <Card className="bg-card h-full border-border">
           <CardHeader className="p-6">
             <h3
               className="text-2xl font-semibold leading-none tracking-tight text-foreground"

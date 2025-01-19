@@ -9,7 +9,7 @@ import { useEffect } from "react";
 import DashboardSkeleton from "@/app/components/Dashboard/DashboardSkeleton";
 
 const DashboardComponent = () => {
-  const { isSignedIn, user } = useUser();
+  const { user } = useUser();
 
   const {
     totalBudgetAmount: {
@@ -17,19 +17,28 @@ const DashboardComponent = () => {
       isLoading: totalBudgetLoading,
       isError: totalBudgetError,
     },
-  } = useBudget(user?.id); // Pass `undefined` if user is null
+    totalSpentAmount: {
+      data: totalSpent,
+      isLoading: totalSpentLoading,
+      isError: totalSpentError,
+    },
+  } = useBudget(user?.id);
 
   useEffect(() => {
     if (totalBudgetError) {
       toast.error("Error fetching total budget");
     }
-  }, [totalBudgetError]);
+
+    if (totalSpentError) {
+      toast.error("Error fetching total spent");
+    }
+  }, [totalBudgetError, totalSpentError]);
 
   if (!user) {
     return null;
   }
 
-  return totalBudgetLoading ? (
+  return totalBudgetLoading || totalSpentLoading ? (
     <DashboardSkeleton />
   ) : (
     <main className="container mx-auto px-4 py-8 sm:px-6 md:px-10 lg:px-14 xl:px-18 2xl:px-22">
@@ -38,8 +47,8 @@ const DashboardComponent = () => {
         <BudgetData
           savedAmount={600}
           savingsGoal={1000}
-          totalBudget={totalBudget || 0}
-          spent={400}
+          totalBudget={totalBudget}
+          spent={totalSpent}
           totalBudgetLoading={totalBudgetLoading}
         />
         <SpendingData spendings={0} />

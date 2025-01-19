@@ -88,6 +88,20 @@ const getTotalBudgetAmount = async () => {
   }
 }
 
+const getTotalSpent = async () => {
+  const user = await currentUser();
+  if(!user) throw new Error("You must be signed in to get budgets");
+  const userId = user.id
+  try{
+    const expenses = await prisma.expense.findMany({ where: { userId } })
+    const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount.toNumber(), 0);
+    return totalSpent
+  }catch(error){  
+    throw error
+  }
+}
 
-export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount };
+
+
+export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount, getTotalSpent };
 

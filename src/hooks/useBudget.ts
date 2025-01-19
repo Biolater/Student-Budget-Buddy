@@ -4,6 +4,7 @@ import {
   deleteBudget,
   getBudgets,
   getTotalBudgetAmount,
+  getTotalSpent,
 } from "@/app/actions/budget.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import type {
@@ -15,7 +16,7 @@ import toast from "react-hot-toast";
 const useBudget = (userId: string | undefined | null) => {
   const query = useQuery({
     queryKey: ["budgets", userId],
-    queryFn: () => (userId ? getBudgets() : Promise.resolve([])),
+    queryFn: () => (userId ? getBudgets() : null),
     enabled: !!userId,
     staleTime: 600000,
   });
@@ -56,7 +57,6 @@ const useBudget = (userId: string | undefined | null) => {
     onMutate: async (newBudget) => {
       if (!userId) throw new Error("You must be signed in to create a budget");
       await queryClient.cancelQueries({ queryKey: ["budgets", userId] });
-      if (!userId) throw new Error("You must be signed in to create a budget");
 
       const previousBudgets = queryClient.getQueryData<ClientBudget[]>([
         "budgets",
@@ -93,7 +93,14 @@ const useBudget = (userId: string | undefined | null) => {
 
   const totalBudgetAmountQuery = useQuery({
     queryKey: ["totalBudgetAmount", userId],
-    queryFn: () => (userId ? getTotalBudgetAmount() : Promise.resolve(0)),
+    queryFn: () => (userId ? getTotalBudgetAmount() : null),
+    enabled: !!userId,
+    staleTime: 600000,
+  });
+
+  const totalSpentQuery = useQuery({
+    queryKey: ["totalSpent", userId],
+    queryFn: () => (userId ? getTotalSpent() : null),
     enabled: !!userId,
     staleTime: 600000,
   });
@@ -103,6 +110,7 @@ const useBudget = (userId: string | undefined | null) => {
     delete: deleteMutation,
     create: createMutation,
     totalBudgetAmount: totalBudgetAmountQuery,
+    totalSpentAmount: totalSpentQuery,
   };
 };
 
