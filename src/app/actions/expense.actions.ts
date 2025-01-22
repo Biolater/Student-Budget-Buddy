@@ -171,11 +171,42 @@ const createExpenseAction = async (
   }
 };
 
+type MonthlySpending = Record<string, number>;
+
+
+// Get montly spending
+const getMonthlySpending = async () => {
+  const user = await currentUser();
+
+  if (!user) {
+    throw new Error("User not authenticated");
+  }
+
+  const spendings = await prisma.expense.findMany({
+    where: { userId: user.id },
+    orderBy: { date: "desc" },
+    select: {
+      amount: true,
+      date: true,
+      category: true,
+      currency: true,
+      id: true,
+    }
+  });
+
+  const monthlySpendings = {};
+
+  
+
+  // Format the data to group by months (YYYY-MM)
+
+};
+
 export {
   createExpense,
   deleteAnExpense,
   fetchExpensesByUser,
   updateExpenseAction,
   createExpenseAction,
+  getMonthlySpending
 };
-

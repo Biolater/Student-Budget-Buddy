@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import useBudget from "@/hooks/useBudget";
 import { useEffect } from "react";
 import DashboardSkeleton from "@/app/components/Dashboard/DashboardSkeleton";
+import { getMonthlySpending } from "@/app/actions/expense.actions";
 
 const DashboardComponent = () => {
   const { user } = useUser();
@@ -34,6 +35,13 @@ const DashboardComponent = () => {
     }
   }, [totalBudgetError, totalSpentError]);
 
+  useEffect(() => {
+    (async () => {
+      const monthlySpending = await getMonthlySpending()
+      console.log(monthlySpending)
+    })()
+  }, [])
+
   if (!user) {
     return null;
   }
@@ -51,7 +59,7 @@ const DashboardComponent = () => {
           spent={totalSpent}
           totalBudgetLoading={totalBudgetLoading}
         />
-        <SpendingData spendings={0} />
+        <SpendingData spendings={150} />
         <FinancialInsights />
       </div>
     </main>

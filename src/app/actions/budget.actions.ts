@@ -80,7 +80,7 @@ const getTotalBudgetAmount = async () => {
   if(!user) throw new Error("You must be signed in to get budgets");
   const userId = user.id
   try{
-    const budgets = await prisma.budget.findMany({ where: { userId } })
+    const budgets = await prisma.budget.findMany({ where: { userId }, select: { amount: true } });
     const totalBudgetAmount = budgets.reduce((acc, budget) => acc + budget.amount.toNumber(), 0);
     return totalBudgetAmount
   }catch(error){  
@@ -93,7 +93,7 @@ const getTotalSpent = async () => {
   if(!user) throw new Error("You must be signed in to get budgets");
   const userId = user.id
   try{
-    const expenses = await prisma.expense.findMany({ where: { userId } })
+    const expenses = await prisma.expense.findMany({ where: { userId }, select: { amount: true } });
     const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount.toNumber(), 0);
     return totalSpent
   }catch(error){  
