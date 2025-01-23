@@ -59,7 +59,7 @@ const DashboardComponent = () => {
           spent={totalSpent}
           totalBudgetLoading={totalBudgetLoading}
         />
-        <SpendingData spendings={150} />
+        <SpendingData spendings={150}  />
         <FinancialInsights />
       </div>
     </main>

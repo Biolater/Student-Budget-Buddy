@@ -169,7 +169,7 @@ const createExpenseAction = async (
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : "Unknown error");
   }
-};
+};  
 
 type MonthlySpending = Record<string, number>;
 
@@ -196,7 +196,7 @@ const getMonthlySpending = async () => {
 
   const monthlySpendings = {};
 
-  
+  return spendings
 
   // Format the data to group by months (YYYY-MM)
 

@@ -11,10 +11,11 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import { ArrowRight, PlusCircle } from "lucide-react";
+import { ArrowRight, PlusCircle } from 'lucide-react';
 import Link from "next/link";
 import { Bar, Pie } from "react-chartjs-2";
 import { motion } from "framer-motion";
+import { useState, useEffect } from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -26,26 +27,59 @@ ChartJS.register(
   ArcElement
 );
 
-const monthlySpendingData = [
-  { month: "Jan", amount: 1000 },
-  { month: "Feb", amount: 1200 },
-  { month: "Mar", amount: 900 },
-  { month: "Apr", amount: 1100 },
-  { month: "May", amount: 1300 },
-  { month: "Jun", amount: 1000 },
-];
+type Expense = {
+  amount: string;
+  category: string;
+  currency: string;
+  date: Date;
+  id: string;
+};
 
-const spendingData = [
-  { category: "Food", amount: 250 },
-  { category: "Rent", amount: 500 },
-  { category: "Books", amount: 150 },
-  { category: "Entertainment", amount: 100 },
-  { category: "Transport", amount: 80 },
-];
+type SpendingDataProps = {
+  expenses: Expense[];
+  baseCurrency?: string;
+};
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
+const SpendingData: React.FC<SpendingDataProps> = ({ expenses, baseCurrency = "USD" }) => {
+  const [monthlySpendingData, setMonthlySpendingData] = useState<{ month: string; amount: number }[]>([]);
+  const [categorySpendingData, setCategorySpendingData] = useState<{ category: string; amount: number }[]>([]);
+
+  useEffect(() => {
+    const processExpenses = async () => {
+      // Fetch exchange rates (you'll need to implement this function)
+      const exchangeRates = await fetchExchangeRates(baseCurrency);
+
+      const monthlyData: { [key: string]: number } = {};
+      const categoryData: { [key: string]: number } = {};
+
+      expenses.forEach((expense) => {
+        const date = new Date(expense.date);
+        const month = date.toLocaleString('default', { month: 'short' });
+        const year = date.getFullYear();
+        const monthKey = `${month} ${year}`;
+        const amount = convertCurrency(parseFloat(expense.amount), expense.currency, baseCurrency, exchangeRates);
+
+        // Aggregate monthly spending
+        monthlyData[monthKey] = (monthlyData[monthKey] || 0) + amount;
+
+        // Aggregate category spending
+        categoryData[expense.category] = (categoryData[expense.category] || 0) + amount;
+      });
+
+      setMonthlySpendingData(
+        Object.entries(monthlyData).map(([month, amount]) => ({ month, amount }))
+      );
+
+      setCategorySpendingData(
+        Object.entries(categoryData).map(([category, amount]) => ({ category, amount }))
+      );
+    };
+
+    processExpenses();
+  }, [expenses, baseCurrency]);
+
   const barChartData = {
     labels: monthlySpendingData.map((data) => data.month),
     datasets: [
@@ -58,10 +92,10 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
   };
 
   const pieChartData = {
-    labels: spendingData.map((data) => data.category),
+    labels: categorySpendingData.map((data) => data.category),
     datasets: [
       {
-        data: spendingData.map((data) => data.amount),
+        data: categorySpendingData.map((data) => data.amount),
         backgroundColor: COLORS,
       },
     ],
@@ -76,6 +110,20 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
           color: "var(--foreground)",
         },
       },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => {
+            let label = context.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.parsed !== null) {
+              label += new Intl.NumberFormat('en-US', { style: 'currency', currency: baseCurrency }).format(context.parsed);
+            }
+            return label;
+          }
+        }
+      }
     },
     scales: {
       x: {
@@ -86,11 +134,14 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
       y: {
         ticks: {
           color: "var(--foreground)",
+          callback: (value: string | number, index: number, ticks: any[]) => {
+            const numValue = typeof value === 'string' ? parseFloat(value) : value;
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: baseCurrency }).format(numValue);
+          }
         },
       },
     },
   };
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -128,7 +179,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
             </h3>
           </CardHeader>
           <CardBody className="w-full overflow-x-auto p-6 pt-0">
-            {spendings > 0 ? (
+            {expenses?.length > 0 ? (
               <motion.div
                 className="h-[18.75rem]"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -173,7 +224,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
             </h3>
           </CardHeader>
           <CardBody className="w-full overflow-x-auto p-6 pt-0">
-            {spendings > 0 ? (
+            {expenses?.length > 0 ? (
               <motion.div
                 className="h-[18.75rem]"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -214,5 +265,24 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
     </motion.div>
   );
 };
+
+// Helper function to convert currency (you'll need to implement this)
+function convertCurrency(amount: number, fromCurrency: string, toCurrency: string, exchangeRates: { [key: string]: number }): number {
+  if (fromCurrency === toCurrency) return amount;
+  const rate = exchangeRates[fromCurrency];
+  return amount / rate;
+}
+
+// Helper function to fetch exchange rates (you'll need to implement this)
+async function fetchExchangeRates(baseCurrency: string): Promise<{ [key: string]: number }> {
+  // Implement API call to get exchange rates
+  // For now, we'll return a mock object
+  return {
+    USD: 1,
+    EUR: 0.85,
+    GBP: 0.73,
+    // Add more currencies as needed
+  };
+}
 
 export default SpendingData;
