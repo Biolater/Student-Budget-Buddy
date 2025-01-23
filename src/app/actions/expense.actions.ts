@@ -194,9 +194,16 @@ const getMonthlySpending = async () => {
     }
   });
 
+  const formattedSpendings = spendings.map((spending) => ({
+    ...spending,
+    amount: spending.amount.toNumber(),
+  }))
+
   const monthlySpendings = {};
 
-  return spendings
+  
+
+  return formattedSpendings
 
   // Format the data to group by months (YYYY-MM)
 

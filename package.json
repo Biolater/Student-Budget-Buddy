@@ -5,6 +5,7 @@
   "scripts": {
     "turbo": "next dev --turbo",
     "dev": "next dev",
+    "seed": "tsx .",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

@@ -102,6 +102,5 @@ const getTotalSpent = async () => {
 }
 
 
-
 export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount, getTotalSpent };
 

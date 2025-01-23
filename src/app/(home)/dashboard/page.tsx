@@ -57,7 +57,6 @@ const DashboardComponent = () => {
           savingsGoal={1000}
           totalBudget={totalBudget}
           spent={totalSpent}
-          totalBudgetLoading={totalBudgetLoading}
         />
         <SpendingData spendings={150}  />
         <FinancialInsights />

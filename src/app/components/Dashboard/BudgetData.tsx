@@ -10,13 +10,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 
 type BudgetDataProps = {
   totalBudget?: number | null;
   spent?: number | null;
   savingsGoal?: number | null;
   savedAmount?: number | null;
-  totalBudgetLoading: boolean;
 };
 
 const BudgetData: React.FC<BudgetDataProps> = ({
@@ -24,8 +24,8 @@ const BudgetData: React.FC<BudgetDataProps> = ({
   spent,
   savingsGoal,
   savedAmount,
-  totalBudgetLoading,
 }) => {
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
