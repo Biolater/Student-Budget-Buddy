@@ -1,7 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./client";
+import fetchExchangeRates from "./getLatestExchangeRates";
 
-export const convertAmount = (
+const convertAmount = (
   amount: number,
   fromCurrency: string,
   toCurrency: string,
@@ -10,7 +11,7 @@ export const convertAmount = (
   (amount * (exchangeRates?.[toCurrency] || 1)) /
   (exchangeRates?.[fromCurrency] || 1);
 
-export const formatCurrency = (
+const formatCurrency = (
   amount: number,
   currencyCode: string,
   currencies: { code: string; symbol: string }[]
@@ -19,7 +20,16 @@ export const formatCurrency = (
   return `${currency?.symbol}${amount.toFixed(2)}`;
 };
 
-export const getDefaultCurrency = async () => {
+const convertCurrency = async (amount: number, targetCurrency: string, baseCurrency: string) => {
+  try {
+    const { conversion_rates } = await fetchExchangeRates(targetCurrency);
+    return amount * conversion_rates[baseCurrency];
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getDefaultCurrency = async () => {
   const user = await currentUser();
   if (!user) throw new Error("You must be signed in to get budgets");
   try {
@@ -33,3 +43,5 @@ export const getDefaultCurrency = async () => {
     throw error;
   }
 };
+
+export { convertAmount, formatCurrency, getDefaultCurrency, convertCurrency };

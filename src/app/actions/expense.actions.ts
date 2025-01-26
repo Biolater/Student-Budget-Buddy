@@ -2,6 +2,7 @@
 import { prisma } from "@/app/lib/client";
 import { type Expense } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
+import { convertCurrency, getDefaultCurrency } from "../lib/currencyUtils";
 
 // Types
 export type Category =
@@ -199,13 +200,27 @@ const getMonthlySpending = async () => {
     amount: spending.amount.toNumber(),
   }))
 
-  const monthlySpendings = {};
+  const result = await getDefaultCurrency();
+  const baseCurrency = result?.baseCurrency;
 
-  
+  if(!baseCurrency) throw new Error("You must have a base currency");
+    
+  const monthlySpendings: Record<string, number> = {};
 
-  return formattedSpendings
+  for (const spending of formattedSpendings) {
+    const month = spending.date.toLocaleDateString("en-US", { month: "short" });
+    const amount = spending.amount;
+    const category = spending.category;
+    const currency = spending.currency;
+    
+    const amountToAdd = currency === baseCurrency.code 
+      ? amount 
+      : await convertCurrency(amount, currency, baseCurrency.code);
 
-  // Format the data to group by months (YYYY-MM)
+    monthlySpendings[month] = (monthlySpendings[month] || 0) + amountToAdd;
+  }
+
+  return monthlySpendings
 
 };
 

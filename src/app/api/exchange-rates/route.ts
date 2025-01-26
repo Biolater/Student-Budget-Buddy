@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
+  const targetCurrency = request.headers.get('target-currency'); // Use lowercase
   const apiKey = process.env.EXCHANGE_RATES_API_KEY;
   if (!apiKey) {
     return new Response(
@@ -9,9 +10,16 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  if(!targetCurrency) {
+    return new Response(
+      JSON.stringify({ error: "Target currency is missing" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+
   try {
     const response = await fetch(
-      `https://v6.exchangerate-api.com/v6/${apiKey}/latest/USD`,
+      `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${targetCurrency}`,
       {
         cache: "force-cache",
         headers: { "Cache-Control": "max-age=600, stale-while-revalidate=300" },

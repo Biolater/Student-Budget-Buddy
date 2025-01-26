@@ -31,12 +31,12 @@ const CurrentBudgets: React.FC<{
     [key: string]: number;
   } | null>(null);
 
-  useEffect(() => {
-    (async () => {
-      const exchangeRates = await fetchExchangeRates();
-      setExchangeRates(exchangeRates.conversion_rates);
-    })();
-  }, []);
+  // useEffect(() => {
+  //   (async () => {
+  //     const exchangeRates = await fetchExchangeRates();
+  //     setExchangeRates(exchangeRates.conversion_rates);
+  //   })();
+  // }, []);
 
   const calculateTotalSpent = useMemo(
     () =>
