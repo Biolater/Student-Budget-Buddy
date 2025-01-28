@@ -23,7 +23,7 @@ const formatCurrency = (
 const convertCurrency = async (amount: number, targetCurrency: string, baseCurrency: string) => {
   try {
     const { conversion_rates } = await fetchExchangeRates(targetCurrency);
-    return amount * conversion_rates[baseCurrency];
+    return parseFloat((amount * conversion_rates[baseCurrency]).toFixed(2));
   } catch (error) {
     throw error;
   }

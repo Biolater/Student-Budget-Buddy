@@ -10,6 +10,7 @@ import {
   Tooltip,
   Legend,
   ArcElement,
+  elements,
 } from "chart.js";
 import { ArrowRight, PlusCircle } from "lucide-react";
 import Link from "next/link";
@@ -26,14 +27,14 @@ ChartJS.register(
   ArcElement
 );
 
-const monthlySpendingData = [
-  { month: "Jan", amount: 1000 },
-  { month: "Feb", amount: 1200 },
-  { month: "Mar", amount: 900 },
-  { month: "Apr", amount: 1100 },
-  { month: "May", amount: 1300 },
-  { month: "Jun", amount: 1000 },
-];
+// const monthlySpendingData = [
+//   { month: "Jan", amount: 1000 },
+//   { month: "Feb", amount: 1200 },
+//   { month: "Mar", amount: 900 },
+//   { month: "Apr", amount: 1100 },
+//   { month: "May", amount: 1300 },
+//   { month: "Jun", amount: 1000 },
+// ];
 
 const spendingData = [
   { category: "Food", amount: 250 },
@@ -45,7 +46,9 @@ const spendingData = [
 
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
 
-const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
+const SpendingData: React.FC<{
+  monthlySpendingData: { month: string; amount: number }[];
+}> = ({ monthlySpendingData }) => {
   const barChartData = {
     labels: monthlySpendingData.map((data) => data.month),
     datasets: [
@@ -82,6 +85,9 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
         ticks: {
           color: "var(--foreground)",
         },
+        // barPercentage: 0.5, // Makes bars as wide as the category allows
+        // categoryPercentage: 11, // Reduces space between categories
+        barThickness: 50, // Sets a fixed width for the bars (adjust as needed)
       },
       y: {
         ticks: {
@@ -90,6 +96,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
       },
     },
   };
+  
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -128,7 +135,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
             </h3>
           </CardHeader>
           <CardBody className="w-full overflow-x-auto p-6 pt-0">
-            {spendings > 0 ? (
+            {monthlySpendingData.length > 0 ? (
               <motion.div
                 className="h-[18.75rem]"
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -173,7 +180,7 @@ const SpendingData: React.FC<{ spendings: number }> = ({ spendings }) => {
             </h3>
           </CardHeader>
           <CardBody className="w-full overflow-x-auto p-6 pt-0">
-            {spendings > 0 ? (
+            {monthlySpendingData.length > 0 ? (
               <motion.div
                 className="h-[18.75rem]"
                 initial={{ opacity: 0, scale: 0.9 }}

@@ -4,7 +4,6 @@ import {
   deleteBudget,
   getBudgets,
   getTotalBudgetAmount,
-  getTotalSpent,
 } from "@/app/actions/budget.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import type {
@@ -98,19 +97,11 @@ const useBudget = (userId: string | undefined | null) => {
     staleTime: 600000,
   });
 
-  const totalSpentQuery = useQuery({
-    queryKey: ["totalSpent", userId],
-    queryFn: () => (userId ? getTotalSpent() : null),
-    enabled: !!userId,
-    staleTime: 600000,
-  });
-
   return {
     query,
     delete: deleteMutation,
     create: createMutation,
     totalBudgetAmount: totalBudgetAmountQuery,
-    totalSpentAmount: totalSpentQuery,
   };
 };
 

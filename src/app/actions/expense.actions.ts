@@ -170,10 +170,22 @@ const createExpenseAction = async (
   } catch (error) {
     throw new Error(error instanceof Error ? error.message : "Unknown error");
   }
-};  
+};
 
 type MonthlySpending = Record<string, number>;
 
+const getTotalSpent = async () => {
+  const user = await currentUser();
+  if(!user) throw new Error("You must be signed in to get budgets");
+  const userId = user.id
+  try{
+    const expenses = await prisma.expense.findMany({ where: { userId }, select: { amount: true } });
+    const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount.toNumber(), 0);
+    return totalSpent
+  }catch(error){  
+    throw error
+  }
+}
 
 // Get montly spending
 const getMonthlySpending = async () => {
@@ -192,36 +204,41 @@ const getMonthlySpending = async () => {
       category: true,
       currency: true,
       id: true,
-    }
+    },
   });
 
   const formattedSpendings = spendings.map((spending) => ({
     ...spending,
     amount: spending.amount.toNumber(),
-  }))
+  }));
 
   const result = await getDefaultCurrency();
   const baseCurrency = result?.baseCurrency;
 
-  if(!baseCurrency) throw new Error("You must have a base currency");
-    
-  const monthlySpendings: Record<string, number> = {};
+  if (!baseCurrency) throw new Error("You must have a base currency");
+
+  const monthlySpendings: { month: string; amount: number }[] = [];
 
   for (const spending of formattedSpendings) {
     const month = spending.date.toLocaleDateString("en-US", { month: "short" });
     const amount = spending.amount;
-    const category = spending.category;
     const currency = spending.currency;
-    
-    const amountToAdd = currency === baseCurrency.code 
-      ? amount 
-      : await convertCurrency(amount, currency, baseCurrency.code);
 
-    monthlySpendings[month] = (monthlySpendings[month] || 0) + amountToAdd;
+    const amountToAdd =
+      currency === baseCurrency.code
+        ? amount
+        : await convertCurrency(amount, currency, baseCurrency.code);
+
+    const existingMonth = monthlySpendings.find((m) => m.month === month);
+
+    if (existingMonth) {
+      existingMonth.amount += amountToAdd
+    }else{
+      monthlySpendings.push({ month, amount: amountToAdd })
+    }
   }
 
-  return monthlySpendings
-
+  return monthlySpendings;
 };
 
 export {
@@ -230,5 +247,6 @@ export {
   fetchExpensesByUser,
   updateExpenseAction,
   createExpenseAction,
-  getMonthlySpending
+  getMonthlySpending,
+  getTotalSpent
 };

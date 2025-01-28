@@ -8,6 +8,7 @@ import useBudget from "@/hooks/useBudget";
 import { useEffect } from "react";
 import DashboardSkeleton from "@/app/components/Dashboard/DashboardSkeleton";
 import { getMonthlySpending } from "@/app/actions/expense.actions";
+import useExpenses from "@/hooks/useExpense";
 
 const DashboardComponent = () => {
   const { user } = useUser();
@@ -18,12 +19,20 @@ const DashboardComponent = () => {
       isLoading: totalBudgetLoading,
       isError: totalBudgetError,
     },
+  } = useBudget(user?.id);
+
+  const {
     totalSpentAmount: {
       data: totalSpent,
       isLoading: totalSpentLoading,
       isError: totalSpentError,
     },
-  } = useBudget(user?.id);
+    monthlySpendingQuery: {
+      data: monthlySpending,
+      isLoading: monthlySpendingLoading,
+      isError: monthlySpendingError,
+    }
+  } = useExpenses(user?.id);
 
   useEffect(() => {
     if (totalBudgetError) {
@@ -33,20 +42,24 @@ const DashboardComponent = () => {
     if (totalSpentError) {
       toast.error("Error fetching total spent");
     }
-  }, [totalBudgetError, totalSpentError]);
+
+    if (monthlySpendingError) {
+      toast.error("Error fetching monthly spending");
+    }
+  }, [totalBudgetError, totalSpentError, monthlySpendingError]);
 
   useEffect(() => {
     (async () => {
-      const monthlySpending = await getMonthlySpending()
-      console.log(monthlySpending)
-    })()
-  }, [])
+      const monthlySpending = await getMonthlySpending();
+      console.log(monthlySpending);
+    })();
+  }, []);
 
   if (!user) {
     return null;
   }
 
-  return totalBudgetLoading || totalSpentLoading ? (
+  return totalBudgetLoading || totalSpentLoading || monthlySpendingLoading ? (
     <DashboardSkeleton />
   ) : (
     <main className="container mx-auto px-4 py-8 sm:px-6 md:px-10 lg:px-14 xl:px-18 2xl:px-22">
@@ -58,7 +71,7 @@ const DashboardComponent = () => {
           totalBudget={totalBudget}
           spent={totalSpent}
         />
-        <SpendingData spendings={150}  />
+        <SpendingData monthlySpendingData={monthlySpending || []} />
         <FinancialInsights />
       </div>
     </main>

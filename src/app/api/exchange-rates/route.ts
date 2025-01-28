@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const targetCurrency = request.headers.get('target-currency'); // Use lowercase
+  const targetCurrency = request.headers.get('target-currency');
   const apiKey = process.env.EXCHANGE_RATES_API_KEY;
   if (!apiKey) {
     return new Response(

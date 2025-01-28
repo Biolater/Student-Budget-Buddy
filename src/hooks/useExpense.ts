@@ -6,6 +6,8 @@ import {
   createExpense,
   fetchExpensesByUser,
   deleteAnExpense,
+  getTotalSpent,
+  getMonthlySpending,
 } from "@/app/actions/expense.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
@@ -86,6 +88,18 @@ const useExpenses = (userId: string | undefined | null) => {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
       },
+    }),
+    totalSpentAmount: useQuery({
+      queryKey: ["totalSpent", userId],
+      queryFn: () => (userId ? getTotalSpent() : null),
+      enabled: !!userId,
+      staleTime: 600000,
+    }),
+    monthlySpendingQuery: useQuery({
+      queryKey: ["monthlySpending", userId],
+      queryFn: () => (userId ? getMonthlySpending() : null),
+      enabled: !!userId,
+      staleTime: 600000,
     }),
   };
 };
