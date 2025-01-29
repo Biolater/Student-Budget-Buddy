@@ -97,10 +97,16 @@ const useExpenses = (userId: string | undefined | null) => {
     }),
     monthlySpendingQuery: useQuery({
       queryKey: ["monthlySpending", userId],
-      queryFn: () => (userId ? getMonthlySpending() : null),
+      queryFn: () => (userId ? getMonthlySpending(false) : null),
       enabled: !!userId,
       staleTime: 600000,
     }),
+    spendingByCategory: useQuery({
+      queryKey: ["spendingByCategory", userId],
+      queryFn: () => (userId ? getMonthlySpending(true) : null),
+      enabled: !!userId,
+      staleTime: 600000,
+    })
   };
 };
 

@@ -1,3 +1,5 @@
+"use server";
+
 import { currentUser } from "@clerk/nextjs/server";
 import { prisma } from "./client";
 import fetchExchangeRates from "./getLatestExchangeRates";

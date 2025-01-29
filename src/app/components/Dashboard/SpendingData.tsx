@@ -10,12 +10,17 @@ import {
   Tooltip,
   Legend,
   ArcElement,
-  elements,
 } from "chart.js";
 import { ArrowRight, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { Bar, Pie } from "react-chartjs-2";
 import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import type {
+  SpendingDataByCategory,
+  SpendingDataByMonth,
+} from "@/app/actions/expense.actions";
 
 ChartJS.register(
   CategoryScale,
@@ -27,76 +32,104 @@ ChartJS.register(
   ArcElement
 );
 
-// const monthlySpendingData = [
-//   { month: "Jan", amount: 1000 },
-//   { month: "Feb", amount: 1200 },
-//   { month: "Mar", amount: 900 },
-//   { month: "Apr", amount: 1100 },
-//   { month: "May", amount: 1300 },
-//   { month: "Jun", amount: 1000 },
-// ];
-
-const spendingData = [
-  { category: "Food", amount: 250 },
-  { category: "Rent", amount: 500 },
-  { category: "Books", amount: 150 },
-  { category: "Entertainment", amount: 100 },
-  { category: "Transport", amount: 80 },
+const CHART_COLORS = [
+  "hsl(134, 60%, 53%)", // primary green
+  "hsl(0, 80%, 60%)", // destructive red
+  "hsl(43, 100%, 58%)", // warning yellow
+  "hsl(207, 90%, 54%)", // info blue
+  "hsl(271, 91%, 65%)", // purple
 ];
 
-const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884D8"];
-
 const SpendingData: React.FC<{
-  monthlySpendingData: { month: string; amount: number }[];
-}> = ({ monthlySpendingData }) => {
+  monthlySpendingData: SpendingDataByMonth;
+  spendingDataByCategory: SpendingDataByCategory;
+}> = ({ monthlySpendingData, spendingDataByCategory }) => {
+  const { theme, systemTheme } = useTheme();
+  const [chartOptions, setChartOptions] = useState({});
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    const currentTheme = theme === "system" ? systemTheme : theme;
+    const isDarkMode = currentTheme === "dark";
+    const textColor = isDarkMode ? "#ffffff" : "#000000";
+    const borderColor = isDarkMode
+      ? "rgba(255, 255, 255, 0.1)"
+      : "rgba(0, 0, 0, 0.1)";
+
+    setChartOptions({
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: textColor,
+            font: {
+              size: 12,
+            },
+          },
+        },
+        tooltip: {
+          backgroundColor: isDarkMode
+            ? "rgba(0, 0, 0, 0.8)"
+            : "rgba(255, 255, 255, 0.8)",
+          titleColor: textColor,
+          bodyColor: textColor,
+          borderColor: borderColor,
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        x: {
+          grid: {
+            color: borderColor,
+          },
+          ticks: {
+            color: textColor,
+          },
+        },
+        y: {
+          grid: {
+            color: borderColor,
+          },
+          ticks: {
+            color: textColor,
+          },
+        },
+      },
+    });
+  }, [theme, systemTheme, mounted]);
+
   const barChartData = {
     labels: monthlySpendingData.map((data) => data.month),
     datasets: [
       {
         label: "Monthly Spending",
         data: monthlySpendingData.map((data) => data.amount),
-        backgroundColor: "hsl(var(--primary))",
+        backgroundColor: "hsla(134, 60%, 53%, 0.7)", // primary green with opacity
+        borderColor: "hsl(134, 60%, 53%)",
+        borderWidth: 1,
       },
     ],
   };
 
   const pieChartData = {
-    labels: spendingData.map((data) => data.category),
+    labels: spendingDataByCategory.map((data) => data.category),
     datasets: [
       {
-        data: spendingData.map((data) => data.amount),
-        backgroundColor: COLORS,
+        data: spendingDataByCategory.map((data) => data.amount),
+        backgroundColor: CHART_COLORS,
+        borderColor:
+          theme === "dark" ? "rgba(255, 255, 255, 0.2)" : "rgba(0, 0, 0, 0.1)",
+        borderWidth: 1,
       },
     ],
   };
-
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        labels: {
-          color: "var(--foreground)",
-        },
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: "var(--foreground)",
-        },
-        // barPercentage: 0.5, // Makes bars as wide as the category allows
-        // categoryPercentage: 11, // Reduces space between categories
-        barThickness: 50, // Sets a fixed width for the bars (adjust as needed)
-      },
-      y: {
-        ticks: {
-          color: "var(--foreground)",
-        },
-      },
-    },
-  };
-  
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -119,6 +152,8 @@ const SpendingData: React.FC<{
       },
     },
   };
+
+  if (!mounted) return null;
 
   return (
     <motion.div
@@ -180,7 +215,7 @@ const SpendingData: React.FC<{
             </h3>
           </CardHeader>
           <CardBody className="w-full overflow-x-auto p-6 pt-0">
-            {monthlySpendingData.length > 0 ? (
+            {spendingDataByCategory.length > 0 ? (
               <motion.div
                 className="h-[18.75rem]"
                 initial={{ opacity: 0, scale: 0.9 }}

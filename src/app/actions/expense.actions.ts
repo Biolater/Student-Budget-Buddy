@@ -27,6 +27,9 @@ export type CreateExpenseData = {
   description: string;
 };
 
+export type SpendingDataByCategory = { category: string; amount: number }[];
+export type SpendingDataByMonth = { month: string; amount: number }[];
+
 // Create Expense
 const createExpense = async (data: CreateExpenseData) => {
   try {
@@ -172,73 +175,120 @@ const createExpenseAction = async (
   }
 };
 
-type MonthlySpending = Record<string, number>;
-
 const getTotalSpent = async () => {
   const user = await currentUser();
-  if(!user) throw new Error("You must be signed in to get budgets");
-  const userId = user.id
-  try{
-    const expenses = await prisma.expense.findMany({ where: { userId }, select: { amount: true } });
-    const totalSpent = expenses.reduce((acc, expense) => acc + expense.amount.toNumber(), 0);
-    return totalSpent
-  }catch(error){  
-    throw error
-  }
-}
+  if (!user) throw new Error("You must be signed in to get budgets");
+  const userId = user.id;
+  try {
+    const expenses = await prisma.expense.findMany({
+      where: { userId },
+      select: { amount: true, currency: true },
+    });
+    const result = await getDefaultCurrency();
+    const baseCurrency = result?.baseCurrency;
+    
+    const formattedExpenses = expenses.map((expense) => ({
+      ...expense,
+      amount: expense.amount.toNumber(),
+    }))
+    if (!baseCurrency) throw new Error("You must have a base currency");
+    
+    let totalSpent = 0;
+    for (const expense of formattedExpenses) {
+      const amountInBaseCurrency = await convertCurrency(
+        expense.amount,
+        expense.currency,
+        baseCurrency.code
+      );
+      totalSpent += amountInBaseCurrency;
+    }
 
-// Get montly spending
-const getMonthlySpending = async () => {
+    return totalSpent;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getMonthlySpending = async (byCategory: boolean) => {
   const user = await currentUser();
 
   if (!user) {
     throw new Error("User not authenticated");
   }
 
-  const spendings = await prisma.expense.findMany({
-    where: { userId: user.id },
-    orderBy: { date: "desc" },
-    select: {
-      amount: true,
-      date: true,
-      category: true,
-      currency: true,
-      id: true,
-    },
-  });
+  try {
+    const spendings = await prisma.expense.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+      select: {
+        amount: true,
+        date: true,
+        category: true,
+        currency: true,
+        id: true,
+      },
+    });
 
-  const formattedSpendings = spendings.map((spending) => ({
-    ...spending,
-    amount: spending.amount.toNumber(),
-  }));
+    const formattedSpendings = spendings.map((spending) => ({
+      ...spending,
+      amount: spending.amount.toNumber(),
+    }));
 
-  const result = await getDefaultCurrency();
-  const baseCurrency = result?.baseCurrency;
+    const result = await getDefaultCurrency();
+    const baseCurrency = result?.baseCurrency;
 
-  if (!baseCurrency) throw new Error("You must have a base currency");
+    if (!baseCurrency) throw new Error("You must have a base currency");
 
-  const monthlySpendings: { month: string; amount: number }[] = [];
+    if (byCategory) {
+      const categories: SpendingDataByCategory = [];
 
-  for (const spending of formattedSpendings) {
-    const month = spending.date.toLocaleDateString("en-US", { month: "short" });
-    const amount = spending.amount;
-    const currency = spending.currency;
+      for (const spending of formattedSpendings) {
+        const category = spending.category;
+        const amount = spending.amount;
+        const currency = spending.currency;
+        const categoryExists = categories.find((c) => c.category === category);
+        const amountToAdd =
+          baseCurrency.code === currency
+            ? amount
+            : await convertCurrency(amount, currency, baseCurrency.code);
 
-    const amountToAdd =
-      currency === baseCurrency.code
-        ? amount
-        : await convertCurrency(amount, currency, baseCurrency.code);
+        if (categoryExists) {
+          categoryExists.amount += amountToAdd;
+        } else {
+          categories.push({ category, amount: amountToAdd });
+        }
+      }
 
-    const existingMonth = monthlySpendings.find((m) => m.month === month);
+      return categories;
+    } else {
+      const monthlySpendings: SpendingDataByMonth = [];
 
-    if (existingMonth) {
-      existingMonth.amount += amountToAdd
-    }else{
-      monthlySpendings.push({ month, amount: amountToAdd })
+      for (const spending of formattedSpendings) {
+        const month = spending.date.toLocaleDateString("en-US", {
+          month: "short",
+        });
+        const amount = spending.amount;
+        const currency = spending.currency;
+
+        const amountToAdd =
+          currency === baseCurrency.code
+            ? amount
+            : await convertCurrency(amount, currency, baseCurrency.code);
+
+        const existingMonth = monthlySpendings.find((m) => m.month === month);
+
+        if (existingMonth) {
+          existingMonth.amount += amountToAdd;
+        } else {
+          monthlySpendings.push({ month, amount: amountToAdd });
+        }
+      }
+
+      return monthlySpendings;
     }
+  } catch (error) {
+    throw error;
   }
-
-  return monthlySpendings;
 };
 
 export {
@@ -248,5 +298,5 @@ export {
   updateExpenseAction,
   createExpenseAction,
   getMonthlySpending,
-  getTotalSpent
+  getTotalSpent,
 };
