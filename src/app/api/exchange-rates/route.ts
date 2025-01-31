@@ -1,5 +1,3 @@
-// pages/api/exchange-rates.ts
-
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -9,15 +7,27 @@ export async function GET(request: NextRequest) {
 
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ error: "Exchange rates API key is missing" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: "Exchange rates API key is missing!",
+        apiKey: "MISSING",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   }
 
   if (!targetCurrency) {
     return new Response(
-      JSON.stringify({ error: "Target currency is missing" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({
+        error: "Target currency is missing!",
+        apiKey,
+      }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   }
 
@@ -30,7 +40,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch exchange rates from API Route: ${response.statusText}`);
+      throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
     }
 
     const data = await response.json();
@@ -43,6 +53,7 @@ export async function GET(request: NextRequest) {
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Something went wrong",
+        apiKey,
       }),
       {
         status: 500,
