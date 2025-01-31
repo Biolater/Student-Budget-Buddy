@@ -44,11 +44,6 @@ const DashboardComponent = () => {
   } = useExpenses(user?.id);
 
   useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    console.log("Base URL:", baseUrl);
-  }, [])
-
-  useEffect(() => {
     if (totalBudgetError) {
       toast.error("Error fetching total budget");
     }
