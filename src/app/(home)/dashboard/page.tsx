@@ -59,6 +59,7 @@ const DashboardComponent = () => {
     if (spendingError) {
       toast.error("Error fetching spending by category");
     }
+
   }, [totalBudgetError, totalSpentError, monthlySpendingError, spendingError]);
 
   if (!user) {

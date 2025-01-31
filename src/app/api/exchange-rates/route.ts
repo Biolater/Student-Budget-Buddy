@@ -1,8 +1,12 @@
+// pages/api/exchange-rates.ts
+
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const targetCurrency = request.headers.get('target-currency');
+  const searchParams = request.nextUrl.searchParams;
+  const targetCurrency = searchParams.get("target-currency");
   const apiKey = process.env.EXCHANGE_RATES_API_KEY;
+
   if (!apiKey) {
     return new Response(
       JSON.stringify({ error: "Exchange rates API key is missing" }),
@@ -10,10 +14,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  if(!targetCurrency) {
+  if (!targetCurrency) {
     return new Response(
       JSON.stringify({ error: "Target currency is missing" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 400, headers: { "Content-Type": "application/json" } }
     );
   }
 
@@ -21,8 +25,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(
       `https://v6.exchangerate-api.com/v6/${apiKey}/latest/${targetCurrency}`,
       {
-        cache: "force-cache",
-        headers: { "Cache-Control": "max-age=600, stale-while-revalidate=300" },
+        headers: { "Content-Type": "application/json" },
       }
     );
 

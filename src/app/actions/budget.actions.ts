@@ -90,4 +90,3 @@ const getTotalBudgetAmount = async () => {
 
 
 export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount };
-
