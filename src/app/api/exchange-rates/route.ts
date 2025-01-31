@@ -7,8 +7,6 @@ export async function GET(request: NextRequest) {
   const targetCurrency = searchParams.get("target-currency");
   const apiKey = process.env.EXCHANGE_RATES_API_KEY;
 
-  console.log("Exchange Rates API Key:", process.env.EXCHANGE_RATES_API_KEY);
-
   if (!apiKey) {
     return new Response(
       JSON.stringify({ error: "Exchange rates API key is missing" }),
@@ -32,7 +30,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
+      throw new Error(`Failed to fetch exchange rates from API Route: ${response.statusText}`);
     }
 
     const data = await response.json();
