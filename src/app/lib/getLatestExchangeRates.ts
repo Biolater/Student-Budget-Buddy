@@ -15,6 +15,7 @@ const fetchExchangeRates = async (targetCurrency: string) => {
     const response = await fetch(apiUrl);
 
     if (!response.ok) {
+      console.error(`Failed to fetch exchange rates: ${response.statusText}`);
       throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
     }
 
