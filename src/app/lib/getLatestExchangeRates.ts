@@ -12,11 +12,7 @@ const fetchExchangeRates = async (targetCurrency: string) => {
     }
 
     const apiUrl = `${baseUrl}/api/exchange-rates?target-currency=${targetCurrency}`;
-    const response = await fetch(apiUrl, {
-      headers: {
-        Authorization: `Bearer ${process.env.EXCHANGE_RATES_API_KEY}`,
-      }
-    });
+    const response = await fetch(apiUrl);
 
     if (!response.ok) {
       throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
