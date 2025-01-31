@@ -34,7 +34,6 @@ const CurrentBudgets: React.FC<{
   useEffect(() => {
     (async () => {
       const exchangeRates = await fetchExchangeRates("USD");
-      console.log(exchangeRates)
       setExchangeRates(exchangeRates.conversion_rates);
     })();
   }, []);
