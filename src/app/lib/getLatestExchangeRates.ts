@@ -5,6 +5,7 @@ const fetchExchangeRates = async (targetCurrency: string) => {
     throw new Error("Target currency is missing");
   }
 
+  const vercelBypassKey = process.env.NEXT_PUBLIC_VERCEL_PROTECTION_BYPASS_KEY || "";
   try { 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     if (!baseUrl) {
@@ -14,7 +15,7 @@ const fetchExchangeRates = async (targetCurrency: string) => {
     const apiUrl = `${baseUrl}/api/exchange-rates?target-currency=${targetCurrency}`;
     const response = await fetch(apiUrl, {
       headers: {
-        "x-vercel-protection-bypass": process.env.NEXT_PUBLIC_VERCEL_PROTECTION_BYPASS_KEY || "",
+        "x-vercel-protection-bypass": vercelBypassKey,
       }
     });
 
@@ -25,7 +26,7 @@ const fetchExchangeRates = async (targetCurrency: string) => {
     const data: { conversion_rates: Record<string, number> } = await response.json();
     return data;
   } catch (error) {
-    throw error;
+    throw new Error(`Failed to fetch exchange rates: ${error} and bypass key is ${vercelBypassKey}`);
   }
 };
 
