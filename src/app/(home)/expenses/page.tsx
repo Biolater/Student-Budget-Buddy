@@ -87,6 +87,7 @@ const ExpenseTracker = () => {
             onFilterChange={(e: ChangeEvent<HTMLSelectElement>) =>
               setSelectedCategory(e.target.value)
             }
+            onDateRangePickerReset={() => setDateRangePickerValue(null)}
             onDateRangePickerChange={(value) => setDateRangePickerValue(value)}
           />
           <ExpenseItems

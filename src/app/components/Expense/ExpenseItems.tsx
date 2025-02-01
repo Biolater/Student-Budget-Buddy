@@ -203,9 +203,10 @@ const ExpenseItems: React.FC<{
                   Close
                 </Button>
                 <Button
+                  color="primary"
                   isDisabled={updateLoading}
                   isLoading={updateLoading}
-                  onClick={handleUpdateButtonClick}
+                  onPress={handleUpdateButtonClick}
                 >
                   {!updateLoading && "Update Expense"}
                 </Button>
