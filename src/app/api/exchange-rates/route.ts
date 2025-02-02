@@ -1,5 +1,3 @@
-// pages/api/exchange-rates.ts
-
 import { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -30,7 +28,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch exchange rates: ${response.statusText}`);
+      throw new Error(`Failed to fetch exchange rates from API Ro: ${response.statusText}`);
     }
 
     const data = await response.json();

@@ -24,7 +24,7 @@ import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
-import { deleteAnExpense } from "@/app/actions/expense.actions";
+import { type Category } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import useExpenses from "@/hooks/useExpense";
 
@@ -60,12 +60,12 @@ const ExpenseItems: React.FC<{
   expensesLoading,
 }) => {
   const {
-    delete: { mutateAsync, isPending: isDeleting },
+    delete: { mutateAsync: mutateDelete, isPending: isDeleting },
+    update: { mutateAsync: mutateUpdate, isPending: isUpdating },
   } = useExpenses(userId);
   const updateTriggerRef = useRef(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
-  const [updateLoading, setUpdateLoading] = useState(false);
   const [showDescriptionFor, setShowDescriptionFor] = useState<Set<string>>(
     new Set()
   ); // Set to store expense IDs whose description is expanded
@@ -94,23 +94,33 @@ const ExpenseItems: React.FC<{
   };
   const handleDeleteExpense = async (id: string) => {
     try {
-      await mutateAsync(id);
+      await mutateDelete(id);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Something went wrong"
       );
     }
   };
-  const handleUpdateButtonClick = () => {
-    updateTriggerRef.current = true;
-    setUpdateLoading(true);
+  const handleUpdateButtonClick = async () => {
+    if (editExpense) {
+      await mutateUpdate({
+        expenseId: editExpense.id,
+        data: {
+          date: editExpense.date,
+          amount: editExpense.amount,
+          currency: editExpense.currency,
+          category: editExpense.category as Category,
+          description: editExpense.description,
+        },
+      });
+    } else {
+      toast.error("Expense not found");
+    }
   };
   const handleExpenseUpdate = () => {
     onExpenseUpdate();
   };
   const handleUpdateFinished = () => {
-    updateTriggerRef.current = false;
-    setUpdateLoading(false);
     setEditExpense(null);
   };
   const handleRead = (expenseId: string) => {
@@ -203,11 +213,12 @@ const ExpenseItems: React.FC<{
                   Close
                 </Button>
                 <Button
-                  isDisabled={updateLoading}
-                  isLoading={updateLoading}
-                  onClick={handleUpdateButtonClick}
+                  color="primary"
+                  isDisabled={isUpdating}
+                  isLoading={isUpdating}
+                  onPress={handleUpdateButtonClick}
                 >
-                  {!updateLoading && "Update Expense"}
+                  {!isUpdating && "Update Expense"}
                 </Button>
               </ModalFooter>
             </>
