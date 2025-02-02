@@ -69,13 +69,13 @@ const ExpenseFilterOptions: React.FC<{
       </Select>
       <div className="relative">
         <div className="relative">
-          <Button className="w-full">
+          <Button className="w-full text-sm">
             {dateRange ? dateRange : "Filter by Date Range"}
           </Button>
           {dateRange && (
             <XIcon
               onClick={handleReset}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
+              className="absolute size-4 sm:size-5 right-2 top-1/2 -translate-y-1/2 z-10 cursor-pointer"
             />
           )}
         </div>

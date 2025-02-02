@@ -8,6 +8,7 @@ import {
   deleteAnExpense,
   getTotalSpent,
   getMonthlySpending,
+  updateExpenseAction,
 } from "@/app/actions/expense.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
@@ -89,6 +90,20 @@ const useExpenses = (userId: string | undefined | null) => {
         queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
       },
     }),
+    update: useMutation({
+      mutationFn: ({
+        expenseId,
+        data,
+      }: {
+        expenseId: string;
+        data: CreateExpenseData;
+      }) => updateExpenseAction(expenseId, data),
+      mutationKey: ["updateExpense", userId],
+      onSuccess: () => {
+        console.log("Expense updated successfully");
+        queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
+      },
+    }),
     totalSpentAmount: useQuery({
       queryKey: ["totalSpent", userId],
       queryFn: () => (userId ? getTotalSpent() : null),
@@ -106,7 +121,7 @@ const useExpenses = (userId: string | undefined | null) => {
       queryFn: () => (userId ? getMonthlySpending(true) : null),
       enabled: !!userId,
       staleTime: 600000,
-    })
+    }),
   };
 };
 
