@@ -10,9 +10,7 @@ import {
   Textarea,
 } from "@nextui-org/react";
 import { RefObject, useCallback, useEffect, useState } from "react";
-import {
-  updateExpenseAction,
-} from "@/app/actions/expense.actions";
+import { updateExpenseAction } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import type { Expense } from "../../(home)/expenses/page";
 import {
@@ -48,18 +46,17 @@ const ExpenseForm: React.FC<{
   isEditing?: boolean;
   editingExpense?: Expense | null;
   updateTriggerState?: RefObject<boolean>;
-  onUpdateExpense?: (expense: Expense) => void;
   onUpdateFinished?: () => void;
 }> = ({
   userId,
   isEditing,
   editingExpense,
   updateTriggerState,
-  onUpdateExpense,
   onUpdateFinished,
 }) => {
   const {
     create: { mutateAsync: createExpense, isPending: isCreatingExpense },
+    update: { mutateAsync: mutateUpdate, isPending: isUpdating },
   } = useExpenses(userId);
   const [date, setDate] = useState<ZonedDateTime | null>(
     isEditing && editingExpense
@@ -157,28 +154,24 @@ const ExpenseForm: React.FC<{
               category,
               description,
             };
-            const updatedExpense = await updateExpenseAction(
-              editingExpense.id,
-              data
-            );
-            if (updatedExpense) {
-              onUpdateExpense?.(updatedExpense);
-              toast.success("Expense updated successfully");
-            }
+
+            await mutateUpdate({
+              expenseId: editingExpense.id,
+              data,
+            });
+            onUpdateFinished?.();
           } catch (error) {
             toast.error(
               error instanceof Error ? error.message : "Something went wrong"
             );
           } finally {
             clearForm();
-            onUpdateFinished?.();
           }
         }
       };
       updateExpense();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateTriggerState?.current]);
+  }, [updateTriggerState?.current, isEditing, editingExpense]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col">

@@ -100,7 +100,7 @@ const useExpenses = (userId: string | undefined | null) => {
       }) => updateExpenseAction(expenseId, data),
       mutationKey: ["updateExpense", userId],
       onSuccess: () => {
-        console.log("Expense updated successfully");
+        toast.success("Expense updated successfully");
         queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
       },
     }),

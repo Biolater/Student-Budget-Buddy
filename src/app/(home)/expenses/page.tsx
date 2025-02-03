@@ -94,9 +94,6 @@ const ExpenseTracker = () => {
             userId={userId}
             expenses={filteredExpenses}
             expensesLoading={isFetching}
-            onExpenseCreation={() => {}}
-            onExpenseDeletionFinished={() => {}}
-            onExpenseUpdate={() => {}}
           />
         </CardFooter>
       </Card>
