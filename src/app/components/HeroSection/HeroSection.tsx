@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Card } from "@nextui-org/react"
+import { Button, Card } from "@heroui/react"
 import { ArrowRight, PiggyBank, TrendingUp, Shield } from 'lucide-react'
 import Link from "next/link"
 import { motion } from "framer-motion"

@@ -1,4 +1,4 @@
-import { Button, Progress, Tooltip } from "@nextui-org/react";
+import { Button, Progress, Tooltip } from "@heroui/react";
 import { convertAmount, formatCurrency } from "@/app/lib/currencyUtils";
 import { type ClientBudget } from "./AddNewBudget";
 import { currencies } from "./CurrentBudgets";
@@ -9,7 +9,7 @@ import {
   ModalHeader,
   ModalFooter,
   useDisclosure,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import useBudget from "@/hooks/useBudget";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";

@@ -5,7 +5,7 @@ import {
   CardFooter,
   CardHeader,
   Tooltip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Link from "next/link";
 import BudgetItem from "./BudgetItem";
 import BudgetSkeleton from "./BudgetSkeleton";

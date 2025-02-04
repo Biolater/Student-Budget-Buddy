@@ -4,7 +4,7 @@ import {
   Select,
   SelectItem,
   type RangeValue,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { ChangeEvent, useState } from "react";
 import {
   getLocalTimeZone,

@@ -1,4 +1,3 @@
-// hooks/useExpenses.ts
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   type TransformedExpense,
@@ -13,81 +12,55 @@ import {
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
 
-// Custom hook for fetching expenses
 const useExpenses = (userId: string | undefined | null) => {
+  // Use a fallback value for keys to avoid undefined/null.
+  const keyUserId = userId ?? "no-user";
+
   return {
     query: useQuery({
-      queryKey: ["expenses", userId],
-      queryFn: () => fetchExpensesByUser(),
+      queryKey: ["expenses", keyUserId],
+      queryFn: async () => {
+        if (!userId) return []; // Default to an empty array.
+        const expenses = await fetchExpensesByUser();
+        return expenses ?? [];
+      },
       enabled: !!userId,
       staleTime: 600000,
     }),
     create: useMutation({
       mutationFn: (data: CreateExpenseData) => createExpense(data),
-      mutationKey: ["createExpense", userId],
-      onMutate: async (newExpense) => {
-        if (!userId)
-          throw new Error("You must be signed in to create a budget");
-        await queryClient.cancelQueries({ queryKey: ["expenses", userId] });
-        const previousExpenses = queryClient.getQueryData<TransformedExpense[]>(
-          ["expenses", userId]
-        );
-        queryClient.setQueryData<TransformedExpense[]>(
-          ["expenses", userId],
-          (old) => {
-            const newExpenseWithDefaults = {
-              ...newExpense,
-              id: Date.now().toString(),
-              userId,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
-
-            return old
-              ? [...old, newExpenseWithDefaults]
-              : [newExpenseWithDefaults];
-          }
-        );
-        toast.success("Expense created successfully");
-        return { previousExpenses };
+      mutationKey: ["createExpense", keyUserId],
+      onMutate: async () => {
+        if (!userId) {
+          throw new Error("You must be signed in to create an expense");
+        }
       },
-      onError: (error, _, ctx) => {
+      onError: (error) => {
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
         );
-        queryClient.setQueryData(["budgets", userId], ctx?.previousExpenses);
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
+        toast.success("Expense created successfully");
+        queryClient.invalidateQueries({ queryKey: ["expenses", keyUserId] });
       },
     }),
     delete: useMutation({
       mutationFn: (expenseId: string) => deleteAnExpense(expenseId),
-      mutationKey: ["deleteExpense", userId],
-      onMutate: async (expenseId: string) => {
-        if (!userId)
-          throw new Error("You must be signed in to create a budget");
-        queryClient.invalidateQueries({ queryKey: ["expeneses", userId] });
-        const previousExpenses = queryClient.getQueryData<TransformedExpense[]>(
-          ["expenses", userId]
-        );
-        queryClient.setQueryData<TransformedExpense[]>(
-          ["expenses", userId],
-          (old) =>
-            old ? old.filter((expense) => expense.id !== expenseId) : []
-        );
-        toast.success("Expense deleted successfully");
-
-        return { previousExpenses };
+      mutationKey: ["deleteExpense", keyUserId],
+      onMutate: async () => {
+        if (!userId) {
+          throw new Error("You must be signed in to delete an expense");
+        }
       },
-      onError: (error, _, ctx) => {
-        queryClient.setQueryData(["expenses", userId], ctx?.previousExpenses);
+      onError: (error) => {
         toast.error(
           error instanceof Error ? error.message : "Something went wrong"
         );
       },
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
+        toast.success("Expense deleted successfully");
+        queryClient.invalidateQueries({ queryKey: ["expenses", keyUserId] });
       },
     }),
     update: useMutation({
@@ -98,27 +71,39 @@ const useExpenses = (userId: string | undefined | null) => {
         expenseId: string;
         data: CreateExpenseData;
       }) => updateExpenseAction(expenseId, data),
-      mutationKey: ["updateExpense", userId],
+      mutationKey: ["updateExpense", keyUserId],
       onSuccess: () => {
         toast.success("Expense updated successfully");
-        queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
+        queryClient.invalidateQueries({ queryKey: ["expenses", keyUserId] });
       },
     }),
     totalSpentAmount: useQuery({
-      queryKey: ["totalSpent", userId],
-      queryFn: () => (userId ? getTotalSpent() : null),
+      queryKey: ["totalSpent", keyUserId],
+      queryFn: async () => {
+        if (!userId) return 0;
+        const total = await getTotalSpent();
+        return total ?? 0;
+      },
       enabled: !!userId,
       staleTime: 600000,
     }),
     monthlySpendingQuery: useQuery({
-      queryKey: ["monthlySpending", userId],
-      queryFn: () => (userId ? getMonthlySpending(false) : null),
+      queryKey: ["monthlySpending", keyUserId],
+      queryFn: async () => {
+        if (!userId) return [];
+        const data = await getMonthlySpending({ byCategory: false });
+        return data ?? [];
+      },
       enabled: !!userId,
       staleTime: 600000,
     }),
     spendingByCategory: useQuery({
-      queryKey: ["spendingByCategory", userId],
-      queryFn: () => (userId ? getMonthlySpending(true) : null),
+      queryKey: ["spendingByCategory", keyUserId],
+      queryFn: async () => {
+        if (!userId) return [];
+        const data = await getMonthlySpending({ byCategory: true });
+        return data ?? [];
+      },
       enabled: !!userId,
       staleTime: 600000,
     }),

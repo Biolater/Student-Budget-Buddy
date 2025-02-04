@@ -186,13 +186,13 @@ const getTotalSpent = async () => {
     });
     const result = await getDefaultCurrency();
     const baseCurrency = result?.baseCurrency;
-    
+
     const formattedExpenses = expenses.map((expense) => ({
       ...expense,
       amount: expense.amount.toNumber(),
-    }))
+    }));
     if (!baseCurrency) throw new Error("You must have a base currency");
-    
+
     let totalSpent = 0;
     for (const expense of formattedExpenses) {
       const amountInBaseCurrency = await convertCurrency(
@@ -209,7 +209,7 @@ const getTotalSpent = async () => {
   }
 };
 
-const getMonthlySpending = async (byCategory: boolean) => {
+const getMonthlySpending = async ({ byCategory }: { byCategory: boolean }) => {
   const user = await currentUser();
 
   if (!user) {

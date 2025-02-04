@@ -8,14 +8,11 @@ import {
   Select,
   SelectItem,
   Textarea,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { RefObject, useCallback, useEffect, useState } from "react";
-import { updateExpenseAction } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import type { Expense } from "../../(home)/expenses/page";
 import {
-  getLocalTimeZone,
-  now,
   parseAbsoluteToLocal,
   type ZonedDateTime,
 } from "@internationalized/date";
@@ -189,6 +186,9 @@ const ExpenseForm: React.FC<{
           </label>
           <DatePicker
             showMonthAndYearPickers
+            classNames={{
+              base: "bg-red-500"
+            }}
             aria-label="Select date"
             onChange={(value) => {
               setDate(value);
@@ -199,7 +199,7 @@ const ExpenseForm: React.FC<{
             isInvalid={!!errors.date}
             size="md"
             className="w-full"
-            granularity="minute" // or "second" if you want to include seconds
+            granularity="minute"
           />
         </div>
         <div className="space-y-2">
@@ -308,7 +308,7 @@ const ExpenseForm: React.FC<{
           isLoading={isCreatingExpense}
           type="submit"
           color="primary"
-          className="mt-4 w-full sm:w-auto md:self-start"
+          className="mt-4 w-full sm:w-auto md:self-end"
         >
           {!isCreatingExpense && "Add expense"}
         </Button>

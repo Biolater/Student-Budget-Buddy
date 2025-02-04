@@ -18,7 +18,7 @@ import {
   type SortDescriptor,
   Tooltip,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Expense } from "../../(home)/expenses/page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
