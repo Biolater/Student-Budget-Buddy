@@ -113,3 +113,7 @@ html[data-theme="dark"] {
 .expenses-date-range button[data-slot="selector-button"]  > * {
   opacity: 0;
 }
+
+#form-date [data-slot="calendar"] [data-slot="cell"]:hover span {
+  background-color: #f0f0f0 !important; /* Change to your desired color */
+}

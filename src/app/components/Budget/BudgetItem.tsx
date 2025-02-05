@@ -1,5 +1,5 @@
 import { Button, Progress, Tooltip } from "@heroui/react";
-import { convertAmount, formatCurrency } from "@/app/lib/currencyUtils";
+// import { formatCurrency } from "@/app/lib/currencyUtils";
 import { type ClientBudget } from "./AddNewBudget";
 import { currencies } from "./CurrentBudgets";
 import { Trash2 } from "lucide-react";
@@ -16,15 +16,7 @@ import toast from "react-hot-toast";
 
 const BudgetItem: React.FC<{
   budgetItem: ClientBudget;
-  totalSpentInBudgetCurrency: number;
-  totalSpentPercentage: number;
-  exchangeRates: Record<string, number>;
-}> = ({
-  budgetItem,
-  totalSpentInBudgetCurrency,
-  totalSpentPercentage,
-  exchangeRates,
-}) => {
+}> = ({ budgetItem }) => {
   const {
     isOpen: deleteModalOpen,
     onOpen: onDeleteOpen,
@@ -57,11 +49,11 @@ const BudgetItem: React.FC<{
           <div className="flex items-center space-x-2">
             <div className="text-right">
               <p className="font-medium">
-                {formatCurrency(
+                {/* {formatCurrency(
                   budgetItem.amount,
                   budgetItem.currency,
                   currencies
-                )}
+                )} */}
               </p>
               <Tooltip
                 color="foreground"
@@ -74,12 +66,12 @@ const BudgetItem: React.FC<{
                     <p className="font-medium">Individual Expenses:</p>
                     {budgetItem.expenses.map((expense, i) => (
                       <p key={i}>
-                        {formatCurrency(
+                        {/* {formatCurrency(
                           expense.amount,
                           expense.currency,
                           currencies
-                        )}
-                        {expense.currency !== budgetItem.currency &&
+                        )} */}
+                        {/* {expense.currency !== budgetItem.currency &&
                           ` (≈${formatCurrency(
                             convertAmount(
                               expense.amount,
@@ -89,18 +81,18 @@ const BudgetItem: React.FC<{
                             ),
                             budgetItem.currency,
                             currencies
-                          )})`}
+                          )})`} */}
                       </p>
                     ))}
                   </div>
                 }
               >
                 <p className="text-sm cursor-pointer text-muted-foreground">
-                  {formatCurrency(
+                  {/* {formatCurrency(
                     totalSpentInBudgetCurrency,
                     budgetItem.currency,
                     currencies
-                  )}{" "}
+                  )}{" "} */}
                   spent
                 </p>
               </Tooltip>
@@ -119,10 +111,10 @@ const BudgetItem: React.FC<{
           </div>
         </div>
         <Progress
-          color={totalSpentPercentage >= 100 ? "danger" : "primary"}
+          // color={totalSpentPercentage >= 100 ? "danger" : "primary"}
           aria-label="Loading..."
           size="md"
-          value={totalSpentPercentage}
+          // value={totalSpentPercentage}
         />
       </div>
       <Modal isOpen={deleteModalOpen} onOpenChange={onDeleteChange}>
@@ -140,7 +132,6 @@ const BudgetItem: React.FC<{
               <ModalFooter>
                 <Button
                   isDisabled={isPending}
-                  isLoading={isPending}
                   color="danger"
                   variant="light"
                   onPress={onClose}

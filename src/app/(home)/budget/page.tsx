@@ -22,6 +22,10 @@ const Budget = () => {
     }
   }, [budgetsError]);
 
+  useEffect(() => {
+    console.log(budgets)
+  }, [budgets])
+
   return (
     <main className="container mx-auto px-4 py-8 sm:px-6 md:px-10 lg:px-14 xl:px-18 2xl:px-22">
       <h1 className="text-3xl font-bold mb-8">Budget Management</h1>

@@ -185,10 +185,8 @@ const ExpenseForm: React.FC<{
             Date
           </label>
           <DatePicker
+            id="form-date"
             showMonthAndYearPickers
-            classNames={{
-              base: "bg-red-500"
-            }}
             aria-label="Select date"
             onChange={(value) => {
               setDate(value);
@@ -198,7 +196,7 @@ const ExpenseForm: React.FC<{
             errorMessage={errors.date}
             isInvalid={!!errors.date}
             size="md"
-            className="w-full"
+            className="w-full annen-nasil"
             granularity="minute"
           />
         </div>
