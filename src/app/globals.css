@@ -16,7 +16,7 @@
     /* white */
     --popover-foreground: hsl(0, 0%, 5%);
     /* very dark gray */
-    --primary: hsl(134, 60%, 53%);
+    --primary: rgba(76, 185, 39, 1);
     /* green */
     --primary-foreground: hsl(0, 0%, 100%);
     /* white */
@@ -58,7 +58,7 @@
     /* very dark gray */
     --popover-foreground: hsl(0, 0%, 98%);
     /* light gray */
-    --primary: hsl(134, 60%, 53%);
+    --primary: rgba(76, 185, 39, 1);
     /* green */
     --primary-foreground: hsl(0, 0%, 5%);
     /* very dark gray */
@@ -114,6 +114,3 @@ html[data-theme="dark"] {
   opacity: 0;
 }
 
-#form-date [data-slot="calendar"] [data-slot="cell"]:hover span {
-  background-color: #f0f0f0 !important; /* Change to your desired color */
-}

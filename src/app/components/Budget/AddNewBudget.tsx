@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { Expense, type Budget } from "@prisma/client";
+import { type Currency, Expense, type Budget } from "@prisma/client";
 import useBudget from "@/hooks/useBudget";
 
 const schema = z.object({
@@ -38,7 +38,11 @@ const schema = z.object({
 
 export type NewBudgetSchema = z.infer<typeof schema>;
 
-export type ClientBudget = Omit<Budget, "amount"> & {
+interface ExtendedBudget extends Budget {
+  currency: Currency
+}
+
+export type ClientBudget = Omit<ExtendedBudget, "amount"> & {
   amount: number;
   expenses: (Omit<Expense, "amount"> & { amount: number })[];
 };
@@ -161,7 +165,7 @@ const AddNewBudget = () => {
               size="md"
               placeholder="Select category"
             >
-              {categories.map((category, idx) => (
+              {categories.map((category) => (
                 <SelectItem key={category.code} value={category.code}>
                   {`${category.symbol} ${category.code}`}
                 </SelectItem>

@@ -44,5 +44,21 @@ export default {
     },
   },
   darkMode: "class",
-  plugins: [heroui()],
+  plugins: [
+    heroui({
+      themes: {
+        dark: {
+          colors: {
+            primary: {
+              DEFAULT: "rgba(76, 185, 39, 1)",
+              "50": "rgba(76, 185, 39, 0.5)",  
+              foreground: "var(--primary-foreground)",
+            },
+
+            focus: "#BEF264",
+          },
+        },
+      },
+    }),
+  ],
 } satisfies Config;

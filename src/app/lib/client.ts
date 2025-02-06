@@ -7,5 +7,4 @@ const prisma = new PrismaClient().$extends(
   })
 );
 
-
 export { prisma };

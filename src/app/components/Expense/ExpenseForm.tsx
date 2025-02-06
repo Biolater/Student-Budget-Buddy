@@ -185,7 +185,6 @@ const ExpenseForm: React.FC<{
             Date
           </label>
           <DatePicker
-            id="form-date"
             showMonthAndYearPickers
             aria-label="Select date"
             onChange={(value) => {

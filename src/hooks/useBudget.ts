@@ -49,11 +49,6 @@ const useBudget = (userId: string | undefined | null) => {
     onMutate: async () => {
       if (!userId) throw new Error("You must be signed in to create a budget");
     },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
-      );
-    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["budgets", keyUserId] });
       toast.success("Budget created successfully");
