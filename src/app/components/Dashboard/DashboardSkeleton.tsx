@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardBody, Skeleton } from "@nextui-org/react";
+import { Card, CardHeader, CardBody, Skeleton } from "@heroui/react";
 
 const DashboardSkeleton = () => {
   return (

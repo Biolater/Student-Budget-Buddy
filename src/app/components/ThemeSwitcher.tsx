@@ -8,7 +8,7 @@ import {
   DropdownMenu,
   DropdownItem,
   Button,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { SunIcon, MoonIcon, LaptopIcon } from "lucide-react";
 
 const themes = [

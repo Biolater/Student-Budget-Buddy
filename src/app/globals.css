@@ -16,7 +16,7 @@
     /* white */
     --popover-foreground: hsl(0, 0%, 5%);
     /* very dark gray */
-    --primary: hsl(134, 60%, 53%);
+    --primary: rgba(76, 185, 39, 1);
     /* green */
     --primary-foreground: hsl(0, 0%, 100%);
     /* white */
@@ -58,7 +58,7 @@
     /* very dark gray */
     --popover-foreground: hsl(0, 0%, 98%);
     /* light gray */
-    --primary: hsl(134, 60%, 53%);
+    --primary: rgba(76, 185, 39, 1);
     /* green */
     --primary-foreground: hsl(0, 0%, 5%);
     /* very dark gray */
@@ -90,7 +90,7 @@
 @layer base {
   html {
     @apply !bg-background text-foreground;
-    font-feature-settings: "rlig"1, "calt"1;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
@@ -110,6 +110,6 @@ html[data-theme="dark"] {
   opacity: 0;
   left: 0;
 }
-.expenses-date-range button[data-slot="selector-button"]  > * {
+.expenses-date-range button[data-slot="selector-button"] > * {
   opacity: 0;
 }

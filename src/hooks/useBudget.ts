@@ -13,86 +13,55 @@ import type {
 import toast from "react-hot-toast";
 
 const useBudget = (userId: string | undefined | null) => {
+  const keyUserId = userId ?? "no-user";
+
   const query = useQuery({
-    queryKey: ["budgets", userId],
-    queryFn: () => (userId ? getBudgets() : null),
+    queryKey: ["budgets", keyUserId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const budgets = await getBudgets();
+      return budgets ?? [];
+    },
     enabled: !!userId,
     staleTime: 600000,
   });
 
   const deleteMutation = useMutation({
     mutationFn: (budgetId: string) => deleteBudget(budgetId),
-    mutationKey: ["deleteBudget", userId],
-    onMutate: async (budgetId: string) => {
+    mutationKey: ["deleteBudget", keyUserId],
+    onMutate: async () => {
       if (!userId) throw new Error("You must be signed in to delete a budget");
-      await queryClient.cancelQueries({ queryKey: ["budgets", userId] });
-      const previousBudgets = queryClient.getQueryData<ClientBudget[]>([
-        "budgets",
-        userId,
-      ]);
-
-      queryClient.setQueryData<ClientBudget[]>(["budgets", userId], (old) =>
-        old ? old.filter((budget) => budget.id !== budgetId) : []
-      );
-
-      toast.success("Budget deleted successfully");
-
-      return { previousBudgets };
     },
-    onError: (error, _, context) => {
-      queryClient.setQueryData(["budgets", userId], context?.previousBudgets);
+    onError: (error) => {
       toast.error(
         error instanceof Error ? error.message : "Something went wrong"
       );
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["budgets", userId] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", keyUserId] });
+      toast.success("Budget deleted successfully");
     },
   });
 
   const createMutation = useMutation({
     mutationFn: (data: NewBudgetSchema) => createBudget(data),
-    mutationKey: ["createBudget", userId],
-    onMutate: async (newBudget) => {
+    mutationKey: ["createBudget", keyUserId],
+    onMutate: async () => {
       if (!userId) throw new Error("You must be signed in to create a budget");
-      await queryClient.cancelQueries({ queryKey: ["budgets", userId] });
-
-      const previousBudgets = queryClient.getQueryData<ClientBudget[]>([
-        "budgets",
-        userId,
-      ]);
-
-      queryClient.setQueryData<ClientBudget[]>(["budgets", userId], (old) => {
-        const newBudgetWithDefaults = {
-          ...newBudget,
-          id: "temp-id",
-          userId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          expenses: [],
-          amount: Number(newBudget.amount),
-        };
-
-        return old ? [...old, newBudgetWithDefaults] : [newBudgetWithDefaults];
-      });
-      toast.success("Budget created successfully");
-
-      return { previousBudgets };
-    },
-    onError: (error, _, ctx) => {
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
-      );
-      queryClient.setQueryData(["budgets", userId], ctx?.previousBudgets);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["budgets", userId] });
+      queryClient.invalidateQueries({ queryKey: ["budgets", keyUserId] });
+      toast.success("Budget created successfully");
     },
   });
 
   const totalBudgetAmountQuery = useQuery({
-    queryKey: ["totalBudgetAmount", userId],
-    queryFn: () => (userId ? getTotalBudgetAmount() : null),
+    queryKey: ["totalBudgetAmount", keyUserId],
+    queryFn: async () => {
+      if (!userId) return 0;
+      const total = await getTotalBudgetAmount();
+      return total ?? 0;
+    },
     enabled: !!userId,
     staleTime: 600000,
   });

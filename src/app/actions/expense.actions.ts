@@ -184,15 +184,14 @@ const getTotalSpent = async () => {
       where: { userId },
       select: { amount: true, currency: true },
     });
-    const result = await getDefaultCurrency();
-    const baseCurrency = result?.baseCurrency;
-    
+    const baseCurrency = await getDefaultCurrency();
+
     const formattedExpenses = expenses.map((expense) => ({
       ...expense,
       amount: expense.amount.toNumber(),
-    }))
+    }));
     if (!baseCurrency) throw new Error("You must have a base currency");
-    
+
     let totalSpent = 0;
     for (const expense of formattedExpenses) {
       const amountInBaseCurrency = await convertCurrency(
@@ -209,7 +208,7 @@ const getTotalSpent = async () => {
   }
 };
 
-const getMonthlySpending = async (byCategory: boolean) => {
+const getMonthlySpending = async ({ byCategory }: { byCategory: boolean }) => {
   const user = await currentUser();
 
   if (!user) {
@@ -234,8 +233,7 @@ const getMonthlySpending = async (byCategory: boolean) => {
       amount: spending.amount.toNumber(),
     }));
 
-    const result = await getDefaultCurrency();
-    const baseCurrency = result?.baseCurrency;
+    const baseCurrency = await getDefaultCurrency();
 
     if (!baseCurrency) throw new Error("You must have a base currency");
 

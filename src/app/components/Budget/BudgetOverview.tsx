@@ -4,7 +4,7 @@ import {
   CardBody,
   CardFooter,
   CardHeader,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Link from "next/link";
 
 const BudgetOverview = () => {

@@ -1,12 +1,12 @@
 "use client";
 
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { Card, CardHeader, CardBody, CardFooter } from "@nextui-org/card";
+import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { useAuth } from "@clerk/nextjs";
 import ExpenseForm from "../../components/Expense/ExpenseForm";
 import ExpenseFilterOptions from "../../components/Expense/ExpenseFilterOptions";
 import ExpenseItems from "../../components/Expense/ExpenseItems";
-import type { RangeValue } from "@nextui-org/react";
+import type { RangeValue } from "@heroui/react";
 import type { ZonedDateTime } from "@internationalized/date";
 import useExpenses from "@/hooks/useExpense";
 import toast from "react-hot-toast";
@@ -94,9 +94,6 @@ const ExpenseTracker = () => {
             userId={userId}
             expenses={filteredExpenses}
             expensesLoading={isFetching}
-            onExpenseCreation={() => {}}
-            onExpenseDeletionFinished={() => {}}
-            onExpenseUpdate={() => {}}
           />
         </CardFooter>
       </Card>

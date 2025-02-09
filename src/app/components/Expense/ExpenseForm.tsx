@@ -8,16 +8,11 @@ import {
   Select,
   SelectItem,
   Textarea,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { RefObject, useCallback, useEffect, useState } from "react";
-import {
-  updateExpenseAction,
-} from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import type { Expense } from "../../(home)/expenses/page";
 import {
-  getLocalTimeZone,
-  now,
   parseAbsoluteToLocal,
   type ZonedDateTime,
 } from "@internationalized/date";
@@ -48,18 +43,17 @@ const ExpenseForm: React.FC<{
   isEditing?: boolean;
   editingExpense?: Expense | null;
   updateTriggerState?: RefObject<boolean>;
-  onUpdateExpense?: (expense: Expense) => void;
   onUpdateFinished?: () => void;
 }> = ({
   userId,
   isEditing,
   editingExpense,
   updateTriggerState,
-  onUpdateExpense,
   onUpdateFinished,
 }) => {
   const {
     create: { mutateAsync: createExpense, isPending: isCreatingExpense },
+    update: { mutateAsync: mutateUpdate, isPending: isUpdating },
   } = useExpenses(userId);
   const [date, setDate] = useState<ZonedDateTime | null>(
     isEditing && editingExpense
@@ -157,28 +151,24 @@ const ExpenseForm: React.FC<{
               category,
               description,
             };
-            const updatedExpense = await updateExpenseAction(
-              editingExpense.id,
-              data
-            );
-            if (updatedExpense) {
-              onUpdateExpense?.(updatedExpense);
-              toast.success("Expense updated successfully");
-            }
+
+            await mutateUpdate({
+              expenseId: editingExpense.id,
+              data,
+            });
+            onUpdateFinished?.();
           } catch (error) {
             toast.error(
               error instanceof Error ? error.message : "Something went wrong"
             );
           } finally {
             clearForm();
-            onUpdateFinished?.();
           }
         }
       };
       updateExpense();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [updateTriggerState?.current]);
+  }, [updateTriggerState?.current, isEditing, editingExpense]);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col">
@@ -205,8 +195,8 @@ const ExpenseForm: React.FC<{
             errorMessage={errors.date}
             isInvalid={!!errors.date}
             size="md"
-            className="w-full"
-            granularity="minute" // or "second" if you want to include seconds
+            className="w-full annen-nasil"
+            granularity="minute"
           />
         </div>
         <div className="space-y-2">
@@ -315,7 +305,7 @@ const ExpenseForm: React.FC<{
           isLoading={isCreatingExpense}
           type="submit"
           color="primary"
-          className="mt-4 w-full sm:w-auto md:self-start"
+          className="mt-4 w-full sm:w-auto md:self-end"
         >
           {!isCreatingExpense && "Add expense"}
         </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Navbar,
   NavbarBrand,
@@ -17,7 +17,7 @@ import {
   DropdownItem,
   Divider,
   NavbarItem,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { PiggyBank } from "lucide-react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ThemeSwitcher } from "../ThemeSwitcher";
@@ -26,6 +26,7 @@ import { usePathname } from "next/navigation";
 
 export const NavbarComponent = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const pathname = usePathname();
@@ -38,14 +39,13 @@ export const NavbarComponent = () => {
     { href: "/analysis", label: "Analysis" },
   ];
 
-  const handleSignOut = async () => {
-    try {
-      signOut({ redirectUrl: "/sign-in" });
-      toast.success("Signed out successfully");
-    } catch (error) {
-      toast.error("Failed to sign out. Please try again.");
-    }
-  };
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <Navbar
@@ -129,7 +129,10 @@ export const NavbarComponent = () => {
               </DropdownItem>
               <DropdownItem key="settings">My Settings</DropdownItem>
               <DropdownItem key="help">Help & Support</DropdownItem>
-              <DropdownItem onPress={handleSignOut} key="logout" color="danger">
+              <DropdownItem onPress={() => {
+                signOut({ redirectUrl: "/sign-in" })
+                toast.success("Signed out")
+              }} key="logout" color="danger">
                 Log Out
               </DropdownItem>
             </DropdownMenu>

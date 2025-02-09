@@ -15,7 +15,7 @@ const createBudget = async (data: NewBudgetSchema) => {
     const budget = await prisma.budget.create({
       data: {
         category,
-        currency,
+        currencyId: `${currency.toLowerCase()}-id`,
         amount,
         period,
         userId,
@@ -47,10 +47,12 @@ const deleteBudget = async (budgetId: string) => {
 const getBudgets = async () => {
   const user = await currentUser();
   if (!user) throw new Error("You must be signed in to get budgets");
-  const userId = user.id; 
+  const userId = user.id;
 
   try {
-    const budgets = await prisma.budget.findMany({ where: { userId } });
+    const budgets = await prisma.budget.findMany({ where: { userId }, include: {
+      currency: true
+    } },);
     const formattedBudgets = await Promise.all(
       budgets.map(async (budget) => {
         const expenses = await prisma.expense.findMany({
@@ -65,28 +67,32 @@ const getBudgets = async () => {
           amount: budget.amount.toNumber(),
           expenses: formattedExpenses,
         };
-        return formattedBudget;
+      return formattedBudget;
       })
     );
     return formattedBudgets;
   } catch (error) {
-    console.error("Error fetching budgets:", error);
     throw new Error("Failed to fetch budgets. Please try again later.");
   }
 };
 
 const getTotalBudgetAmount = async () => {
   const user = await currentUser();
-  if(!user) throw new Error("You must be signed in to get budgets");
-  const userId = user.id
-  try{
-    const budgets = await prisma.budget.findMany({ where: { userId }, select: { amount: true } });
-    const totalBudgetAmount = budgets.reduce((acc, budget) => acc + budget.amount.toNumber(), 0);
-    return totalBudgetAmount
-  }catch(error){  
-    throw error
+  if (!user) throw new Error("You must be signed in to get budgets");
+  const userId = user.id;
+  try {
+    const budgets = await prisma.budget.findMany({
+      where: { userId },
+      select: { amount: true },
+    });
+    const totalBudgetAmount = budgets.reduce(
+      (acc, budget) => acc + budget.amount.toNumber(),
+      0
+    );
+    return totalBudgetAmount;
+  } catch (error) {
+    throw error;
   }
-}
-
+};
 
 export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount };

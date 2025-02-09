@@ -18,11 +18,11 @@ import {
   type SortDescriptor,
   Tooltip,
   Link,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import { Expense } from "../../(home)/expenses/page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
 import { type Category } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
@@ -48,24 +48,14 @@ const ExpenseItems: React.FC<{
   userId: string | null | undefined;
   expenses: Expense[];
   expensesLoading: boolean;
-  onExpenseDeletionFinished: () => void;
-  onExpenseCreation: () => void;
-  onExpenseUpdate: () => void;
-}> = ({
-  userId,
-  expenses,
-  onExpenseDeletionFinished,
-  onExpenseCreation,
-  onExpenseUpdate,
-  expensesLoading,
-}) => {
+}> = ({ userId, expenses, expensesLoading }) => {
   const {
     delete: { mutateAsync: mutateDelete, isPending: isDeleting },
-    update: { mutateAsync: mutateUpdate, isPending: isUpdating },
   } = useExpenses(userId);
   const updateTriggerRef = useRef(false);
   const [editExpense, setEditExpense] = useState<Expense | null>(null);
   const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [showDescriptionFor, setShowDescriptionFor] = useState<Set<string>>(
     new Set()
   ); // Set to store expense IDs whose description is expanded
@@ -102,26 +92,14 @@ const ExpenseItems: React.FC<{
     }
   };
   const handleUpdateButtonClick = async () => {
-    if (editExpense) {
-      await mutateUpdate({
-        expenseId: editExpense.id,
-        data: {
-          date: editExpense.date,
-          amount: editExpense.amount,
-          currency: editExpense.currency,
-          category: editExpense.category as Category,
-          description: editExpense.description,
-        },
-      });
-    } else {
-      toast.error("Expense not found");
-    }
-  };
-  const handleExpenseUpdate = () => {
-    onExpenseUpdate();
+    updateTriggerRef.current = true;
+    setIsUpdating(true);
   };
   const handleUpdateFinished = () => {
     setEditExpense(null);
+    updateTriggerRef.current = false;
+    setIsUpdating(false);
+    onEditModalChange();
   };
   const handleRead = (expenseId: string) => {
     setShowDescriptionFor((prev) => {
@@ -204,7 +182,6 @@ const ExpenseItems: React.FC<{
                   isEditing={true}
                   editingExpense={editExpense}
                   updateTriggerState={updateTriggerRef}
-                  onUpdateExpense={handleExpenseUpdate}
                   onUpdateFinished={handleUpdateFinished}
                 />
               </ModalBody>
@@ -269,7 +246,7 @@ const ExpenseItems: React.FC<{
                           DESCRIPTION_TRUNCATE_LENGTH
                         )}...`}
                     <Link
-                      onClick={() => handleRead(expense.id)}
+                      onPress={() => handleRead(expense.id)}
                       className="text-muted-foreground cursor-pointer block"
                       size="sm"
                       underline="hover"

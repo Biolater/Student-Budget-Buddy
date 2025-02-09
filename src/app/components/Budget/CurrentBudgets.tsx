@@ -5,7 +5,7 @@ import {
   CardFooter,
   CardHeader,
   Tooltip,
-} from "@nextui-org/react";
+} from "@heroui/react";
 import Link from "next/link";
 import BudgetItem from "./BudgetItem";
 import BudgetSkeleton from "./BudgetSkeleton";
@@ -27,33 +27,6 @@ const CurrentBudgets: React.FC<{
   budgets: ClientBudget[];
   budgetsLoading: boolean;
 }> = ({ budgets, budgetsLoading }) => {
-  const [exchangeRates, setExchangeRates] = useState<{
-    [key: string]: number;
-  } | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const exchangeRates = await fetchExchangeRates("USD");
-      setExchangeRates(exchangeRates.conversion_rates);
-    })();
-  }, []);
-
-  const calculateTotalSpent = useMemo(
-    () =>
-      (expenses: ClientBudget["expenses"], targetCurrency: string): number =>
-        expenses.reduce(
-          (total, expense) =>
-            total +
-            convertAmount(
-              expense.amount,
-              expense.currency,
-              targetCurrency,
-              exchangeRates || {}
-            ),
-          0
-        ),
-    [exchangeRates]
-  );
 
   return (
     <Card className="bg-card">
@@ -66,7 +39,7 @@ const CurrentBudgets: React.FC<{
             View and manage your existing budgets
           </p>
         </div>
-        <Tooltip
+        {/* <Tooltip
           content="Hover over spent amounts to see individual expenses in their original currencies"
           color="foreground"
           classNames={{
@@ -74,24 +47,16 @@ const CurrentBudgets: React.FC<{
           }}
         >
           <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-        </Tooltip>
+        </Tooltip> */}
       </CardHeader>
       <CardBody className="p-6 pt-0 max-h-96 flex-col gap-4">
-        {budgetsLoading || !exchangeRates ? (
+        {budgetsLoading ? (
           <BudgetSkeleton />
         ) : budgets.length > 0 ? (
           budgets.map((budget) => {
-            const totalSpentInBudgetCurrency = calculateTotalSpent(
-              budget.expenses,
-              budget.currency
-            );
-            const spentPercentage =
-              (totalSpentInBudgetCurrency / budget.amount) * 100;
+      
             return (
               <BudgetItem
-                exchangeRates={exchangeRates || {}}
-                totalSpentInBudgetCurrency={totalSpentInBudgetCurrency}
-                totalSpentPercentage={spentPercentage}
                 key={budget.id}
                 budgetItem={budget}
               />
