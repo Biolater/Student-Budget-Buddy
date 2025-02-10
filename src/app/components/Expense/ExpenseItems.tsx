@@ -22,18 +22,19 @@ import {
 import { Expense } from "../../(home)/expenses/page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
-import { type Category } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import useExpenses from "@/hooks/useExpense";
+
 
 const TABLE_HEADERS = [
   { label: "Date", isSortable: true, key: "date" },
   { label: "Amount", isSortable: true, key: "amount" },
-  { label: "Category", isSortable: true, key: "category" },
-  { label: "Description", isSortable: true, key: "description" },
+  { label: "Category", key: "category" },
+  { label: "Description", key: "description" },
   { label: "Actions", key: "actions" },
+
 ];
 const currencies = [
   { code: "USD", symbol: "$" },
@@ -236,10 +237,11 @@ const ExpenseItems: React.FC<{
                 {expense.amount.toFixed(2)} {expense.currency}
               </TableCell>
               <TableCell>{expense.category}</TableCell>
-              <TableCell className="min-w-[200px]">
+              <TableCell className="min-w-[12.5rem]">
                 {expense.description.length > DESCRIPTION_TRUNCATE_LENGTH ? (
                   <>
                     {showDescriptionFor.has(expense.id)
+
                       ? expense.description
                       : `${expense.description.slice(
                           0,

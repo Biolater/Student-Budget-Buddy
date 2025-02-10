@@ -129,10 +129,14 @@ export const NavbarComponent = () => {
               </DropdownItem>
               <DropdownItem key="settings">My Settings</DropdownItem>
               <DropdownItem key="help">Help & Support</DropdownItem>
-              <DropdownItem onPress={() => {
-                signOut({ redirectUrl: "/sign-in" })
-                toast.success("Signed out")
-              }} key="logout" color="danger">
+              <DropdownItem
+                onPress={() => {
+                  signOut({ redirectUrl: "/sign-in" });
+                  toast.success("Signed out");
+                }}
+                key="logout"
+                color="danger"
+              >
                 Log Out
               </DropdownItem>
             </DropdownMenu>
@@ -143,7 +147,10 @@ export const NavbarComponent = () => {
         {isLoaded &&
           isSignedIn &&
           navLinks.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
+            <NavbarMenuItem
+              isActive={pathname === item.href}
+              key={`${item}-${index}`}
+            >
               <Link
                 className="w-full"
                 color="foreground"

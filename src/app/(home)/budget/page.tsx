@@ -29,6 +29,7 @@ const Budget = () => {
         <CurrentBudgets
           budgets={budgets || []}
           budgetsLoading={budgetsLoading}
+          userId={userId}
         />
         <AddNewBudget />
         <BudgetOverview />

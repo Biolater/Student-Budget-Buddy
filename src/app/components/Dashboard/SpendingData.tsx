@@ -102,6 +102,8 @@ const SpendingData: React.FC<{
           },
         },
       },
+      barThickness: 20,
+      maxBarThickness: 20,
     });
   }, [theme, systemTheme, mounted]);
 

@@ -10,13 +10,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useEffect } from "react";
+import type { Currency } from "@prisma/client";
 
 type BudgetDataProps = {
   totalBudget?: number | null;
   spent?: number | null;
   savingsGoal?: number | null;
   savedAmount?: number | null;
+  defaultCurrency: Currency | undefined;
 };
 
 const BudgetData: React.FC<BudgetDataProps> = ({
@@ -24,10 +25,13 @@ const BudgetData: React.FC<BudgetDataProps> = ({
   spent,
   savingsGoal,
   savedAmount,
+  defaultCurrency,
 }) => {
+  const currencySymbol = defaultCurrency?.symbol || "$";
 
   const containerVariants = {
     hidden: { opacity: 0 },
+
     visible: {
       opacity: 1,
       transition: {
@@ -69,7 +73,8 @@ const BudgetData: React.FC<BudgetDataProps> = ({
               <>
                 <div className="flex flex-col gap-1">
                   <div className="text-2xl font-bold text-foreground">
-                    ${totalBudget.toLocaleString()}
+                    {currencySymbol}
+                    {totalBudget.toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     For this semester
@@ -105,7 +110,8 @@ const BudgetData: React.FC<BudgetDataProps> = ({
             {spent ? (
               <div className="flex flex-col gap-1">
                 <div className="text-2xl font-bold text-foreground">
-                  ${spent.toLocaleString()}
+                  {currencySymbol}
+                  {spent.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {totalBudget
@@ -147,7 +153,8 @@ const BudgetData: React.FC<BudgetDataProps> = ({
               <>
                 <div className="flex flex-col gap-1">
                   <div className="text-2xl font-bold text-foreground">
-                    ${(totalBudget - spent).toLocaleString()}
+                    {currencySymbol}
+                    {(totalBudget - spent).toLocaleString()}
                   </div>
                   <Progress
                     aria-label="Budget progress"
@@ -202,10 +209,12 @@ const BudgetData: React.FC<BudgetDataProps> = ({
               <>
                 <div className="flex flex-col gap-1">
                   <div className="text-2xl font-bold text-foreground">
-                    ${savingsGoal.toLocaleString()}
+                    {currencySymbol}
+                    {savingsGoal.toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    ${savedAmount?.toLocaleString()} saved so far
+                    {currencySymbol}
+                    {savedAmount?.toLocaleString()} saved so far
                   </p>
                   <Progress
                     aria-label="Savings progress"
