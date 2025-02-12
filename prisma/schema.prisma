@@ -18,7 +18,7 @@ model User {
   id             String    @id
   email          String    @unique
   username       String    @unique
-  expenses       Expense[]
+  expenses       Expense[]  
   budgets        Budget[]
   baseCurrency   Currency  @relation(fields: [baseCurrencyId], references: [id])
   baseCurrencyId String    @default("usd-id")
