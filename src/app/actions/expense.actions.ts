@@ -194,14 +194,9 @@ const getTotalSpent = async () => {
 
     let totalSpent = 0;
     for (const expense of formattedExpenses) {
-      const amountInBaseCurrency = await convertCurrency(
-        expense.amount,
-        expense.currency,
-        baseCurrency.code
-      );
-      totalSpent += amountInBaseCurrency;
+      const amountToAdd = expense.currency === baseCurrency.code ? expense.amount : await convertCurrency(expense.amount, expense.currency, baseCurrency.code);
+      totalSpent += amountToAdd;
     }
-
     return totalSpent;
   } catch (error) {
     throw error;

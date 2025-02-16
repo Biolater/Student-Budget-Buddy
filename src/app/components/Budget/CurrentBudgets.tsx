@@ -8,12 +8,8 @@ import {
 } from "@heroui/react";
 import Link from "next/link";
 import BudgetItem from "./BudgetItem";
-import BudgetSkeleton from "./BudgetSkeleton";
-import { useEffect, useMemo, useState } from "react";
-import fetchExchangeRates from "@/app/lib/getLatestExchangeRates";
-import { convertAmount } from "@/app/lib/currencyUtils";
+import BudgetSkeleton from "./BudgetSkeleton";;
 import { ClientBudget } from "./AddNewBudget";
-import { Info } from "lucide-react";
 
 export const currencies = [
   { code: "USD", symbol: "$" },
