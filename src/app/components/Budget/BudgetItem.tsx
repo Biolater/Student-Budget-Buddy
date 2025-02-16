@@ -10,13 +10,24 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { type ClientBudget } from "./AddNewBudget";
+import useBudget from "@/hooks/useBudget";
 
-const BudgetItem: React.FC<{ budgetItem: ClientBudget }> = ({ budgetItem }) => {
+const BudgetItem: React.FC<{
+  budgetItem: ClientBudget;
+  userId: string | undefined | null;
+}> = ({ budgetItem, userId }) => {
   const {
     isOpen: deleteModalOpen,
     onOpen: onDeleteOpen,
     onOpenChange: onDeleteChange,
   } = useDisclosure();
+
+  const {
+    delete: {
+      mutateAsync: deleteBudget,
+      isPending: isDeletingBudget,
+    },
+  } = useBudget(userId);
 
   const budgetCategory = budgetItem.category;
   const budgetCurrencySymbol = budgetItem.currency.symbol;
@@ -76,10 +87,22 @@ const BudgetItem: React.FC<{ budgetItem: ClientBudget }> = ({ budgetItem }) => {
                 </span>
               </ModalHeader>
               <ModalFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
+                <Button
+                  isDisabled={isDeletingBudget}
+                  variant="light"
+                  onPress={onClose}
+                >
                   Cancel
                 </Button>
-                <Button color="danger" onPress={onClose}>
+                <Button
+                  color="danger"
+                  onPress={async () => {
+                    await deleteBudget(budgetItem.id);
+                    onClose();
+                  }}
+                  isLoading={isDeletingBudget}
+                  isDisabled={isDeletingBudget}
+                >
                   Delete
                 </Button>
               </ModalFooter>

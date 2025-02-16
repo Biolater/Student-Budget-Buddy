@@ -13,6 +13,8 @@ import {
   type SpendingDataByMonth,
 } from "@/app/actions/expense.actions";
 import useExpenses from "@/hooks/useExpense";
+import { useQuery } from "@tanstack/react-query";
+import { getDefaultCurrency } from "@/app/lib/currencyUtils";
 
 const DashboardComponent = () => {
   const { user } = useUser();
@@ -24,6 +26,15 @@ const DashboardComponent = () => {
       isError: totalBudgetError,
     },
   } = useBudget(user?.id);
+
+  const { data: defaultCurrency, isLoading: defaultCurrencyLoading, isError: defaultCurrencyError } = useQuery({
+    queryKey: ["default-currency"],
+    queryFn: async () => {
+      const defaultCurrency = await getDefaultCurrency();
+      return defaultCurrency;
+    },
+  });
+
 
   const {
     totalSpentAmount: {
@@ -59,7 +70,12 @@ const DashboardComponent = () => {
     if (spendingError) {
       toast.error("Error fetching spending by category");
     }
-  }, [totalBudgetError, totalSpentError, monthlySpendingError, spendingError]);
+
+    if (defaultCurrencyError) {
+      toast.error("Error fetching default currency");
+    }
+  }, [totalBudgetError, totalSpentError, monthlySpendingError, spendingError, defaultCurrencyError]);
+
 
   if (!user) {
     return null;
@@ -68,6 +84,7 @@ const DashboardComponent = () => {
   return totalBudgetLoading ||
     totalSpentLoading ||
     monthlySpendingLoading ||
+    defaultCurrencyLoading ||
     spendingLoading ? (
     <DashboardSkeleton />
   ) : (
@@ -75,6 +92,7 @@ const DashboardComponent = () => {
       <h1 className="text-3xl font-bold mb-8">Financial Dashboard</h1>
       <div className="flex flex-col">
         <BudgetData
+          defaultCurrency={defaultCurrency}
           savedAmount={600}
           savingsGoal={1000}
           totalBudget={totalBudget}

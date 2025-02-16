@@ -35,10 +35,11 @@ const BudgetOverview = () => {
           <p className="text-xs text-muted-foreground">33.3% left</p>
         </div>
       </CardBody>
-      <CardFooter className="flex items-center p-6 pt-0">
+      <CardFooter className="flex items-center justify-end p-6 pt-0">
         <Button color="primary" className="lg:w-full" as={Link} href="/dashboard">
           Back to Dashboard{" "}
           <svg
+
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"

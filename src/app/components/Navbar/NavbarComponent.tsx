@@ -8,7 +8,6 @@ import {
   NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
-  Link,
   Button,
   DropdownTrigger,
   Dropdown,
@@ -22,15 +21,20 @@ import { PiggyBank } from "lucide-react";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { ThemeSwitcher } from "../ThemeSwitcher";
 import toast from "react-hot-toast";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
+import { LayoutGroup, motion } from "framer-motion";
+import Link from "next/link";
 
 export const NavbarComponent = () => {
+  // State to track if the component is mounted in the client
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
+  const router = useRouter();
   const pathname = usePathname();
 
+  // Define your navigation links
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/expenses", label: "Expenses" },
@@ -39,10 +43,12 @@ export const NavbarComponent = () => {
     { href: "/analysis", label: "Analysis" },
   ];
 
+  // Set isClient true once the component has mounted
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  // Prevent server-side rendering issues
   if (!isClient) {
     return null;
   }
@@ -58,6 +64,7 @@ export const NavbarComponent = () => {
         ],
       }}
     >
+      {/* Top left section with the menu toggle and brand */}
       <NavbarContent as="div">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
@@ -68,33 +75,53 @@ export const NavbarComponent = () => {
           href={isSignedIn ? "/dashboard" : "/"}
           className="gap-3 text-foreground"
         >
-          <PiggyBank />
+          <PiggyBank aria-hidden="true" />
           <p className="font-bold text-inherit">Budget Buddy</p>
         </NavbarBrand>
       </NavbarContent>
+
+      {/* Navigation links for signed in users */}
       {isLoaded && isSignedIn && (
         <NavbarContent
           className="hidden md:flex gap-4 flex-grow"
           justify="center"
         >
-          {navLinks.map((link) => (
-            <li key={link.href}>
-              <NavbarItem
-                as={Link}
-                isActive={pathname === link.href}
-                href={link.href}
-                className="text-muted-foreground transition-colors hover:text-foreground hover:bg-secondary px-3 py-2 rounded-md text-sm"
-              >
-                {link.label}
-              </NavbarItem>
-            </li>
-          ))}
+          <LayoutGroup id="navbar-items">
+            {navLinks.map((link) => (
+              <li className="relative" key={link.href}>
+                <NavbarItem
+                  id={link.href}
+                  as="button"
+                  onClick={() => router.push(link.href)}
+                  className={`relative text-muted-foreground transition-colors hover:text-foreground px-3 ${
+                    pathname === link.href ? "text-foreground" : ""
+                  } py-2 rounded-md text-sm z-10`}
+                  aria-current={pathname === link.href ? "page" : undefined}
+                >
+                  {link.label}
+                </NavbarItem>
+                {pathname === link.href && (
+                  <motion.div
+                    className="absolute inset-0 bg-secondary rounded-md"
+                    layoutId="navbar-item-active"
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 30,
+                    }}
+                  />
+                )}
+              </li>
+            ))}
+          </LayoutGroup>
         </NavbarContent>
       )}
+
+      {/* Right side: Theme switcher, auth buttons or user dropdown */}
       <NavbarContent as="div" justify="end">
         <ThemeSwitcher />
         {isLoaded && !isSignedIn && (
-          <div className="md:flex gap-4 hidden">
+          <div className="hidden md:flex gap-4">
             <Button
               variant="bordered"
               color="primary"
@@ -118,6 +145,7 @@ export const NavbarComponent = () => {
                 color="primary"
                 src={user.imageUrl || "https://via.placeholder.com/150"}
                 size="sm"
+                alt="User avatar"
               />
             </DropdownTrigger>
             <DropdownMenu aria-label="Profile Actions" variant="flat">
@@ -128,28 +156,32 @@ export const NavbarComponent = () => {
                 </p>
               </DropdownItem>
               <DropdownItem key="settings">My Settings</DropdownItem>
-              <DropdownItem key="help">Help & Support</DropdownItem>
-              <DropdownItem onPress={() => {
-                signOut({ redirectUrl: "/sign-in" })
-                toast.success("Signed out")
-              }} key="logout" color="danger">
+              <DropdownItem key="help">Help &amp; Support</DropdownItem>
+              <DropdownItem
+                key="logout"
+                color="danger"
+                onPress={() => {
+                  signOut({ redirectUrl: "/sign-in" });
+                  toast.success("Signed out");
+                }}
+              >
                 Log Out
               </DropdownItem>
             </DropdownMenu>
           </Dropdown>
         )}
       </NavbarContent>
+
+      {/* Mobile Menu */}
       <NavbarMenu>
         {isLoaded &&
           isSignedIn &&
           navLinks.map((item, index) => (
-            <NavbarMenuItem key={`${item}-${index}`}>
-              <Link
-                className="w-full"
-                color="foreground"
-                href={item.href}
-                size="lg"
-              >
+            <NavbarMenuItem
+              key={`${item.href}-${index}`}
+              isActive={pathname === item.href}
+            >
+              <Link className="w-full" color="foreground" href={item.href}>
                 {item.label}
               </Link>
             </NavbarMenuItem>
@@ -157,32 +189,17 @@ export const NavbarComponent = () => {
         {!isSignedIn && (
           <>
             <NavbarMenuItem>
-              <Link
-                color="foreground"
-                className="w-full"
-                size="lg"
-                href="/about"
-              >
+              <Link color="foreground" className="w-full" href="/about">
                 About
               </Link>
             </NavbarMenuItem>
             <NavbarMenuItem>
-              <Link
-                color="foreground"
-                className="w-full"
-                size="lg"
-                href="/features"
-              >
+              <Link color="foreground" className="w-full" href="/features">
                 Features
               </Link>
             </NavbarMenuItem>
             <NavbarMenuItem>
-              <Link
-                color="foreground"
-                className="w-full"
-                size="lg"
-                href="/benefits"
-              >
+              <Link color="foreground" className="w-full" href="/benefits">
                 Benefits
               </Link>
             </NavbarMenuItem>

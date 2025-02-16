@@ -22,17 +22,16 @@ import {
 import { Expense } from "../../(home)/expenses/page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import ExpenseForm from "./ExpenseForm";
-import { type Category } from "@/app/actions/expense.actions";
 import toast from "react-hot-toast";
 import useExpenses from "@/hooks/useExpense";
 
 const TABLE_HEADERS = [
   { label: "Date", isSortable: true, key: "date" },
   { label: "Amount", isSortable: true, key: "amount" },
-  { label: "Category", isSortable: true, key: "category" },
-  { label: "Description", isSortable: true, key: "description" },
+  { label: "Category", key: "category" },
+  { label: "Description", key: "description" },
   { label: "Actions", key: "actions" },
 ];
 const currencies = [
@@ -43,6 +42,7 @@ const currencies = [
   { code: "AZN", symbol: "₼" },
 ];
 const DESCRIPTION_TRUNCATE_LENGTH = 40;
+const ITEMS_PER_PAGE = 5;
 
 const ExpenseItems: React.FC<{
   userId: string | null | undefined;
@@ -63,6 +63,7 @@ const ExpenseItems: React.FC<{
     column: "date",
     direction: "descending",
   });
+  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
 
   const {
     isOpen: editModelOpen,
@@ -121,6 +122,20 @@ const ExpenseItems: React.FC<{
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, expenses]);
+
+  const hasMore = expenses.length > displayCount;
+
+  const handleShowMoreClick = () => {
+    setDisplayCount((prev) => prev + ITEMS_PER_PAGE);
+  };
+
+  const handleShowLessClick = () => {
+    setDisplayCount(ITEMS_PER_PAGE);
+  };
+
+  const currentItems = useMemo(() => {
+    return sortedItems.slice(0, displayCount);
+  }, [sortedItems, displayCount]);
 
   return (
     <>
@@ -202,91 +217,117 @@ const ExpenseItems: React.FC<{
           )}
         </ModalContent>
       </Modal>
-      <Table
-        sortDescriptor={sortDescriptor}
-        onSortChange={setSortDescriptor}
-        removeWrapper
-        classNames={{ base: "w-full overflow-auto" }}
-        aria-label="Expense table"
-      >
-        <TableHeader columns={TABLE_HEADERS}>
-          {(column) => (
-            <TableColumn allowsSorting={column?.isSortable} key={column.key}>
-              {column.label}
-            </TableColumn>
-          )}
-        </TableHeader>
-        <TableBody
-          items={sortedItems}
-          loadingContent={<Spinner label="Loading..." />}
-          isLoading={expensesLoading}
+      <div className="space-y-4 w-full">
+        <Table
+          sortDescriptor={sortDescriptor}
+          onSortChange={setSortDescriptor}
+          removeWrapper
+          classNames={{ base: "w-full overflow-auto" }}
+          aria-label="Expense table"
         >
-          {sortedItems.map((expense, index) => (
-            <TableRow
-              key={expense.id}
-              className={`${
-                index === sortedItems.length - 1 ? "" : "border-b border-border"
-              } hover:bg-primary-opacity transition-colors duration-200 ease-in-out`}
-            >
-              <TableCell className="whitespace-nowrap">
-                {format(expense.date, "MMM d, yyyy, h:mm a")}
-              </TableCell>
-              <TableCell>
-                {currencies.find((c) => c.code === expense.currency)?.symbol}
-                {expense.amount.toFixed(2)} {expense.currency}
-              </TableCell>
-              <TableCell>{expense.category}</TableCell>
-              <TableCell className="min-w-[200px]">
-                {expense.description.length > DESCRIPTION_TRUNCATE_LENGTH ? (
-                  <>
-                    {showDescriptionFor.has(expense.id)
-                      ? expense.description
-                      : `${expense.description.slice(
-                          0,
-                          DESCRIPTION_TRUNCATE_LENGTH
-                        )}...`}
-                    <Link
-                      onPress={() => handleRead(expense.id)}
-                      className="text-muted-foreground cursor-pointer block"
-                      size="sm"
-                      underline="hover"
-                      aria-expanded={showDescriptionFor.has(expense.id)}
-                    >
+          <TableHeader columns={TABLE_HEADERS}>
+            {(column) => (
+              <TableColumn allowsSorting={column?.isSortable} key={column.key}>
+                {column.label}
+              </TableColumn>
+            )}
+          </TableHeader>
+          <TableBody
+            items={currentItems}
+            loadingContent={<Spinner label="Loading..." />}
+            isLoading={expensesLoading}
+          >
+            {currentItems.map((expense, index) => (
+              <TableRow
+                key={expense.id}
+                className={`${
+                  index === currentItems.length - 1
+                    ? ""
+                    : "border-b border-border"
+                } hover:bg-primary-opacity transition-colors duration-200 ease-in-out`}
+              >
+                <TableCell className="whitespace-nowrap">
+                  {format(expense.date, "MMM d, yyyy, h:mm a")}
+                </TableCell>
+                <TableCell>
+                  {currencies.find((c) => c.code === expense.currency)?.symbol}
+                  {expense.amount.toFixed(2)} {expense.currency}
+                </TableCell>
+                <TableCell>{expense.category}</TableCell>
+                <TableCell className="min-w-[12.5rem]">
+                  {expense.description.length > DESCRIPTION_TRUNCATE_LENGTH ? (
+                    <>
                       {showDescriptionFor.has(expense.id)
-                        ? "Read less"
-                        : "Read more"}
-                    </Link>
-                  </>
-                ) : (
-                  expense.description
-                )}
-              </TableCell>
-              <TableCell>
-                <div className="flex space-x-2 items-center">
-                  <Button
-                    className="min-w-8 min-h-8 h-full rounded-xl p-3"
-                    variant="light"
-                    size="sm"
-                    onPress={() => handleEditModalOpen(expense)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                    <span className="sr-only">Edit</span>
-                  </Button>
-                  <Button
-                    className="min-w-8 min-h-8 h-full rounded-xl p-3"
-                    onPress={() => handleDeleteModalOpen(expense)}
-                    color="danger"
-                    size="md"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete</span>
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                        ? expense.description
+                        : `${expense.description.slice(
+                            0,
+                            DESCRIPTION_TRUNCATE_LENGTH
+                          )}...`}
+                      <Link
+                        onPress={() => handleRead(expense.id)}
+                        className="text-muted-foreground cursor-pointer block"
+                        size="sm"
+                        underline="hover"
+                        aria-expanded={showDescriptionFor.has(expense.id)}
+                      >
+                        {showDescriptionFor.has(expense.id)
+                          ? "Read less"
+                          : "Read more"}
+                      </Link>
+                    </>
+                  ) : (
+                    expense.description
+                  )}
+                </TableCell>
+                <TableCell>
+                  <div className="flex space-x-2 items-center">
+                    <Button
+                      className="min-w-8 min-h-8 h-full rounded-xl p-3"
+                      variant="light"
+                      size="sm"
+                      onPress={() => handleEditModalOpen(expense)}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span className="sr-only">Edit</span>
+                    </Button>
+                    <Button
+                      className="min-w-8 min-h-8 h-full rounded-xl p-3"
+                      onPress={() => handleDeleteModalOpen(expense)}
+                      color="danger"
+                      size="md"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+
+        {expenses.length > ITEMS_PER_PAGE && (
+          <div className="flex justify-center mt-4">
+            {hasMore ? (
+              <Button
+                variant="light"
+                onPress={handleShowMoreClick}
+                className="w-full max-w-[200px]"
+              >
+                Show More
+              </Button>
+            ) : (
+              <Button
+                variant="light"
+                onPress={handleShowLessClick}
+                className="w-full max-w-[200px]"
+              >
+                Show Less
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
     </>
   );
 };
