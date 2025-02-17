@@ -1,37 +1,68 @@
 "use client";
 
 import { Card, CardHeader, CardBody, Progress } from "@heroui/react";
-import {
-  ArrowRight,
-  BarChart3,
-  DollarSign,
-  TrendingUp,
-  Wallet,
-} from "lucide-react";
+import { ArrowRight, BarChart3, DollarSign, TrendingUp, Wallet } from 'lucide-react';
 import Link from "next/link";
 import { motion } from "framer-motion";
-import type { Currency } from "@prisma/client";
+
+type Currency = {
+  code: string;
+  symbol: string;
+};
 
 type BudgetDataProps = {
-  totalBudget?: number | null;
-  spent?: number | null;
+  budgets: {
+    id: string;
+    amount: number;
+    currency: string;
+    category: string;
+    startDate: Date;
+    endDate: Date;
+  }[];
+  expenses: {
+    amount: number;
+    currency: string;
+    date: Date;
+    budgetId: string;
+  }[];
+  defaultCurrency: Currency;
   savingsGoal?: number | null;
   savedAmount?: number | null;
-  defaultCurrency: Currency | undefined;
 };
 
 const BudgetData: React.FC<BudgetDataProps> = ({
-  totalBudget,
-  spent,
+  budgets,
+  expenses,
+  defaultCurrency,
   savingsGoal,
   savedAmount,
-  defaultCurrency,
 }) => {
   const currencySymbol = defaultCurrency?.symbol || "$";
 
+  // Calculate total budget in default currency
+  const totalBudget = budgets.reduce((total, budget) => {
+    // Convert budget amount to default currency
+    const convertedAmount = convertCurrency(budget.amount, budget.currency, defaultCurrency.code);
+    return total + convertedAmount;
+  }, 0);
+
+  // Calculate total spent in default currency
+  const totalSpent = expenses.reduce((total, expense) => {
+    // Convert expense amount to default currency
+    const convertedAmount = convertCurrency(expense.amount, expense.currency, defaultCurrency.code);
+    return total + convertedAmount;
+  }, 0);
+
+  // Calculate remaining budget
+  const remainingBudget = totalBudget - totalSpent;
+
+  // Determine the overall budget period
+  const earliestStartDate = new Date(Math.min(...budgets.map(b => b.startDate.getTime())));
+  const latestEndDate = new Date(Math.max(...budgets.map(b => b.endDate.getTime())));
+  const budgetPeriod = `${formatDate(earliestStartDate)} - ${formatDate(latestEndDate)}`;
+
   const containerVariants = {
     hidden: { opacity: 0 },
-
     visible: {
       opacity: 1,
       transition: {
@@ -69,30 +100,14 @@ const BudgetData: React.FC<BudgetDataProps> = ({
             <DollarSign className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardBody className="p-4 pt-0 flex flex-col justify-between gap-2">
-            {totalBudget ? (
-              <>
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold text-foreground">
-                    {currencySymbol}
-                    {totalBudget.toLocaleString()}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    For this semester
-                  </p>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground">No budget set</p>
-                <Link
-                  href="/budget"
-                  className="inline-flex self-start items-center gap-2 text-sm text-primary hover:underline"
-                >
-                  Add Budget
-                  <ArrowRight className="size-4" />
-                </Link>
+            <div className="flex flex-col gap-1">
+              <div className="text-2xl font-bold text-foreground">
+                {currencySymbol}{totalBudget.toLocaleString()}
               </div>
-            )}
+              <p className="text-xs text-muted-foreground">
+                {budgetPeriod}
+              </p>
+            </div>
           </CardBody>
         </Card>
       </motion.div>
@@ -107,34 +122,14 @@ const BudgetData: React.FC<BudgetDataProps> = ({
             <Wallet className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardBody className="p-4 pt-0 flex flex-col justify-between gap-2">
-            {spent ? (
-              <div className="flex flex-col gap-1">
-                <div className="text-2xl font-bold text-foreground">
-                  {currencySymbol}
-                  {spent.toLocaleString()}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {totalBudget
-                    ? `${((spent / totalBudget) * 100).toFixed(
-                        1
-                      )}% of total budget`
-                    : ""}
-                </p>
+            <div className="flex flex-col gap-1">
+              <div className="text-2xl font-bold text-foreground">
+                {currencySymbol}{totalSpent.toLocaleString()}
               </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground">
-                  No expenses recorded
-                </p>
-                <Link
-                  href="/expenses"
-                  className="inline-flex self-start items-center gap-2 text-sm text-primary hover:underline"
-                >
-                  Add expenses
-                  <ArrowRight className="size-4" />
-                </Link>
-              </div>
-            )}
+              <p className="text-xs text-muted-foreground">
+                {((totalSpent / totalBudget) * 100).toFixed(1)}% of total budget
+              </p>
+            </div>
           </CardBody>
         </Card>
       </motion.div>
@@ -149,48 +144,30 @@ const BudgetData: React.FC<BudgetDataProps> = ({
             <BarChart3 className="size-4 text-muted-foreground" />
           </CardHeader>
           <CardBody className="p-4 pt-0 flex flex-col justify-between gap-2">
-            {totalBudget && spent ? (
-              <>
-                <div className="flex flex-col gap-1">
-                  <div className="text-2xl font-bold text-foreground">
-                    {currencySymbol}
-                    {(totalBudget - spent).toLocaleString()}
-                  </div>
-                  <Progress
-                    aria-label="Budget progress"
-                    classNames={{
-                      base: "max-w-full",
-                      track: "drop-shadow-md border border-default",
-                      indicator: `${
-                        (spent / totalBudget) * 100 > 100
-                          ? "bg-destructive"
-                          : (spent / totalBudget) * 100 > 75
-                          ? "bg-warning"
-                          : (spent / totalBudget) * 100 > 50
-                          ? "bg-primary"
-                          : "bg-success"
-                      }`,
-                      label: "tracking-wider font-medium text-default-600",
-                      value: "text-foreground/60",
-                    }}
-                    value={Math.min((spent / totalBudget) * 100, 100)}
-                  />
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <p className="text-sm text-muted-foreground">
-                  Set a budget to track remaining funds
-                </p>
-                <Link
-                  href="/budget"
-                  className="inline-flex self-start items-center gap-2 text-sm text-primary hover:underline"
-                >
-                  Set budget
-                  <ArrowRight className="size-4" />
-                </Link>
+            <div className="flex flex-col gap-1">
+              <div className="text-2xl font-bold text-foreground">
+                {currencySymbol}{remainingBudget.toLocaleString()}
               </div>
-            )}
+              <Progress
+                aria-label="Budget progress"
+                classNames={{
+                  base: "max-w-full",
+                  track: "drop-shadow-md border border-default",
+                  indicator: `${
+                    (totalSpent / totalBudget) * 100 > 100
+                      ? "bg-destructive"
+                      : (totalSpent / totalBudget) * 100 > 75
+                      ? "bg-warning"
+                      : (totalSpent / totalBudget) * 100 > 50
+                      ? "bg-primary"
+                      : "bg-success"
+                  }`,
+                  label: "tracking-wider font-medium text-default-600",
+                  value: "text-foreground/60",
+                }}
+                value={Math.min((totalSpent / totalBudget) * 100, 100)}
+              />
+            </div>
           </CardBody>
         </Card>
       </motion.div>
@@ -209,12 +186,10 @@ const BudgetData: React.FC<BudgetDataProps> = ({
               <>
                 <div className="flex flex-col gap-1">
                   <div className="text-2xl font-bold text-foreground">
-                    {currencySymbol}
-                    {savingsGoal.toLocaleString()}
+                    {currencySymbol}{savingsGoal.toLocaleString()}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {currencySymbol}
-                    {savedAmount?.toLocaleString()} saved so far
+                    {currencySymbol}{savedAmount?.toLocaleString()} saved so far
                   </p>
                   <Progress
                     aria-label="Savings progress"
@@ -233,10 +208,7 @@ const BudgetData: React.FC<BudgetDataProps> = ({
                       label: "tracking-wider font-medium text-default-600",
                       value: "text-foreground/60",
                     }}
-                    value={Math.min(
-                      savedAmount ? (savedAmount / savingsGoal) * 100 : 0,
-                      100
-                    )}
+                    value={Math.min(savedAmount ? ((savedAmount / savingsGoal) * 100) : 0, 100)}
                   />
                 </div>
               </>
@@ -260,5 +232,17 @@ const BudgetData: React.FC<BudgetDataProps> = ({
     </motion.div>
   );
 };
+
+// Helper function to convert currency (you'll need to implement this)
+function convertCurrency(amount: number, fromCurrency: string, toCurrency: string): number {
+  // Implement currency conversion logic here
+  // For now, we'll just return the amount
+  return amount;
+}
+
+// Helper function to format date
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
 
 export default BudgetData;
