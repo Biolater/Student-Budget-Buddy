@@ -38,7 +38,7 @@ const Budget = () => {
           budgetsLoading={budgetsLoading}
           userId={userId}
         />
-        <BudgetForm currencies={currencies || []} onSubmit={() => {}} />
+        <BudgetForm currencies={currencies || []}/>
         <BudgetOverview />
       </div>
     </main>

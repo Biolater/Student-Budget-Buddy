@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -13,6 +13,7 @@ import {
   Tabs,
   Tab,
   DatePicker,
+  Selection,
 } from "@heroui/react";
 import { Plus } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
@@ -20,6 +21,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
+import { DateValue } from "@heroui/react";
+import useBudget from "@/hooks/useBudget";
 
 // Categories from your existing code
 const categories = [
@@ -81,11 +84,14 @@ const PREDEFINED_PERIODS = {
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
   currencyId: z.string().nonempty("Currency is required"),
-  amount: z.number().positive("Amount must be greater than 0"),
+  amount: z.coerce
+    .number()
+    .min(0.01, "Amount must be greater than 0")
+    .positive("Amount must be positive"),
   period: z.string().nonempty("Period is required"),
   periodType: z.enum(["predefined", "custom"]),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
+  startDate: z.custom<DateValue>().optional(),
+  endDate: z.custom<DateValue>().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -96,19 +102,17 @@ interface BudgetFormProps {
     symbol: string;
     code: string;
   }[];
-  onSubmit: (data: FormData) => Promise<void>;
-  isSubmitting?: boolean;
 }
 
-const BudgetForm: React.FC<BudgetFormProps> = ({
-  currencies,
-  onSubmit,
-  isSubmitting = false,
-}) => {
+const BudgetForm: React.FC<BudgetFormProps> = ({ currencies }) => {
   const [periodType, setPeriodType] = useState<"predefined" | "custom">(
     "predefined"
   );
   const { userId } = useAuth();
+
+  const {
+    create: { mutateAsync: createBudget, isPending: creatingBudget },
+  } = useBudget(userId);
 
   const {
     register,
@@ -123,7 +127,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
       category: "",
       currencyId: "",
       amount: 0,
-      period: "monthly",
+      period: "",
       periodType: "predefined",
     },
   });
@@ -135,7 +139,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
     }
 
     try {
-      await onSubmit(data);
+      await createBudget(data);
       toast.success("Budget created successfully");
     } catch (error) {
       toast.error(
@@ -146,10 +150,11 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
 
   const watchPeriod = watch("period");
   const watchCategory = watch("category");
+  const watchCurrency = watch("currencyId");
 
   return (
     <Card className="bg-card">
-      <CardHeader className="flex flex-col space-y-1.5 p-6">
+      <CardHeader className="flex flex-col gap-1.5 p-6">
         <h3 className="text-2xl font-semibold leading-none tracking-tight">
           Create New Budget
         </h3>
@@ -158,13 +163,17 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
         </p>
       </CardHeader>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
-        <CardBody className="p-6 pt-0 space-y-4">
+        <CardBody className="p-6 pt-0 flex flex-col gap-4">
           {/* Category Selection */}
-          <div className="space-y-2">
-            <label htmlFor="category" className="text-sm font-medium">
-              Category
-            </label>
-            <Select>
+          <div className="flex flex-col gap-2">
+            <Select
+              label="Category"
+              labelPlacement="outside"
+              placeholder="Select Category"
+              {...register("category")}
+              errorMessage={errors.category?.message}
+              isInvalid={!!errors.category}
+            >
               {categories.map((category) => (
                 <SelectItem key={category.key}>{category.label}</SelectItem>
               ))}
@@ -172,54 +181,54 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
           </div>
 
           {/* Currency Selection */}
-          <div className="space-y-2">
-            <label htmlFor="currencyId" className="text-sm font-medium">
-              Currency
-            </label>
+          <div className="flex flex-col gap-2">
             <Select
+              label="Currency"
+              labelPlacement="outside"
+              placeholder="Select Currency"
               {...register("currencyId")}
               errorMessage={errors.currencyId?.message}
               isInvalid={!!errors.currencyId}
-              value={watch("currencyId")}
             >
               {currencies.map((currency) => (
                 <SelectItem key={currency.id}>
-                  {currency.symbol} {currency.code}
+                  {`${currency.symbol} ${currency.code}`}
                 </SelectItem>
               ))}
             </Select>
           </div>
 
           {/* Amount Input */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Amount</label>
-            <Controller
-              name="amount"
-              control={control}
-              render={({ field }) => (
-                <Input
-                  type="number"
-                  step="0.01"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  errorMessage={errors.amount?.message}
-                  isInvalid={!!errors.amount}
-                />
-              )}
+          <div className="flex flex-col gap-2">
+            <Input
+              label="Amount"
+              labelPlacement="outside"
+              type="number"
+              step="0.01"
+              {...register("amount")}
+              errorMessage={errors.amount?.message}
+              isInvalid={!!errors.amount}
             />
           </div>
 
           {/* Period Selection */}
-          <div className="space-y-4">
+          <div className="flex flex-col gap-2">
             <Tabs
+              className="w-full"
+              classNames={{
+                tabList: "w-full",
+              }}
               selectedKey={periodType}
               onSelectionChange={(key) =>
                 setPeriodType(key as "predefined" | "custom")
               }
             >
               <Tab key="predefined" title="Predefined Periods">
-                <div className="pt-4 space-y-4">
+                <div className="flex flex-col gap-2">
                   <Select
+                    label="Period"
+                    labelPlacement="outside"
+                    placeholder="Select Period"
                     {...register("period")}
                     errorMessage={errors.period?.message}
                     isInvalid={!!errors.period}
@@ -231,7 +240,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
                 </div>
               </Tab>
               <Tab key="custom" title="Custom Period">
-                <div className="pt-4 space-y-4">
+                <div className="flex flex-col gap-2">
                   <div className="grid grid-cols-2 gap-4">
                     <Controller
                       name="startDate"
@@ -239,7 +248,8 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
                       render={({ field }) => (
                         <DatePicker
                           label="Start Date"
-                          selected={field.value}
+                          labelPlacement="outside"
+                          value={field.value}
                           onChange={field.onChange}
                           errorMessage={errors.startDate?.message}
                         />
@@ -251,10 +261,10 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
                       render={({ field }) => (
                         <DatePicker
                           label="End Date"
-                          selected={field.value}
+                          labelPlacement="outside"
+                          value={field.value}
                           onChange={field.onChange}
                           errorMessage={errors.endDate?.message}
-                          minDate={watch("startDate")}
                         />
                       )}
                     />
@@ -270,10 +280,11 @@ const BudgetForm: React.FC<BudgetFormProps> = ({
             type="submit"
             color="primary"
             className="w-full"
-            isLoading={isSubmitting}
-            startContent={!isSubmitting && <Plus className="size-4" />}
+            isLoading={creatingBudget}
+            isDisabled={creatingBudget}
+            startContent={<Plus className="size-4" />}
           >
-            Create Budget
+            {creatingBudget ? "Creating..." : "Create Budget"}
           </Button>
         </CardFooter>
       </form>
