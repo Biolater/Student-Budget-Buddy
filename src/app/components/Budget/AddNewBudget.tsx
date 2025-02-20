@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   Button,
   Card,
@@ -9,248 +10,270 @@ import {
   Input,
   Select,
   SelectItem,
+  Tabs,
+  Tab,
+  DatePicker,
 } from "@heroui/react";
 import { Plus } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-import { type Currency, Expense, type Budget } from "@prisma/client";
-import useBudget from "@/hooks/useBudget";
+
+// Categories from your existing code
+const categories = [
+  { key: "food", label: "🍔 Food" },
+  { key: "entertainment", label: "🎉 Entertainment" },
+  { key: "transport", label: "🚗 Transport" },
+  { key: "health", label: "💊 Health" },
+  { key: "education", label: "📚 Education" },
+  { key: "clothing", label: "👕 Clothing" },
+  { key: "pets", label: "🐶 Pets" },
+  { key: "travel", label: "🌳 Travel" },
+  { key: "other", label: "🤷‍♀️ Other" },
+];
+
+// Predefined periods with their date calculations
+const PREDEFINED_PERIODS = {
+  monthly: {
+    key: "monthly",
+    label: "Monthly",
+    getDates: () => {
+      const start = new Date();
+      const end = new Date();
+      end.setMonth(end.getMonth() + 1);
+      return { start, end };
+    },
+  },
+  quarterly: {
+    key: "quarterly",
+    label: "Quarterly",
+    getDates: () => {
+      const start = new Date();
+      const end = new Date();
+      end.setMonth(end.getMonth() + 3);
+      return { start, end };
+    },
+  },
+  semesterly: {
+    key: "semesterly",
+    label: "Semesterly",
+    getDates: () => {
+      const start = new Date();
+      const end = new Date();
+      end.setMonth(end.getMonth() + 6);
+      return { start, end };
+    },
+  },
+  yearly: {
+    key: "yearly",
+    label: "Yearly",
+    getDates: () => {
+      const start = new Date();
+      const end = new Date();
+      end.setFullYear(end.getFullYear() + 1);
+      return { start, end };
+    },
+  },
+};
 
 const schema = z.object({
   category: z.string().nonempty("Category is required"),
-  currency: z.string().nonempty("Currency is required"),
-  amount: z
-    .union([z.string(), z.undefined()])
-    .refine(
-      (value) =>
-        value === undefined ||
-        (value !== undefined &&
-          !isNaN(parseFloat(value)) &&
-          parseFloat(value) > 0 &&
-          !/^0\d+$/.test(value)),
-      "Amount must be a number greater than 0 and without leading zeros."
-    ),
+  currencyId: z.string().nonempty("Currency is required"),
+  amount: z.number().positive("Amount must be greater than 0"),
   period: z.string().nonempty("Period is required"),
+  periodType: z.enum(["predefined", "custom"]),
+  startDate: z.date().optional(),
+  endDate: z.date().optional(),
 });
 
-export type NewBudgetSchema = z.infer<typeof schema>;
+type FormData = z.infer<typeof schema>;
 
-interface ExtendedBudget extends Budget {
-  currency: Currency
+interface BudgetFormProps {
+  currencies: {
+    id: string;
+    symbol: string;
+    code: string;
+  }[];
+  onSubmit: (data: FormData) => Promise<void>;
+  isSubmitting?: boolean;
 }
 
-export type ClientBudget = Omit<ExtendedBudget, "amount"> & {
-  amount: number;
-  expenses: (Omit<Expense, "amount"> & { amount: number })[];
-};
-
-const categories = [
-  { code: "Food", symbol: "🍔" },
-  { code: "Entertainment", symbol: "🎉" },
-  { code: "Transport", symbol: "🚗" },
-  { code: "Health", symbol: "💊" },
-  { code: "Education", symbol: "📚" },
-  { code: "Clothing", symbol: "👕" },
-  { code: "Pets", symbol: "🐶" },
-  { code: "Travel", symbol: "🌳" },
-  { code: "Other", symbol: "🤷‍♀️" },
-];
-
-const PERIODS = [
-  {
-    key: "monthly",
-    label: "Monthly",
-  },
-  {
-    key: "Semesterly",
-    label: "Semesterly",
-  },
-  {
-    key: "yearly",
-    label: "Yearly",
-  },
-];
-
-const CURRENCIES = [
-  { code: "USD", symbol: "$" },
-  { code: "EUR", symbol: "€" },
-  { code: "GBP", symbol: "£" },
-  { code: "TRY", symbol: "₺" },
-  { code: "AZN", symbol: "₼" },
-];
-
-const AddNewBudget = () => {
+const BudgetForm: React.FC<BudgetFormProps> = ({
+  currencies,
+  onSubmit,
+  isSubmitting = false,
+}) => {
+  const [periodType, setPeriodType] = useState<"predefined" | "custom">(
+    "predefined"
+  );
   const { userId } = useAuth();
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    control,
     watch,
     setValue,
-  } = useForm<NewBudgetSchema>({
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       category: "",
-      currency: "",
-      amount: undefined,
-      period: "",
+      currencyId: "",
+      amount: 0,
+      period: "monthly",
+      periodType: "predefined",
     },
   });
 
-  const [category, period, currency, amount] = watch([
-    "category",
-    "period",
-    "currency",
-    "amount",
-  ]);
-
-  const {
-    create: {
-      mutateAsync: createBudget,
-      isPending: creatingBudget,
-    },
-  } = useBudget(userId);
-
-  const handleFormReset = () => {
-    setValue("category", "");
-    setValue("currency", "");
-    setValue("amount", undefined);
-    setValue("period", "");
-  };
-
-  const onSubmit = async (data: NewBudgetSchema) => {
-    if (userId) {
-      try {
-        await createBudget(data);
-        handleFormReset();
-      } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Something went wrong"
-        );
-      }
-    } else {
+  const handleFormSubmit = async (data: FormData) => {
+    if (!userId) {
       toast.error("You must be signed in to create a budget");
+      return;
+    }
+
+    try {
+      await onSubmit(data);
+      toast.success("Budget created successfully");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create budget"
+      );
     }
   };
 
+  const watchPeriod = watch("period");
+  const watchCategory = watch("category");
+
   return (
     <Card className="bg-card">
-      <CardHeader className="flex flex-col space-y-1.5 p-6 items-start">
+      <CardHeader className="flex flex-col space-y-1.5 p-6">
         <h3 className="text-2xl font-semibold leading-none tracking-tight">
-          Add New Budget
+          Create New Budget
         </h3>
         <p className="text-sm text-muted-foreground">
-          Create a new budget for a specific category
+          Set up a new budget with your preferred category and period
         </p>
       </CardHeader>
-      <form className="h-full flex flex-col" onSubmit={handleSubmit(onSubmit)}>
-        <CardBody className="p-6 pt-0 flex-col gap-4">
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <CardBody className="p-6 pt-0 space-y-4">
+          {/* Category Selection */}
           <div className="space-y-2">
-            <label
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              htmlFor="category"
-            >
+            <label htmlFor="category" className="text-sm font-medium">
               Category
             </label>
-            <Select
-              selectedKeys={new Set([category])}
-              {...register("category")}
-              aria-labelledby="category"
-              errorMessage={errors?.category?.message}
-              isInvalid={!!errors?.category?.message}
-              name="category"
-              size="md"
-              placeholder="Select category"
-            >
+            <Select>
               {categories.map((category) => (
-                <SelectItem key={category.code} value={category.code}>
-                  {`${category.symbol} ${category.code}`}
-                </SelectItem>
+                <SelectItem key={category.key}>{category.label}</SelectItem>
               ))}
             </Select>
           </div>
+
+          {/* Currency Selection */}
           <div className="space-y-2">
-            <label
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              htmlFor="currency"
-            >
+            <label htmlFor="currencyId" className="text-sm font-medium">
               Currency
             </label>
             <Select
-              selectedKeys={new Set([currency])}
-              {...register("currency")}
-              aria-labelledby="currency"
-              errorMessage={errors?.currency?.message}
-              isInvalid={!!errors?.currency?.message}
-              name="currency"
-              size="md"
-              placeholder="Select currency"
+              {...register("currencyId")}
+              errorMessage={errors.currencyId?.message}
+              isInvalid={!!errors.currencyId}
+              value={watch("currencyId")}
             >
-              {CURRENCIES.map((currency) => (
-                <SelectItem key={currency.code} value={currency.code}>
-                  {`${currency.symbol} ${currency.code}`}
+              {currencies.map((currency) => (
+                <SelectItem key={currency.id}>
+                  {currency.symbol} {currency.code}
                 </SelectItem>
               ))}
             </Select>
           </div>
-          <div className="space-y-2">
-            <label
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              htmlFor="amount"
-            >
-              Amount
-            </label>
-            <Input
-              value={`${amount}`}
-              {...register("amount")}
-              className={
-                errors?.amount?.message !== undefined
-                  ? "[&_*_input]:placeholder:text-danger"
-                  : ""
-              }
 
-              aria-labelledby="amount"
-              size="md"
-              type="number"
-              placeholder="Enter amount"
-              errorMessage={errors?.amount?.message}
-              isInvalid={!!errors?.amount?.message}
+          {/* Amount Input */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Amount</label>
+            <Controller
+              name="amount"
+              control={control}
+              render={({ field }) => (
+                <Input
+                  type="number"
+                  step="0.01"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  errorMessage={errors.amount?.message}
+                  isInvalid={!!errors.amount}
+                />
+              )}
             />
           </div>
-          <div className="space-y-2">
-            <label
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              htmlFor="period"
+
+          {/* Period Selection */}
+          <div className="space-y-4">
+            <Tabs
+              selectedKey={periodType}
+              onSelectionChange={(key) =>
+                setPeriodType(key as "predefined" | "custom")
+              }
             >
-              Period
-            </label>
-            <Select
-              selectedKeys={new Set([period])}
-              {...register("period")}
-              aria-labelledby="period"
-              errorMessage={errors?.period?.message}
-              isInvalid={!!errors?.period?.message}
-              placeholder="Select period"
-            >
-              {PERIODS.map((period) => (
-                <SelectItem key={period.key}>{period.label}</SelectItem>
-              ))}
-            </Select>
+              <Tab key="predefined" title="Predefined Periods">
+                <div className="pt-4 space-y-4">
+                  <Select
+                    {...register("period")}
+                    errorMessage={errors.period?.message}
+                    isInvalid={!!errors.period}
+                  >
+                    {Object.values(PREDEFINED_PERIODS).map((period) => (
+                      <SelectItem key={period.key}>{period.label}</SelectItem>
+                    ))}
+                  </Select>
+                </div>
+              </Tab>
+              <Tab key="custom" title="Custom Period">
+                <div className="pt-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <Controller
+                      name="startDate"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker
+                          label="Start Date"
+                          selected={field.value}
+                          onChange={field.onChange}
+                          errorMessage={errors.startDate?.message}
+                        />
+                      )}
+                    />
+                    <Controller
+                      name="endDate"
+                      control={control}
+                      render={({ field }) => (
+                        <DatePicker
+                          label="End Date"
+                          selected={field.value}
+                          onChange={field.onChange}
+                          errorMessage={errors.endDate?.message}
+                          minDate={watch("startDate")}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+              </Tab>
+            </Tabs>
           </div>
         </CardBody>
-        <CardFooter className="p-6 pt-0 flex justify-end">
+
+        <CardFooter className="p-6 pt-0">
           <Button
-            color="primary"
-            isDisabled={creatingBudget}
-            isLoading={creatingBudget}
             type="submit"
-            className="lg:w-full"
-            startContent={!creatingBudget && <Plus />}
+            color="primary"
+            className="w-full"
+            isLoading={isSubmitting}
+            startContent={!isSubmitting && <Plus className="size-4" />}
           >
-            Add Budget
+            Create Budget
           </Button>
         </CardFooter>
       </form>
@@ -258,4 +281,4 @@ const AddNewBudget = () => {
   );
 };
 
-export default AddNewBudget;
+export default BudgetForm;

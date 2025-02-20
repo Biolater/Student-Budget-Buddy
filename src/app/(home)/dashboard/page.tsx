@@ -79,7 +79,7 @@ const staticData = {
     { month: "Feb", amount: 800 },
     { month: "Mar", amount: 245 },
   ],
-};
+};  
 
 const DashboardComponent = () => {
   const { user } = useUser();
