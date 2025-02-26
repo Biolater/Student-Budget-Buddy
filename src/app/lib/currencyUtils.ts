@@ -43,4 +43,9 @@ const getDefaultCurrency = async () => {
   }
 };
 
-export { convertAmount, getDefaultCurrency, convertCurrency } 
+const getCurrencies = async () => {
+  const currencies = await prisma.currency.findMany();
+  return currencies;
+};
+
+export { convertAmount, getDefaultCurrency, convertCurrency, getCurrencies };

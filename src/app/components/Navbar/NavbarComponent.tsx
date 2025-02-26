@@ -88,18 +88,17 @@ export const NavbarComponent = () => {
         >
           <LayoutGroup id="navbar-items">
             {navLinks.map((link) => (
-              <li className="relative" key={link.href}>
-                <NavbarItem
+              <li className="relative py-1.5" key={link.href}>
+                <Link
                   id={link.href}
-                  as="button"
-                  onClick={() => router.push(link.href)}
-                  className={`relative text-muted-foreground transition-colors hover:text-foreground px-3 ${
-                    pathname === link.href ? "text-foreground" : ""
-                  } py-2 rounded-md text-sm z-10`}
+                  href={link.href}
+                  className={`relative transition-colors hover:text-foreground px-3 ${
+                    pathname === link.href ? "text-foreground" : "text-muted-foreground"
+                  } rounded-md text-sm z-10`}
                   aria-current={pathname === link.href ? "page" : undefined}
                 >
                   {link.label}
-                </NavbarItem>
+                </Link>
                 {pathname === link.href && (
                   <motion.div
                     className="absolute inset-0 bg-secondary rounded-md"

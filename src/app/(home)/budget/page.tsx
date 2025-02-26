@@ -1,6 +1,5 @@
 "use client";
 
-import AddNewBudget from "../../components/Budget/AddNewBudget";
 import BudgetOverview from "../../components/Budget/BudgetOverview";
 import CurrentBudgets from "../../components/Budget/CurrentBudgets";
 import { type Budget } from "@prisma/client";
@@ -8,6 +7,9 @@ import { useAuth } from "@clerk/nextjs";
 import useBudget from "@/hooks/useBudget";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
+import BudgetForm from "../../components/Budget/AddNewBudget";
+import { getCurrencies } from "@/app/lib/currencyUtils";
+import { useCurrencies } from "@/hooks/useCurrency";
 
 const Budget = () => {
   const { userId } = useAuth();
@@ -15,12 +17,17 @@ const Budget = () => {
   const {
     query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
   } = useBudget(userId);
+  
+  const { query: { data: currencies, isPending: currenciesLoading, isError: currenciesError } } = useCurrencies(userId ?? "");
 
   useEffect(() => {
     if (budgetsError) {
       toast.error("Failed to fetch budgets");
     }
-  }, [budgetsError]);
+    if (currenciesError) {
+      toast.error("Failed to fetch currencies");
+    }
+  }, [budgetsError, currenciesError]);
 
   return (
     <main className="container mx-auto px-4 py-8 sm:px-6 md:px-10 lg:px-14 xl:px-18 2xl:px-22">
@@ -31,7 +38,7 @@ const Budget = () => {
           budgetsLoading={budgetsLoading}
           userId={userId}
         />
-        <AddNewBudget />
+        <BudgetForm currencies={currencies || []}/>
         <BudgetOverview />
       </div>
     </main>
