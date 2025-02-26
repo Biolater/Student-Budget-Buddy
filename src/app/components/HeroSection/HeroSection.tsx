@@ -37,13 +37,6 @@ export default function HeroSection() {
       <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
       <section className="text-foreground overflow-hidden relative">
         <div className="absolute inset-0 z-0">
-          <Image
-            src="/placeholder.svg?height=1080&width=1920"
-            alt="Background pattern"
-            layout="fill"
-            objectFit="cover"
-            className="opacity-5"
-          />
         </div>
         <div className="container mx-auto px-4 py-16 sm:py-24 lg:py-32 relative z-10">
           <motion.div

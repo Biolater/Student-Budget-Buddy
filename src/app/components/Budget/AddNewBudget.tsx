@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -23,19 +23,7 @@ import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { DateValue } from "@heroui/react";
 import useBudget from "@/hooks/useBudget";
-
-// Categories from your existing code
-const categories = [
-  { key: "food", label: "🍔 Food" },
-  { key: "entertainment", label: "🎉 Entertainment" },
-  { key: "transport", label: "🚗 Transport" },
-  { key: "health", label: "💊 Health" },
-  { key: "education", label: "📚 Education" },
-  { key: "clothing", label: "👕 Clothing" },
-  { key: "pets", label: "🐶 Pets" },
-  { key: "travel", label: "🌳 Travel" },
-  { key: "other", label: "🤷‍♀️ Other" },
-];
+import { categories } from "@/constants/data/categories";
 
 // Predefined periods with their date calculations
 const PREDEFINED_PERIODS = {
@@ -155,7 +143,7 @@ const BudgetForm: React.FC<BudgetFormProps> = ({ currencies }) => {
   return (
     <Card className="bg-card">
       <CardHeader className="flex flex-col gap-1.5 p-6">
-        <h3 className="text-2xl font-semibold leading-none tracking-tight">
+        <h3 className="text-2xl font-semibold leading-none tracking-tight self-start">
           Create New Budget
         </h3>
         <p className="text-sm text-muted-foreground">

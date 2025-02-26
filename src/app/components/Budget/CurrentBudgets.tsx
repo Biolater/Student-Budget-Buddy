@@ -9,7 +9,7 @@ import {
 import Link from "next/link";
 import BudgetItem from "./BudgetItem";
 import BudgetSkeleton from "./BudgetSkeleton";;
-import { ClientBudget } from "./AddNewBudget";
+// import { ClientBudget }
 
 export const currencies = [
   { code: "USD", symbol: "$" },
@@ -35,15 +35,6 @@ const CurrentBudgets: React.FC<{
             View and manage your existing budgets
           </p>
         </div>
-        {/* <Tooltip
-            content="Hover over spent amounts to see individual expenses in their original currencies"
-            color="foreground"
-            classNames={{
-              content: "rounded-lg max-w-sm sm:max-w-[unset] py-[0.375rem] px-3",
-            }}
-          >
-            <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-          </Tooltip> */}
       </CardHeader>
       <CardBody className="p-6 pt-0 max-h-96 flex-col gap-4 overflow-y-auto">
         {budgetsLoading ? (
@@ -60,7 +51,7 @@ const CurrentBudgets: React.FC<{
           </p>
         )}
       </CardBody>
-      <CardFooter className="flex items-center justify-end p-6 pt-0">
+      <CardFooter className="flex items-center justify-end p-6 pt-0 mt-auto">
         <Button
           as={Link}
           color="primary"
