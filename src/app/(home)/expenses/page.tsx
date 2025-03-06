@@ -1,8 +1,13 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
-import { useAuth } from "@clerk/nextjs";
+import ExpenseFilterOptions from "@/app/components/Expense/ExpenseFilterOptions";
+import ExpenseForm from "@/app/components/Expense/ExpenseForm";
+import ExpenseFormV2 from "@/app/components/Expense/ExpenseFormV2";
+import { useAuth } from "@/contexts/AuthContext";
+/* import { ChangeEvent, useEffect, useMemo, useState } from "react";
+ */ import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
+import { ChangeEvent } from "react";
+/* import { useAuth } from "@clerk/nextjs";
 import ExpenseForm from "../../components/Expense/ExpenseForm";
 import ExpenseFilterOptions from "../../components/Expense/ExpenseFilterOptions";
 import ExpenseItems from "../../components/Expense/ExpenseItems";
@@ -11,20 +16,9 @@ import type { ZonedDateTime } from "@internationalized/date";
 import useExpenses from "@/hooks/useExpense";
 import toast from "react-hot-toast";
 
-export type Expense = {
-  id: string;
-  userId: string;
-  amount: number;
-  category: string;
-  description: string;
-  currency: string;
-  date: Date;
-  createdAt: Date;
-  updatedAt: Date;
-};
-
+ */
 // Utility function for filtering expenses
-const filterExpenses = (
+/* const filterExpenses = (
   expenses: Expense[],
   category: string = "All Categories",
   dateRange: RangeValue<ZonedDateTime> | null = null
@@ -40,18 +34,19 @@ const filterExpenses = (
     return matchesCategory && matchesDateRange;
   });
 };
-
+ */
 const ExpenseTracker = () => {
-  const [dateRangePickerValue, setDateRangePickerValue] =
+  const { isLoaded, userId } = useAuth();
+  /*   const [dateRangePickerValue, setDateRangePickerValue] =
     useState<RangeValue<ZonedDateTime> | null>(null);
   const [selectedCategory, setSelectedCategory] =
     useState<string>("All Categories");
   const { userId } = useAuth();
   const {
     query: { data: expenses, isPending: isFetching, error: fetchError },
-  } = useExpenses(userId);
+  } = useExpenses(userId); */
 
-  useEffect(() => {
+  /*   useEffect(() => {
     if (fetchError) {
       toast.error(fetchError.message);
     }
@@ -65,7 +60,7 @@ const ExpenseTracker = () => {
       dateRangePickerValue
     );
   }, [expenses, selectedCategory, dateRangePickerValue]);
-
+ */
   return (
     <div className="container max-w-4xl mx-auto p-4 md:py-8">
       <Card className="expense-tracker bg-card">
@@ -78,23 +73,22 @@ const ExpenseTracker = () => {
           </p>
         </CardHeader>
         <CardBody className="p-6 pt-0">
-          <ExpenseForm
-            userId={userId}
-          />
+          {/* <ExpenseForm userId={userId} /> */}
+          <ExpenseFormV2 />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
           <ExpenseFilterOptions
-            onFilterChange={(e: ChangeEvent<HTMLSelectElement>) =>
-              setSelectedCategory(e.target.value)
+            onFilterChange={(e: ChangeEvent<HTMLSelectElement>) =>{}
+              // setSelectedCategory(e.target.value)
             }
-            onDateRangePickerReset={() => setDateRangePickerValue(null)}
-            onDateRangePickerChange={(value) => setDateRangePickerValue(value)}
+            // onDateRangePickerReset={() => setDateRangePickerValue(null)}
+            // onDateRangePickerChange={(value) => setDateRangePickerValue(value)}
           />
-          <ExpenseItems
+          {/* <ExpenseItems
             userId={userId}
             expenses={filteredExpenses}
             expensesLoading={isFetching}
-          />
+          /> */}
         </CardFooter>
       </Card>
     </div>
