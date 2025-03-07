@@ -1,68 +1,78 @@
-import {
-  Button,
-  Card,
-  CardBody,
-  CardFooter,
-  CardHeader,
-  Tooltip,
-} from "@heroui/react";
-import Link from "next/link";
-import BudgetItem from "./BudgetItem";
-import BudgetSkeleton from "./BudgetSkeleton";;
-// import { ClientBudget }
+// import {
+//   Button,
+//   Card,
+//   CardBody,
+//   CardFooter,
+//   CardHeader,
+//   Tooltip,
+// } from "@heroui/react";
+// import Link from "next/link";
+// import BudgetItem from "./BudgetItem";
+// import BudgetSkeleton from "./BudgetSkeleton";;
+// // import { ClientBudget }
 
-export const currencies = [
-  { code: "USD", symbol: "$" },
-  { code: "EUR", symbol: "€" },
-  { code: "GBP", symbol: "£" },
-  { code: "TRY", symbol: "₺" },
-  { code: "AZN", symbol: "₼" },
-];
+// export const currencies = [
+//   { code: "USD", symbol: "$" },
+//   { code: "EUR", symbol: "€" },
+//   { code: "GBP", symbol: "£" },
+//   { code: "TRY", symbol: "₺" },
+//   { code: "AZN", symbol: "₼" },
+// ];
 
-const CurrentBudgets: React.FC<{
-  budgets: ClientBudget[];
-  budgetsLoading: boolean;
-  userId: string | undefined | null;
-}> = ({ budgets, budgetsLoading, userId }) => {
+// const CurrentBudgets: React.FC<{
+//   budgets: ClientBudget[];
+//   budgetsLoading: boolean;
+//   userId: string | undefined | null;
+// }> = ({ budgets, budgetsLoading, userId }) => {
+//   return (
+//     <Card className="bg-card">
+//       <CardHeader className="flex items-center justify-between  p-6">
+//         <div className="flex flex-col space-y-1.5">
+//           <h3 className="text-2xl font-semibold leading-none tracking-tight">
+//             Current Budgets
+//           </h3>
+//           <p className="text-sm text-muted-foreground">
+//             View and manage your existing budgets
+//           </p>
+//         </div>
+//       </CardHeader>
+//       <CardBody className="p-6 pt-0 max-h-96 flex-col gap-4 overflow-y-auto">
+//         {budgetsLoading ? (
+//           <BudgetSkeleton />
+//         ) : budgets.length > 0 ? (
+//           budgets.map((budget) => {
+//             return (
+//               <BudgetItem key={budget.id} budgetItem={budget} userId={userId} />
+//             );
+//           })
+//         ) : (
+//           <p className="text-sm text-muted-foreground">
+//             No budgets found. Create a new budget to get started.
+//           </p>
+//         )}
+//       </CardBody>
+//       <CardFooter className="flex items-center justify-end p-6 pt-0 mt-auto">
+//         <Button
+//           as={Link}
+//           color="primary"
+//           className="lg:w-full"
+//           href="/expenses"
+//         >
+//           View Expenses
+//         </Button>
+//       </CardFooter>
+//     </Card>
+//   );
+// };
+
+// export default CurrentBudgets;
+
+import React from 'react'
+
+const CurrentBudgets = () => {
   return (
-    <Card className="bg-card">
-      <CardHeader className="flex items-center justify-between  p-6">
-        <div className="flex flex-col space-y-1.5">
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">
-            Current Budgets
-          </h3>
-          <p className="text-sm text-muted-foreground">
-            View and manage your existing budgets
-          </p>
-        </div>
-      </CardHeader>
-      <CardBody className="p-6 pt-0 max-h-96 flex-col gap-4 overflow-y-auto">
-        {budgetsLoading ? (
-          <BudgetSkeleton />
-        ) : budgets.length > 0 ? (
-          budgets.map((budget) => {
-            return (
-              <BudgetItem key={budget.id} budgetItem={budget} userId={userId} />
-            );
-          })
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            No budgets found. Create a new budget to get started.
-          </p>
-        )}
-      </CardBody>
-      <CardFooter className="flex items-center justify-end p-6 pt-0 mt-auto">
-        <Button
-          as={Link}
-          color="primary"
-          className="lg:w-full"
-          href="/expenses"
-        >
-          View Expenses
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
+    <div>CurrentBudgets</div>
+  )
+}
 
-export default CurrentBudgets;
+export default CurrentBudgets

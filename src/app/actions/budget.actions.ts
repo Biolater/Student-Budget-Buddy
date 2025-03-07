@@ -2,6 +2,10 @@
 // import { type NewBudgetSchema } from "@/app/components/Budget/AddNewBudget";
 // import { currentUser } from "@clerk/nextjs/server";
 
+// const createBudget = async (data: any) => {
+
+// }
+
 // const createBudget = async (data: NewBudgetSchema) => {
 //   const { category, currency, amount, period } = data;
 //   const user = await currentUser();

@@ -6,6 +6,8 @@ export const useCategory = () => {
     expenseCategoriesQuery: useQuery({
       queryKey: ["expenseCategories"],
       queryFn: fetchExpenseCategoriesForSelect,
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 60 * 60 * 1000, // 1 hour
     }),
   };
 };

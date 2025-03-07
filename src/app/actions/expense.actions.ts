@@ -1,8 +1,38 @@
-// import { prisma } from "@/app/lib/client";
+'use server';
+import { prisma } from "@/app/lib/client";
+import { ExpenseFormSchemaType, ServerExpenseSchema } from "@/schema/expense.schema";
 // import { type Expense } from "@prisma/client";
-// import { currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 // import { convertCurrency, getDefaultCurrency } from "../lib/currencyUtils";
 
+const createExpense = async (data: ExpenseFormSchemaType) => {
+    try {
+        console.log("action data", data);
+        const validatedData = ServerExpenseSchema.parse(data);
+        const { date, amount, currency, category, description } = validatedData;
+        const user = await currentUser();
+        if (!user) {
+            throw new Error("User not authenticated");
+        }
+        const expense = await prisma.expense.create({
+            data: {
+                date,
+                amount,
+                expenseCategoryId: category,
+                description,
+                currencyId: currency,
+                userId: user.id
+            }
+        });
+
+        return { ...expense, amount: expense.amount.toNumber() };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { createExpense }
+ 
 // // Types
 // export type Category =
 //   | "Food"

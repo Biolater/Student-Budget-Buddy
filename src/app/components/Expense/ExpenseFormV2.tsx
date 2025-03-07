@@ -2,7 +2,10 @@
 
 import { useCategory } from "@/hooks/useCategory";
 import { useCurrency } from "@/hooks/useCurrency";
-import { ExpenseFormSchema, type ExpenseFormSchemaType } from "@/schema";
+import {
+  ExpenseFormSchema,
+  type ExpenseFormSchemaType,
+} from "@/schema/expense.schema";
 import {
   Button,
   DatePicker,
@@ -14,11 +17,15 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import ExpenseFormSkeleton from "./ExpenseFormSkeleton";
+import useExpense from "@/hooks/useExpense";
+import { useAuth } from "@/contexts/AuthContext";
 
 const ExpenseFormV2 = () => {
+  const { userId } = useAuth();
   const {
     control,
     formState: { errors },
+    handleSubmit,
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
   });
@@ -39,8 +46,20 @@ const ExpenseFormV2 = () => {
     },
   } = useCategory();
 
-  const onSubmit = (data: ExpenseFormSchemaType) => {
-    console.log(data);
+  const {
+    create: {
+      mutateAsync: createExpense,
+      isPending: createExpenseLoading,
+      isError: createExpenseError,
+    },
+  } = useExpense(userId);
+
+  const onSubmit = async (data: ExpenseFormSchemaType) => {
+    try {
+      await createExpense(data);
+    } catch (error) {
+      console.error("Error creating expense:", error);
+    }
   };
 
   if (currenciesLoading || categoriesLoading) {
@@ -49,7 +68,7 @@ const ExpenseFormV2 = () => {
 
   return (
     <>
-      <form method="POST" action="/api/expense" className="flex flex-col gap-4" >
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <Controller
@@ -182,8 +201,10 @@ const ExpenseFormV2 = () => {
             className="flex-grow md:flex-grow-0"
             color="primary"
             type="submit"
+            isLoading={createExpenseLoading}
+            disabled={createExpenseLoading}
           >
-            Submit
+            {!createExpenseLoading ? "Create Expense" : "Creating Expense..."}
           </Button>
         </div>
       </form>

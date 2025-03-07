@@ -77,13 +77,14 @@ const ExpenseTracker = () => {
           <ExpenseFormV2 />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
-          <ExpenseFilterOptions
-            onFilterChange={(e: ChangeEvent<HTMLSelectElement>) =>{}
+          {/* <ExpenseFilterOptions
+            onFilterChange={
+              (e: ChangeEvent<HTMLSelectElement>) => {}
               // setSelectedCategory(e.target.value)
             }
             // onDateRangePickerReset={() => setDateRangePickerValue(null)}
             // onDateRangePickerChange={(value) => setDateRangePickerValue(value)}
-          />
+          /> */}
           {/* <ExpenseItems
             userId={userId}
             expenses={filteredExpenses}

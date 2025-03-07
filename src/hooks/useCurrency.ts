@@ -5,7 +5,9 @@ export const useCurrency = () => {
   return {
     query: useQuery({
       queryKey: ["currencies"],
-      queryFn: fetchCurrenciesForSelect
+      queryFn: fetchCurrenciesForSelect,
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 60 * 60 * 1000, // 1 hour
     })
   };
 };
