@@ -75,7 +75,7 @@ model Expense {
   id                String          @id @default(uuid())
   userId            String
   user              User            @relation(fields: [userId], references: [id])
-  date              DateTime
+  date             DateTime 
   amount            Decimal
   currencyId        String
   currency          Currency        @relation(fields: [currencyId], references: [id])

@@ -32,7 +32,7 @@ const createExpense = async (data: ExpenseFormSchemaType) => {
 }
 
 export { createExpense }
- 
+
 // // Types
 // export type Category =
 //   | "Food"

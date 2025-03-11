@@ -28,11 +28,11 @@ export type ExpenseFormSchemaType = z.infer<typeof ExpenseFormSchema>;
 // Server-side schema that transforms the client data into server types
 export const ServerExpenseSchema = ExpenseFormSchema.transform((data) => {
     return {
-        date: data.date.toDate(''),
+        date: new Date(),
         amount: data.amount,
         currency: data.currency,
         category: data.category,
-        description: data.description,
+        description: data.description ?? null,
     };
 });
 
