@@ -1,11 +1,11 @@
 "use client";
 
-import { useCategory } from "@/hooks/useCategory";
-import { useCurrency } from "@/hooks/useCurrency";
+import { useCategory } from "@/app/hooks/useCategory";
+import { useCurrency } from "@/app/hooks/useCurrency";
 import {
   ExpenseFormSchema,
   type ExpenseFormSchemaType,
-} from "@/schema/expense.schema";
+} from "@/app/schema/expense.schema";
 import {
   Button,
   DatePicker,
@@ -17,10 +17,18 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import ExpenseFormSkeleton from "./ExpenseFormSkeleton";
-import useExpense from "@/hooks/useExpense";
-import { useAuth } from "@/contexts/AuthContext";
+import useExpense from "@/app/hooks/useExpense";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { FC } from "react";
+import { Currency } from "@prisma/client";
+import { ClientCurrencyItem } from "../../types/currency.types";
 
-const ExpenseFormV2 = () => {
+interface ExpenseFormProps {
+  currencies: ClientCurrencyItem[];
+  currenciesLoading: boolean;
+}
+
+const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, currenciesLoading }) => {
   const { userId } = useAuth();
   const {
     control,
@@ -29,14 +37,6 @@ const ExpenseFormV2 = () => {
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
   });
-
-  const {
-    query: {
-      data: currencies,
-      isPending: currenciesLoading,
-      isError: currenciesError,
-    },
-  } = useCurrency();
 
   const {
     expenseCategoriesQuery: {
