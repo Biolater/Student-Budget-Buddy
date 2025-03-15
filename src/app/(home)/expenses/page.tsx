@@ -91,7 +91,10 @@ const ExpenseTracker = () => {
           </p>
         </CardHeader>
         <CardBody className="p-6 pt-0">
-          <ExpenseFormV2 currencies={currencies!} currenciesLoading={currenciesLoading} />
+          <ExpenseFormV2
+            currencies={currencies!}
+            currenciesLoading={currenciesLoading}
+          />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
           {/* <ExpenseFilterOptions
@@ -104,7 +107,7 @@ const ExpenseTracker = () => {
           /> */}
           <ExpenseItems
             userId={userId}
-            expenses={expenses}
+            expenses={expenses || []}
             expensesLoading={isFetching}
             currencies={currencies || []}
           />
