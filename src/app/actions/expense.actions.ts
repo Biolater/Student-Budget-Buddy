@@ -1,13 +1,12 @@
 'use server';
 import { prisma } from "@/app/lib/client";
-import { ExpenseFormSchemaType, ServerExpenseSchema } from "@/schema/expense.schema";
+import { ExpenseFormSchemaType, ServerExpenseData, ServerExpenseSchema } from "@/schema/expense.schema";
 // import { type Expense } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 // import { convertCurrency, getDefaultCurrency } from "../lib/currencyUtils";
 
-const createExpense = async (data: ExpenseFormSchemaType) => {
+const createExpense = async (data: ServerExpenseData) => {
     try {
-        console.log("action data", data);
         const validatedData = ServerExpenseSchema.parse(data);
         const { date, amount, currency, category, description } = validatedData;
         const user = await currentUser();

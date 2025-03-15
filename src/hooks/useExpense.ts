@@ -18,7 +18,10 @@ const useExpense = (userId: string | undefined | null) => {
 
   return {
     create: useMutation({
-      mutationFn: (data: ExpenseFormSchemaType) => createExpense(data),
+      mutationFn: (data: ExpenseFormSchemaType) => createExpense({
+        ...data,
+        date: data.date.toDate("UTC")
+      }),
       mutationKey: ["createExpense", userId],
       onMutate: async () => {
         if (!userId) {
