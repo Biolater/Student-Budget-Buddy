@@ -12,7 +12,7 @@ import DashboardSkeleton from "@/app/components/Dashboard/DashboardSkeleton";
 //   type SpendingDataByCategory,
 //   type SpendingDataByMonth,
 // } from "@/app/actions/expense.actions";
-import useExpenses from "@/hooks/useExpense";
+import useExpenses from "@/app/hooks/useExpense";
 import { useQuery } from "@tanstack/react-query";
 // import { getDefaultCurrency } from "@/app/lib/currencyUtils";
 

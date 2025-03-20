@@ -1,13 +1,35 @@
 'use server';
 import { prisma } from "@/app/lib/client";
-import { ExpenseFormSchemaType, ServerExpenseSchema } from "@/schema/expense.schema";
+import { ExpenseFormSchemaType, ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
 // import { type Expense } from "@prisma/client";
 import { currentUser } from "@clerk/nextjs/server";
 // import { convertCurrency, getDefaultCurrency } from "../lib/currencyUtils";
 
-const createExpense = async (data: ExpenseFormSchemaType) => {
+const fetchExpensesByUserId = async (userId: string) => {
     try {
-        console.log("action data", data);
+        const user = await currentUser();
+        if (!user) {
+            throw new Error("User not authenticated");
+        }
+        const expenses = await prisma.expense.findMany({
+            where: { userId: userId },
+            orderBy: { date: "desc" },
+            include: {
+                category: true,
+                currency: true,
+            }
+        });
+        return expenses.map(expense => ({
+            ...expense,
+            amount: expense.amount.toNumber(),
+        }));
+    } catch (error) {
+        throw error;
+    }
+}
+
+const createExpense = async (data: ServerExpenseData) => {
+    try {   
         const validatedData = ServerExpenseSchema.parse(data);
         const { date, amount, currency, category, description } = validatedData;
         const user = await currentUser();
@@ -31,7 +53,7 @@ const createExpense = async (data: ExpenseFormSchemaType) => {
     }
 }
 
-export { createExpense }
+export { createExpense, fetchExpensesByUserId };
 
 // // Types
 // export type Category =

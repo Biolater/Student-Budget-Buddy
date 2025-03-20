@@ -23,7 +23,7 @@ import { useAuth } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 import { DateValue } from "@heroui/react";
 // import useBudget from "@/hooks/useBudget";
-import { categories } from "@/constants/data/categories";
+import { categories } from "@/app/constants/data/categories";
 
 // Predefined periods with their date calculations
 const PREDEFINED_PERIODS = {

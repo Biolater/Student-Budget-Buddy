@@ -3,10 +3,13 @@
 import ExpenseFilterOptions from "@/app/components/Expense/ExpenseFilterOptions";
 import ExpenseForm from "@/app/components/Expense/ExpenseForm";
 import ExpenseFormV2 from "@/app/components/Expense/ExpenseFormV2";
-import { useAuth } from "@/contexts/AuthContext";
+import ExpenseItems from "@/app/components/Expense/ExpenseItems";
+import { useAuth } from "@/app/contexts/AuthContext";
+import { useCurrency } from "@/app/hooks/useCurrency";
+import useExpense from "@/app/hooks/useExpense";
 /* import { ChangeEvent, useEffect, useMemo, useState } from "react";
  */ import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useEffect } from "react";
 /* import { useAuth } from "@clerk/nextjs";
 import ExpenseForm from "../../components/Expense/ExpenseForm";
 import ExpenseFilterOptions from "../../components/Expense/ExpenseFilterOptions";
@@ -61,6 +64,21 @@ const ExpenseTracker = () => {
     );
   }, [expenses, selectedCategory, dateRangePickerValue]);
  */
+
+  const {
+    fetchExpenses: { data: expenses, isPending: isFetching, error: fetchError },
+  } = useExpense(userId);
+
+  const {
+    query: {
+      data: currencies,
+      isPending: currenciesLoading,
+      isError: currenciesError,
+    },
+  } = useCurrency();
+
+  if (!isLoaded || !userId || isFetching) return null;
+
   return (
     <div className="container max-w-4xl mx-auto p-4 md:py-8">
       <Card className="expense-tracker bg-card">
@@ -73,8 +91,10 @@ const ExpenseTracker = () => {
           </p>
         </CardHeader>
         <CardBody className="p-6 pt-0">
-          {/* <ExpenseForm userId={userId} /> */}
-          <ExpenseFormV2 />
+          <ExpenseFormV2
+            currencies={currencies!}
+            currenciesLoading={currenciesLoading}
+          />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">
           {/* <ExpenseFilterOptions
@@ -85,11 +105,12 @@ const ExpenseTracker = () => {
             // onDateRangePickerReset={() => setDateRangePickerValue(null)}
             // onDateRangePickerChange={(value) => setDateRangePickerValue(value)}
           /> */}
-          {/* <ExpenseItems
+          <ExpenseItems
             userId={userId}
-            expenses={filteredExpenses}
+            expenses={expenses || []}
             expensesLoading={isFetching}
-          /> */}
+            currencies={currencies || []}
+          />
         </CardFooter>
       </Card>
     </div>

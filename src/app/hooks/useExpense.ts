@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 // import {
 //   type TransformedExpense,
 //   type CreateExpenseData,
@@ -11,14 +11,16 @@ import { useMutation } from "@tanstack/react-query";
 // } from "@/app/actions/expense.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
-import { createExpense } from "@/app/actions/expense.actions";
-import { ExpenseFormSchemaType } from "@/schema/expense.schema";
+import { createExpense, fetchExpensesByUserId } from "@/app/actions/expense.actions";
+import { ExpenseFormSchemaType } from "@/app/schema/expense.schema";
 
 const useExpense = (userId: string | undefined | null) => {
-
   return {
     create: useMutation({
-      mutationFn: (data: ExpenseFormSchemaType) => createExpense(data),
+      mutationFn: (data: ExpenseFormSchemaType) => createExpense({
+        ...data,
+        date: data.date.toDate("UTC")
+      }),
       mutationKey: ["createExpense", userId],
       onMutate: async () => {
         if (!userId) {
@@ -34,7 +36,18 @@ const useExpense = (userId: string | undefined | null) => {
         toast.success("Expense created successfully");
         queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
       },
+    }),
+    fetchExpenses: useQuery({
+      queryKey: ["expenses"],
+      queryFn: async () => {
+        if (!userId) return []; // Default to an empty array.
+        const expenses = await fetchExpensesByUserId(userId);
+        return expenses ?? [];
+      },
+      enabled: !!userId,
+      staleTime: 600000,
     })
+    
     // query: useQuery({
     //   queryKey: ["expenses", keyUserId],
     //   queryFn: async () => {
