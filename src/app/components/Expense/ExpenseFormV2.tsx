@@ -22,13 +22,16 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { FC } from "react";
 import { Currency } from "@prisma/client";
 import { ClientCurrencyItem } from "../../types/currency.types";
+import { ExpenseCategoryRef } from "@/app/types/category.types";
 
 interface ExpenseFormProps {
   currencies: ClientCurrencyItem[];
+  categories: ExpenseCategoryRef[];
+  categoriesLoading: boolean;
   currenciesLoading: boolean;
 }
 
-const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, currenciesLoading }) => {
+const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, categories, currenciesLoading, categoriesLoading }) => {
   const { userId } = useAuth();
   const {
     control,
@@ -37,14 +40,6 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, currenciesLoading }) 
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
   });
-
-  const {
-    expenseCategoriesQuery: {
-      data: categories,
-      isPending: categoriesLoading,
-      isError: categoriesError,
-    },
-  } = useCategory();
 
   const {
     create: {
