@@ -11,17 +11,19 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 // } from "@/app/actions/expense.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
-import { createExpense, fetchExpensesByUserId } from "@/app/actions/expense.actions";
+import { createExpense, deleteExpense, fetchExpensesByUserId } from "@/app/actions/expense.actions";
 import { ExpenseFormSchemaType } from "@/app/schema/expense.schema";
+import { addToast } from "@heroui/react";
+import { getLocalTimeZone } from "@internationalized/date";
 
 const useExpense = (userId: string | undefined | null) => {
   return {
     create: useMutation({
       mutationFn: (data: ExpenseFormSchemaType) => createExpense({
         ...data,
-        date: data.date.toDate("UTC")
+        date: data.date.toDate(getLocalTimeZone())
       }),
-      mutationKey: ["createExpense", userId],
+      mutationKey: ["createExpense"],
       onMutate: async () => {
         if (!userId) {
           throw new Error("You must be signed in to create an expense");
@@ -34,7 +36,7 @@ const useExpense = (userId: string | undefined | null) => {
       },
       onSuccess: () => {
         toast.success("Expense created successfully");
-        queryClient.invalidateQueries({ queryKey: ["expenses", userId] });
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
       },
     }),
     fetchExpenses: useQuery({
@@ -46,8 +48,31 @@ const useExpense = (userId: string | undefined | null) => {
       },
       enabled: !!userId,
       staleTime: 600000,
+    }),
+    delete: useMutation({
+      mutationFn: (expenseId: string) => deleteExpense(expenseId),
+      mutationKey: ["deleteExpense"],
+      onMutate: async () => {
+        if (!userId) {
+          throw new Error("You must be signed in to delete an expense");
+        }
+      },
+      onError: (error) => {
+        addToast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Something went wrong",
+          color: "danger",
+        });
+      },
+      onSuccess: () => {
+        addToast({
+          title: "Success",
+          description: "Expense deleted successfully",
+          color: "success",
+        });
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      },
     })
-    
     // query: useQuery({
     //   queryKey: ["expenses", keyUserId],
     //   queryFn: async () => {

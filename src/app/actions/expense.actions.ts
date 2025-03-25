@@ -53,7 +53,27 @@ const createExpense = async (data: ServerExpenseData) => {
     }
 }
 
-export { createExpense, fetchExpensesByUserId };
+const deleteExpense = async (expenseId: string) => {
+    try {
+        const user = await currentUser();
+        if (!user) {
+            throw new Error("User not authenticated");
+        }
+        const deletedExpense = await prisma.expense.delete({
+            where: { id: expenseId },
+        });
+
+        if (deletedExpense.userId !== user.id) {
+            throw new Error("You are not authorized to delete this expense");
+        }
+
+        return { success: true, message: "Expense deleted successfully" };
+    } catch (error) {
+        throw error;
+    }
+}
+
+export { createExpense, fetchExpensesByUserId, deleteExpense };
 
 // // Types
 // export type Category =

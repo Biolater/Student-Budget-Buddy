@@ -23,6 +23,12 @@ import { FC } from "react";
 import { Currency } from "@prisma/client";
 import { ClientCurrencyItem } from "../../types/currency.types";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
+import {
+  toZoned,
+  now,
+  getLocalTimeZone,
+  parseAbsolute,
+} from "@internationalized/date";
 
 interface ExpenseFormProps {
   currencies: ClientCurrencyItem[];
@@ -31,9 +37,15 @@ interface ExpenseFormProps {
   currenciesLoading: boolean;
 }
 
-const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, categories, currenciesLoading, categoriesLoading }) => {
+const ExpenseFormV2: FC<ExpenseFormProps> = ({
+  currencies,
+  categories,
+  currenciesLoading,
+  categoriesLoading,
+}) => {
   const { userId } = useAuth();
   const {
+    watch,
     control,
     formState: { errors },
     handleSubmit,
@@ -42,11 +54,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, categories, currencie
   });
 
   const {
-    create: {
-      mutateAsync: createExpense,
-      isPending: createExpenseLoading,
-      isError: createExpenseError,
-    },
+    create: { mutateAsync: createExpense, isPending: createExpenseLoading },
   } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
@@ -96,9 +104,12 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, categories, currencie
                   labelPlacement="outside"
                   placeholder="Select currency"
                   errorMessage={errors.currency?.message}
-                  onChange={(value) => field.onChange(value)}
+                  onSelectionChange={(keys) => {
+                    const selectedKey = Array.from(keys)[0];
+                    field.onChange(selectedKey);
+                  }}
                   isInvalid={!!errors.currency}
-                  value={field.value}
+                  selectedKeys={field.value ? [field.value] : []}
                   isRequired
                 >
                   {currencies!.map((option) => (
@@ -124,9 +135,12 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({ currencies, categories, currencie
                   labelPlacement="outside"
                   placeholder="Select category"
                   errorMessage={errors.category?.message}
-                  onChange={(value) => field.onChange(value)}
+                  onSelectionChange={(keys) => {
+                    const selectedKey = Array.from(keys)[0];
+                    field.onChange(selectedKey);
+                  }}
+                  selectedKeys={field.value ? [field.value] : []}
                   isInvalid={!!errors.category}
-                  value={field.value}
                   isRequired
                 >
                   {categories!.map((category) => (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -19,6 +19,7 @@ import {
   type SortDescriptor,
   Tooltip,
   Link,
+  DateValue,
 } from "@heroui/react";
 import { TABLE_HEADERS } from "@/app/constants/expense.constants";
 // import { Expense } from "../../(home)/expenses/page";
@@ -29,6 +30,14 @@ import toast from "react-hot-toast";
 import useExpenses from "@/app/hooks/useExpense";
 import { ClientCurrencyItem } from "@/app/types/currency.types";
 import { ExtendedExpense } from "@/app/types/expense.types";
+import EditExpenseForm from "./EditExpenseForm";
+import {
+  getLocalTimeZone,
+  now,
+  parseZonedDateTime,
+  ZonedDateTime,
+} from "@internationalized/date";
+import { ExpenseCategoryRef } from "@/app/types/category.types";
 
 const DESCRIPTION_TRUNCATE_LENGTH = 40;
 const ITEMS_PER_PAGE = 5;
@@ -38,10 +47,27 @@ const ExpenseItems: React.FC<{
   expenses: ExtendedExpense[];
   expensesLoading: boolean;
   currencies: ClientCurrencyItem[];
-}> = ({ userId, expenses, expensesLoading, currencies }) => {
-  // const {
-  //   delete: { mutateAsync: mutateDelete, isPending: isDeleting },
-  // } = useExpenses(userId);
+  categories: ExpenseCategoryRef[];
+  currenciesLoading: boolean;
+  categoriesLoading: boolean;
+}> = ({
+  userId,
+  expenses,
+  expensesLoading,
+  currencies,
+  categories,
+  categoriesLoading,
+  currenciesLoading,
+}) => {
+  const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null);
+  const [editExpense, setEditExpense] = useState<ExtendedExpense | null>(null);
+  const {
+    delete: {
+      mutateAsync: deleteExpense,
+      isPending: isDeleting,
+      error: deleteError,
+    },
+  } = useExpenses(userId);
   // const updateTriggerRef = useRef(false);
   // const [editExpense, setEditExpense] = useState<Expense | null>(null);
   // const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
@@ -55,16 +81,38 @@ const ExpenseItems: React.FC<{
   });
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
 
-  // const {
-  //   isOpen: editModelOpen,
-  //   onOpen: onEditModalOpen,
-  //   onClose: onEditModalChange,
-  // } = useDisclosure();
-  // const {
-  //   isOpen: deleteModelOpen,
-  //   onOpen: onDeleteModalOpen,
-  //   onClose: onDeleteModalChange,
-  // } = useDisclosure();
+  const handleDeleteButtonClick = (expenseId: string) => {
+    setDeleteExpenseId(expenseId);
+    onDeleteModalOpen();
+  };
+
+  const {
+    isOpen: editModelOpen,
+    onOpen: onEditModalOpen,
+    onClose: onEditModalChange,
+  } = useDisclosure();
+
+  const {
+    isOpen: deleteModelOpen,
+    onOpen: onDeleteModalOpen,
+    onClose: onDeleteModalChange,
+  } = useDisclosure();
+
+  const handleDeleteExpense = async (id: string) => {
+    try {
+      await deleteExpense(id);
+      onDeleteModalChange();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Something went wrong"
+      );
+    }
+  };
+
+  const handleEditButtonClick = (expense: ExtendedExpense) => {
+    setEditExpense(expense);
+    onEditModalOpen();
+  };
 
   // const handleEditModalOpen = (expense: Expense) => {
   //   onEditModalOpen();
@@ -133,9 +181,10 @@ const ExpenseItems: React.FC<{
   return (
     <>
       <Modal
-        // isOpen={deleteModelOpen}
+        backdrop="blur"
+        isOpen={deleteModelOpen}
         placement="auto"
-        // onOpenChange={onDeleteModalChange}
+        onOpenChange={onDeleteModalChange}
       >
         <ModalContent>
           {(onClose) => (
@@ -152,17 +201,18 @@ const ExpenseItems: React.FC<{
                   Close
                 </Button>
                 <Button
-                  // isDisabled={isDeleting}
-                  // isLoading={isDeleting}
+                  isDisabled={isDeleting}
+                  isLoading={isDeleting}
                   color="danger"
-                  // onPress={async () => {
-                  //   if (deleteExpense) {
-                  //     await handleDeleteExpense(deleteExpense?.id); // Fix: Directly pass the correct expense.id here
-                  //     onClose(); // Close modal after deletion
-                  //   }
-                  // }}
+                  onPress={() => {
+                    if (deleteExpenseId) {
+                      handleDeleteExpense(deleteExpenseId);
+                    } else {
+                      toast.error("Something went wrong");
+                    }
+                  }}
                 >
-                  {/* {isDeleting ? "Deleting..." : "Delete"} */}
+                  Delete Expense
                 </Button>
               </ModalFooter>
             </>
@@ -170,9 +220,12 @@ const ExpenseItems: React.FC<{
         </ModalContent>
       </Modal>
       <Modal
-        // isOpen={editModelOpen}
+        scrollBehavior="inside"
+        backdrop="blur"
+        size="2xl"
+        isOpen={editModelOpen}
         placement="auto"
-        // onOpenChange={onEditModalChange}
+        onOpenChange={onEditModalChange}
       >
         <ModalContent>
           {(onClose) => (
@@ -185,27 +238,51 @@ const ExpenseItems: React.FC<{
                 </p>
               </ModalHeader>
               <ModalBody>
-                {/* <ExpenseForm
-                  userId={userId}
-                  isEditing={true}
-                  editingExpense={editExpense}
-                  updateTriggerState={updateTriggerRef}
-                  onUpdateFinished={handleUpdateFinished}
-                /> */}
+                <EditExpenseForm
+                  categoriesLoading={categoriesLoading}
+                  currenciesLoading={currenciesLoading}
+                  currencies={currencies}
+                  categories={categories}
+                  initialData={{
+                    date: (() => {
+                      const rawDate = editExpense?.date;
+                      if (!rawDate) return now(getLocalTimeZone());
+
+                      const date = new Date(rawDate);
+                      const timezoneOffset = date.getTimezoneOffset() * 60000;
+                      const localISOString = new Date(
+                        date.getTime() - timezoneOffset
+                      )
+                        .toISOString()
+                        .slice(0, -1);
+
+                      const timeZone = getLocalTimeZone(); // or Intl.DateTimeFormat().resolvedOptions().timeZone;
+                      return parseZonedDateTime(
+                        `${localISOString}[${timeZone}]`
+                      ) as DateValue;
+                    })(),
+                    amount: editExpense?.amount ?? 0,
+                    // Map currency to a string (using the currency code, for example)
+                    currency: editExpense?.currency?.code ?? "",
+                    // If category is an object, map it to a string as well
+                    category: editExpense?.category?.name ?? "",
+                    description: editExpense?.description ?? "",
+                  }}
+                />
               </ModalBody>
-              <ModalFooter>
+              {/* <ModalFooter>
                 <Button variant="light" onPress={onClose}>
                   Close
                 </Button>
                 <Button
                   color="primary"
-                  // isDisabled={isUpdating}
-                  // isLoading={isUpdating}
-                  // onPress={handleUpdateButtonClick}
+                  isDisabled={isUpdating}
+                  isLoading={isUpdating}
+                  onPress={handleUpdateButtonClick}
                 >
-                  {/* {!isUpdating && "Update Expense"} */}
+                  {!isUpdating && "Update Expense"}
                 </Button>
-              </ModalFooter>
+              </ModalFooter> */}
             </>
           )}
         </ModalContent>
@@ -281,14 +358,14 @@ const ExpenseItems: React.FC<{
                       className="min-w-8 min-h-8 h-full rounded-xl p-3"
                       variant="light"
                       size="sm"
-                      // onPress={() => handleEditModalOpen(expense)}
+                      onPress={() => handleEditButtonClick(expense)}
                     >
                       <Pencil className="h-4 w-4" />
                       <span className="sr-only">Edit</span>
                     </Button>
                     <Button
                       className="min-w-8 min-h-8 h-full rounded-xl p-3"
-                      // onPress={() => handleDeleteModalOpen(expense)}
+                      onPress={() => handleDeleteButtonClick(expense.id)}
                       color="danger"
                       size="md"
                     >
@@ -308,7 +385,7 @@ const ExpenseItems: React.FC<{
               <Button
                 variant="light"
                 onPress={handleShowMoreClick}
-                className="w-full max-w-[200px]"
+                className="w-full max-w-[12.5rem]"
               >
                 Show More
               </Button>
@@ -316,7 +393,7 @@ const ExpenseItems: React.FC<{
               <Button
                 variant="light"
                 onPress={handleShowLessClick}
-                className="w-full max-w-[200px]"
+                className="w-full max-w-[12.5rem]"
               >
                 Show Less
               </Button>

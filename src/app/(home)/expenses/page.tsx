@@ -9,26 +9,37 @@ import useExpense from "@/app/hooks/useExpense";
 import { filterExpenses } from "@/app/utils/expenses.utils";
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import type { RangeValue } from "@heroui/react";
-import { type ChangeEvent, useCallback, useMemo, useState } from "react";
+import {
+  type ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { ZonedDateTime } from "@internationalized/date";
 import { useCategory } from "@/app/hooks/useCategory";
-import { Skeleton } from "@heroui/react";
-import { Alert } from "@heroui/react";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { Button } from "@heroui/react";
+import { addToast } from "@heroui/react";
 
 const ExpenseTracker = () => {
-  const { isLoaded, userId } = useAuth();
+  const { userId } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [dateRangePickerValue, setDateRangePickerValue] =
     useState<RangeValue<ZonedDateTime> | null>(null);
 
   const {
-    fetchExpenses: { data: expenses, isPending: isFetching, error: fetchError },
+    fetchExpenses: {
+      data: expenses,
+      isPending: isFetching,
+      error: expensesError,
+    },
   } = useExpense(userId);
 
   const {
-    query: { data: currencies, isPending: currenciesLoading },
+    query: {
+      data: currencies,
+      isPending: currenciesLoading,
+      error: currenciesError,
+    },
   } = useCurrency();
 
   const {
@@ -63,6 +74,30 @@ const ExpenseTracker = () => {
 
   const handleDateReset = useCallback(() => setDateRangePickerValue(null), []);
 
+  useEffect(() => {
+    if (currenciesError) {
+      addToast({
+        title: "Error",
+        description: "Failed to fetch currencies.",
+        color: "danger",
+      });
+    } else if (categoriesError) {
+      addToast({
+        title: "Error",
+        description: "Failed to fetch categories.",
+        color: "danger",
+      });
+    } else if (expensesError) {
+      {
+      }
+      addToast({
+        title: "Error",
+        description: "Failed to fetch expenses.",
+        color: "danger",
+      });
+    }
+  }, [currenciesError, categoriesError, expensesError]);
+
   return (
     <div className="container max-w-4xl mx-auto p-4 md:py-8">
       <Card className="expense-tracker bg-card">
@@ -76,8 +111,8 @@ const ExpenseTracker = () => {
         </CardHeader>
         <CardBody className="p-6 pt-0">
           <ExpenseFormV2
-            currencies={currencies!}
-            categories={categories!}
+            currencies={currencies ?? []}
+            categories={categories ?? []}
             categoriesLoading={categoriesLoading}
             currenciesLoading={currenciesLoading}
           />
@@ -91,9 +126,12 @@ const ExpenseTracker = () => {
           />
           <ExpenseItems
             userId={userId}
-            expenses={filteredExpenses || []}
+            expenses={filteredExpenses ?? []}
             expensesLoading={isFetching}
-            currencies={currencies || []}
+            currencies={currencies ?? []}
+            categories={categories ?? []}
+            currenciesLoading={currenciesLoading}
+            categoriesLoading={categoriesLoading}
           />
         </CardFooter>
       </Card>
