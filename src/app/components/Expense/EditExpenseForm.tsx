@@ -19,21 +19,26 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { FC, useEffect } from "react";
 import { ClientCurrencyItem } from "../../types/currency.types";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
+import useExpense from "@/app/hooks/useExpense";
 
 interface EditExpenseFormProps {
+  expenseId: string;
   currencies: ClientCurrencyItem[];
   categories: ExpenseCategoryRef[];
   currenciesLoading: boolean;
   categoriesLoading: boolean;
   initialData: ExpenseFormSchemaType;
+  onSuccess?: () => void;
 }
 
 const EditExpenseForm: FC<EditExpenseFormProps> = ({
+  expenseId,
   currencies,
   categories,
   currenciesLoading,
   categoriesLoading,
   initialData,
+  onSuccess,
 }) => {
   const { userId } = useAuth();
   const {
@@ -45,17 +50,22 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
     defaultValues: initialData,
   });
 
-  //   const {
-  //     update: {
-  //       mutateAsync: updateExpense,
-  //       isPending: updateExpenseLoading,
-  //       isError: updateExpenseError,
-  //     },
-  //   } = useExpense(userId);
+  const {
+    update: {
+      mutateAsync: updateExpense,
+      isPending: updateExpenseLoading,
+      isSuccess: updateExpenseSuccess,
+    },
+  } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
     try {
-      //   await updateExpense(data);
+      const formattedData = {
+        ...data,
+        currency: `${data.currency.toLowerCase()}-id`,
+        category: `${data.category.toLowerCase()}-id`,
+      };
+      await updateExpense({ expenseId, data: formattedData });
     } catch (error) {
       console.error("Error updating expense:", error);
     }
@@ -64,6 +74,12 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
   if (currenciesLoading || categoriesLoading) {
     return <ExpenseFormSkeleton />;
   }
+
+  useEffect(() => {
+    if (updateExpenseSuccess) {
+      onSuccess?.();
+    }
+  }, [updateExpenseSuccess, onSuccess]);
 
   return (
     <form
@@ -173,10 +189,7 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
                 placeholder="Enter amount"
                 labelPlacement="outside"
                 errorMessage={errors.amount?.message}
-                onChange={(e) => {
-                  const parsedValue = Number.parseFloat(e.target.value);
-                  field.onChange(isNaN(parsedValue) ? undefined : parsedValue);
-                }}
+                onChange={field.onChange}
                 isInvalid={!!errors.amount}
                 value={
                   field.value !== undefined && field.value !== null
@@ -217,11 +230,12 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
           className="flex-grow md:flex-grow-0"
           color="primary"
           type="submit"
-          //   isLoading={updateExpenseLoading}
-          //   disabled={updateExpenseLoading}
+          isLoading={updateExpenseLoading}
+          aria-busy={updateExpenseLoading}
+          disabled={updateExpenseLoading}
           aria-label="Update Expense"
         >
-          {/* {!updateExpenseLoading ? "Update Expense" : "Updating Expense..."} */}
+          {!updateExpenseLoading && "Update Expense"}
         </Button>
       </div>
     </form>

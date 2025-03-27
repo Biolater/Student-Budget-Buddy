@@ -1,61 +1,60 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-// import {
-//   type TransformedExpense,
-//   type CreateExpenseData,
-//   createExpense,
-//   fetchExpensesByUser,
-//   deleteAnExpense,
-//   getTotalSpent,
-//   getMonthlySpending,
-//   updateExpenseAction,
-// } from "@/app/actions/expense.actions";
 import { queryClient } from "@/app/components/TanstackProvider";
 import toast from "react-hot-toast";
-import { createExpense, deleteExpense, fetchExpensesByUserId } from "@/app/actions/expense.actions";
+import { createExpense, deleteExpense, fetchExpensesByUserId, updateExpense } from "@/app/actions/expense.actions";
 import { ExpenseFormSchemaType } from "@/app/schema/expense.schema";
 import { addToast } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
 
+// Generate a dynamic query key based on userId.
+const EXPENSE_QUERY_KEY = (userId: string) => ["expenses", userId];
+
 const useExpense = (userId: string | undefined | null) => {
+  // Helper function to ensure the user is authenticated.
+  const assertUser = () => {
+    if (!userId) {
+      throw new Error("You must be signed in to perform this action");
+    }
+  };
+
   return {
     create: useMutation({
-      mutationFn: (data: ExpenseFormSchemaType) => createExpense({
-        ...data,
-        date: data.date.toDate(getLocalTimeZone())
-      }),
-      mutationKey: ["createExpense"],
+      mutationFn: (data: ExpenseFormSchemaType) =>
+        createExpense({
+          ...data,
+          date: data.date.toDate(getLocalTimeZone()),
+        }),
+      // Use a dynamic query key for better cache management.
+      mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onMutate: async () => {
-        if (!userId) {
-          throw new Error("You must be signed in to create an expense");
-        }
+        assertUser();
       },
       onError: (error) => {
-        toast.error(
-          error instanceof Error ? error.message : "Something went wrong"
-        );
+        toast.error(error instanceof Error ? error.message : "Something went wrong");
       },
       onSuccess: () => {
         toast.success("Expense created successfully");
-        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        if (userId) {
+          queryClient.invalidateQueries({ queryKey: EXPENSE_QUERY_KEY(userId) });
+        }
       },
     }),
     fetchExpenses: useQuery({
-      queryKey: ["expenses"],
+      queryKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       queryFn: async () => {
         if (!userId) return []; // Default to an empty array.
         const expenses = await fetchExpensesByUserId(userId);
         return expenses ?? [];
       },
       enabled: !!userId,
-      staleTime: 600000,
+      staleTime: 600000, // 10 minutes.
     }),
     delete: useMutation({
       mutationFn: (expenseId: string) => deleteExpense(expenseId),
-      mutationKey: ["deleteExpense"],
+      mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onMutate: async () => {
-        if (!userId) {
-          throw new Error("You must be signed in to delete an expense");
-        }
+        assertUser();
+        // You might add an optimistic update here.
       },
       onError: (error) => {
         addToast({
@@ -70,99 +69,37 @@ const useExpense = (userId: string | undefined | null) => {
           description: "Expense deleted successfully",
           color: "success",
         });
-        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+        if (userId) {
+          queryClient.invalidateQueries({ queryKey: EXPENSE_QUERY_KEY(userId) });
+        }
       },
-    })
-    // query: useQuery({
-    //   queryKey: ["expenses", keyUserId],
-    //   queryFn: async () => {
-    //     if (!userId) return []; // Default to an empty array.
-    //     const expenses = await fetchExpensesByUser();
-    //     return expenses ?? [];
-    //   },
-    //   enabled: !!userId,
-    //   staleTime: 600000,
-    // }),
-    // create: useMutation({
-    //   mutationFn: (data: CreateExpenseData) => createExpense(data),
-    //   mutationKey: ["createExpense", keyUserId],
-    //   onMutate: async () => {
-    //     if (!userId) {
-    //       throw new Error("You must be signed in to create an expense");
-    //     }
-    //   },
-    //   onError: (error) => {
-    //     toast.error(
-    //       error instanceof Error ? error.message : "Something went wrong"
-    //     );
-    //   },
-    //   onSuccess: () => {
-    //     toast.success("Expense created successfully");
-    //     queryClient.invalidateQueries({ queryKey: ["expenses", keyUserId] });
-    //   },
-    // }),
-    // delete: useMutation({
-    //   mutationFn: (expenseId: string) => deleteAnExpense(expenseId),
-    //   mutationKey: ["deleteExpense", keyUserId],
-    //   onMutate: async () => {
-    //     if (!userId) {
-    //       throw new Error("You must be signed in to delete an expense");
-    //     }
-    //   },
-    //   onError: (error) => {
-    //     toast.error(
-    //       error instanceof Error ? error.message : "Something went wrong"
-    //     );
-    //   },
-    //   onSuccess: () => {
-    //     toast.success("Expense deleted successfully");
-    //     queryClient.invalidateQueries({ queryKey: ["expenses", keyUserId] });
-    //   },
-    // }),
-    // update: useMutation({
-    //   mutationFn: ({
-    //     expenseId,
-    //     data,
-    //   }: {
-    //     expenseId: string;
-    //     data: CreateExpenseData;
-    //   }) => updateExpenseAction(expenseId, data),
-    //   mutationKey: ["updateExpense", keyUserId],
-    //   onSuccess: () => {
-    //     toast.success("Expense updated successfully");
-    //     queryClient.invalidateQueries({ queryKey: ["expenses", keyUserId] });
-    //   },
-    // }),
-    // totalSpentAmount: useQuery({
-    //   queryKey: ["totalSpent", keyUserId],
-    //   queryFn: async () => {
-    //     if (!userId) return 0;
-    //     const total = await getTotalSpent();
-    //     return total ?? 0;
-    //   },
-    //   enabled: !!userId,
-    //   staleTime: 600000,
-    // }),
-    // monthlySpendingQuery: useQuery({
-    //   queryKey: ["monthlySpending", keyUserId],
-    //   queryFn: async () => {
-    //     if (!userId) return [];
-    //     const data = await getMonthlySpending({ byCategory: false });
-    //     return data ?? [];
-    //   },
-    //   enabled: !!userId,
-    //   staleTime: 600000,
-    // }),
-    // spendingByCategory: useQuery({
-    //   queryKey: ["spendingByCategory", keyUserId],
-    //   queryFn: async () => {
-    //     if (!userId) return [];
-    //     const data = await getMonthlySpending({ byCategory: true });
-    //     return data ?? [];
-    //   },
-    //   enabled: !!userId,
-    //   staleTime: 600000,
-    // }),
+    }),
+    update: useMutation({
+      mutationFn: ({
+        expenseId,
+        data,
+      }: {
+        expenseId: string;
+        data: ExpenseFormSchemaType;
+      }) =>
+        updateExpense(expenseId, {
+          ...data,
+          date: data.date.toDate(getLocalTimeZone()),
+        }),
+      mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
+      onMutate: async () => {
+        assertUser();
+      },
+      onSuccess: () => {
+        toast.success("Expense updated successfully");
+        if (userId) {
+          queryClient.invalidateQueries({ queryKey: EXPENSE_QUERY_KEY(userId) });
+        }
+      },
+      onError: (error) => {
+        toast.error(error instanceof Error ? error.message : "Something went wrong");
+      },
+    }),
   };
 };
 

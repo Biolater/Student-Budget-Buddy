@@ -1,79 +1,107 @@
 'use server';
+
 import { prisma } from "@/app/lib/client";
-import { ExpenseFormSchemaType, ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
-// import { type Expense } from "@prisma/client";
+import { ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
 import { currentUser } from "@clerk/nextjs/server";
-// import { convertCurrency, getDefaultCurrency } from "../lib/currencyUtils";
+
+// Helper function to ensure the user is authenticated.
+const requireUser = async () => {
+    const user = await currentUser();
+    if (!user) {
+        throw new Error("User not authenticated");
+    }
+    return user;
+};
 
 const fetchExpensesByUserId = async (userId: string) => {
-    try {
-        const user = await currentUser();
-        if (!user) {
-            throw new Error("User not authenticated");
-        }
-        const expenses = await prisma.expense.findMany({
-            where: { userId: userId },
-            orderBy: { date: "desc" },
-            include: {
-                category: true,
-                currency: true,
-            }
-        });
-        return expenses.map(expense => ({
-            ...expense,
-            amount: expense.amount.toNumber(),
-        }));
-    } catch (error) {
-        throw error;
+    const user = await requireUser();
+    // Optionally, ensure the requested userId matches the authenticated user.
+    if (user.id !== userId) {
+        throw new Error("Unauthorized access");
     }
-}
+
+    const expenses = await prisma.expense.findMany({
+        where: { userId },
+        orderBy: { date: "desc" },
+        include: {
+            category: true,
+            currency: true,
+        },
+    });
+
+    return expenses.map(expense => ({
+        ...expense,
+        amount: expense.amount.toNumber(),
+    }));
+};
 
 const createExpense = async (data: ServerExpenseData) => {
-    try {   
-        const validatedData = ServerExpenseSchema.parse(data);
-        const { date, amount, currency, category, description } = validatedData;
-        const user = await currentUser();
-        if (!user) {
-            throw new Error("User not authenticated");
-        }
-        const expense = await prisma.expense.create({
-            data: {
-                date,
-                amount,
-                expenseCategoryId: category,
-                description,
-                currencyId: currency,
-                userId: user.id
-            }
-        });
+    const user = await requireUser();
+    const validatedData = ServerExpenseSchema.parse(data);
+    const { date, amount, currency, category, description } = validatedData;
 
-        return { ...expense, amount: expense.amount.toNumber() };
-    } catch (error) {
-        throw error;
-    }
-}
+    const expense = await prisma.expense.create({
+        data: {
+            date,
+            amount,
+            expenseCategoryId: category,
+            description,
+            currencyId: currency,
+            userId: user.id,
+        },
+    });
+
+    return { ...expense, amount: expense.amount.toNumber() };
+};
 
 const deleteExpense = async (expenseId: string) => {
-    try {
-        const user = await currentUser();
-        if (!user) {
-            throw new Error("User not authenticated");
-        }
-        const deletedExpense = await prisma.expense.delete({
-            where: { id: expenseId },
-        });
+    const user = await requireUser();
+    // Verify that the expense exists and belongs to the user.
+    const expense = await prisma.expense.findUnique({
+        where: { id: expenseId },
+    });
 
-        if (deletedExpense.userId !== user.id) {
-            throw new Error("You are not authorized to delete this expense");
-        }
-
-        return { success: true, message: "Expense deleted successfully" };
-    } catch (error) {
-        throw error;
+    if (!expense) {
+        throw new Error("Expense not found");
     }
-}
+    if (expense.userId !== user.id) {
+        throw new Error("You are not authorized to delete this expense");
+    }
 
-export { createExpense, fetchExpensesByUserId, deleteExpense };
+    await prisma.expense.delete({ where: { id: expenseId } });
+    return { success: true, message: "Expense deleted successfully" };
+};
+
+const updateExpense = async (expenseId: string, data: ServerExpenseData) => {
+    const user = await requireUser();
+    const validatedData = ServerExpenseSchema.parse(data);
+    const { date, amount, currency, category, description } = validatedData;
+
+    // Verify that the expense exists and belongs to the user.
+    const expense = await prisma.expense.findUnique({ where: { id: expenseId } });
+    if (!expense) {
+        throw new Error("Expense not found");
+    }
+    if (expense.userId !== user.id) {
+        throw new Error("You are not authorized to update this expense");
+    }
+
+    const updatedExpense = await prisma.expense.update({
+        where: { id: expenseId },
+        data: {
+            date,
+            amount,
+            expenseCategoryId: category,
+            description,
+            currencyId: currency,
+        },
+    });
+
+    return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
+};
+
+export { createExpense, fetchExpensesByUserId, deleteExpense, updateExpense };
+
 
 // // Types
 // export type Category =

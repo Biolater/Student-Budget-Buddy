@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   Table,
   TableHeader,
@@ -17,32 +17,30 @@ import {
   ModalFooter,
   Spinner,
   type SortDescriptor,
-  Tooltip,
   Link,
   DateValue,
 } from "@heroui/react";
 import { TABLE_HEADERS } from "@/app/constants/expense.constants";
-// import { Expense } from "../../(home)/expenses/page";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import ExpenseForm from "./ExpenseForm";
+import EditExpenseForm from "./EditExpenseForm";
 import toast from "react-hot-toast";
 import useExpenses from "@/app/hooks/useExpense";
 import { ClientCurrencyItem } from "@/app/types/currency.types";
 import { ExtendedExpense } from "@/app/types/expense.types";
-import EditExpenseForm from "./EditExpenseForm";
 import {
   getLocalTimeZone,
   now,
   parseZonedDateTime,
-  ZonedDateTime,
 } from "@internationalized/date";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
+import DeleteExpenseModal from "./DeleteExpenseModal";
+import EditExpenseModal from "./EditExpenseModal";
 
 const DESCRIPTION_TRUNCATE_LENGTH = 40;
 const ITEMS_PER_PAGE = 5;
 
-const ExpenseItems: React.FC<{
+interface ExpenseItemsProps {
   userId: string | null | undefined;
   expenses: ExtendedExpense[];
   expensesLoading: boolean;
@@ -50,7 +48,9 @@ const ExpenseItems: React.FC<{
   categories: ExpenseCategoryRef[];
   currenciesLoading: boolean;
   categoriesLoading: boolean;
-}> = ({
+}
+
+const ExpenseItems: React.FC<ExpenseItemsProps> = ({
   userId,
   expenses,
   expensesLoading,
@@ -62,231 +62,121 @@ const ExpenseItems: React.FC<{
   const [deleteExpenseId, setDeleteExpenseId] = useState<string | null>(null);
   const [editExpense, setEditExpense] = useState<ExtendedExpense | null>(null);
   const {
-    delete: {
-      mutateAsync: deleteExpense,
-      isPending: isDeleting,
-      error: deleteError,
-    },
+    delete: { mutateAsync: deleteExpense, isPending: isDeleting },
   } = useExpenses(userId);
-  // const updateTriggerRef = useRef(false);
-  // const [editExpense, setEditExpense] = useState<Expense | null>(null);
-  // const [deleteExpense, setDeleteExpense] = useState<Expense | null>(null);
-  // const [isUpdating, setIsUpdating] = useState(false);
-  // const [showDescriptionFor, setShowDescriptionFor] = useState<Set<string>>(
-  //   new Set()
-  // ); // Set to store expense IDs whose description is expanded
+  const [showDescriptionFor, setShowDescriptionFor] = useState<Set<string>>(
+    new Set()
+  );
   const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
     column: "date",
     direction: "descending",
   });
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
 
-  const handleDeleteButtonClick = (expenseId: string) => {
-    setDeleteExpenseId(expenseId);
-    onDeleteModalOpen();
-  };
-
   const {
-    isOpen: editModelOpen,
+    isOpen: editModalOpen,
     onOpen: onEditModalOpen,
-    onClose: onEditModalChange,
+    onClose: onEditModalClose,
   } = useDisclosure();
 
   const {
-    isOpen: deleteModelOpen,
+    isOpen: deleteModalOpen,
     onOpen: onDeleteModalOpen,
-    onClose: onDeleteModalChange,
+    onClose: onDeleteModalClose,
   } = useDisclosure();
 
-  const handleDeleteExpense = async (id: string) => {
-    try {
-      await deleteExpense(id);
-      onDeleteModalChange();
-    } catch (error) {
-      toast.error(
-        error instanceof Error ? error.message : "Something went wrong"
-      );
-    }
-  };
+  const handleDeleteButtonClick = useCallback(
+    (expenseId: string) => {
+      setDeleteExpenseId(expenseId);
+      onDeleteModalOpen();
+    },
+    [onDeleteModalOpen]
+  );
 
-  const handleEditButtonClick = (expense: ExtendedExpense) => {
-    setEditExpense(expense);
-    onEditModalOpen();
-  };
+  const handleRead = useCallback((expenseId: string) => {
+    setShowDescriptionFor((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(expenseId)) {
+        newSet.delete(expenseId);
+      } else {
+        newSet.add(expenseId);
+      }
+      return newSet;
+    });
+  }, []);
 
-  // const handleEditModalOpen = (expense: Expense) => {
-  //   onEditModalOpen();
-  //   setEditExpense(expense);
-  // };
-  // const handleDeleteModalOpen = (expense: Expense) => {
-  //   onDeleteModalOpen();
-  //   setDeleteExpense(expense);
-  // };
-  // const handleDeleteExpense = async (id: string) => {
-  //   try {
-  //     await mutateDelete(id);
-  //   } catch (error) {
-  //     toast.error(
-  //       error instanceof Error ? error.message : "Something went wrong"
-  //     );
-  //   }
-  // };
-  // const handleUpdateButtonClick = async () => {
-  //   updateTriggerRef.current = true;
-  //   setIsUpdating(true);
-  // };
-  // const handleUpdateFinished = () => {
-  //   setEditExpense(null);
-  //   updateTriggerRef.current = false;
-  //   setIsUpdating(false);
-  //   onEditModalChange();
-  // };
-  // const handleRead = (expenseId: string) => {
-  //   setShowDescriptionFor((prev) => {
-  //     const newSet = new Set(prev);
-  //     if (newSet.has(expenseId)) {
-  //       newSet.delete(expenseId);
-  //     } else {
-  //       newSet.add(expenseId);
-  //     }
-  //     return newSet;
-  //   });
-  // };
+  const handleDeleteExpense = useCallback(
+    async (id: string) => {
+      try {
+        await deleteExpense(id);
+        onDeleteModalClose();
+      } catch (error) {
+        toast.error(
+          error instanceof Error ? error.message : "Something went wrong"
+        );
+      }
+    },
+    [deleteExpense, onDeleteModalClose]
+  );
+
+  const handleEditButtonClick = useCallback(
+    (expense: ExtendedExpense) => {
+      setEditExpense(expense);
+      onEditModalOpen();
+    },
+    [onEditModalOpen]
+  );
+
   const sortedItems = useMemo(() => {
     return [...expenses].sort((a, b) => {
-      const first = a[sortDescriptor.column as keyof ExtendedExpense]; // Expense
-      const second = b[sortDescriptor.column as keyof ExtendedExpense]; // Expense
-      if (first === null || first === undefined) return 1;
-      if (second === null || second === undefined) return -1;
+      const first = a[sortDescriptor.column as keyof ExtendedExpense];
+      const second = b[sortDescriptor.column as keyof ExtendedExpense];
+      if (first == null) return 1;
+      if (second == null) return -1;
       const cmp = first < second ? -1 : first > second ? 1 : 0;
-
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
   }, [sortDescriptor, expenses]);
 
   const hasMore = expenses.length > displayCount;
 
-  const handleShowMoreClick = () => {
+  const handleShowMoreClick = useCallback(() => {
     setDisplayCount((prev) => prev + ITEMS_PER_PAGE);
-  };
+  }, []);
 
-  const handleShowLessClick = () => {
+  const handleShowLessClick = useCallback(() => {
     setDisplayCount(ITEMS_PER_PAGE);
-  };
+  }, []);
 
-  const currentItems = useMemo(() => {
-    return sortedItems.slice(0, displayCount);
-  }, [sortedItems, displayCount]);
+  const currentItems = useMemo(
+    () => sortedItems.slice(0, displayCount),
+    [sortedItems, displayCount]
+  );
 
   return (
     <>
-      <Modal
-        backdrop="blur"
-        isOpen={deleteModelOpen}
-        placement="auto"
-        onOpenChange={onDeleteModalChange}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex-col space-y-1.5">
-                <p>Delete Expense</p>
-                <p className="text-sm text-muted-foreground">
-                  Are you sure you want to delete this expense? This action
-                  cannot be undone.
-                </p>
-              </ModalHeader>
-              <ModalFooter>
-                <Button variant="light" onPress={onClose}>
-                  Close
-                </Button>
-                <Button
-                  isDisabled={isDeleting}
-                  isLoading={isDeleting}
-                  color="danger"
-                  onPress={() => {
-                    if (deleteExpenseId) {
-                      handleDeleteExpense(deleteExpenseId);
-                    } else {
-                      toast.error("Something went wrong");
-                    }
-                  }}
-                >
-                  Delete Expense
-                </Button>
-              </ModalFooter>
-            </>
-          )}
-        </ModalContent>
-      </Modal>
-      <Modal
-        scrollBehavior="inside"
-        backdrop="blur"
-        size="2xl"
-        isOpen={editModelOpen}
-        placement="auto"
-        onOpenChange={onEditModalChange}
-      >
-        <ModalContent>
-          {(onClose) => (
-            <>
-              <ModalHeader className="flex-col space-y-1.5">
-                <p>Edit Expense</p>
-                <p className="text-sm text-muted-foreground">
-                  Make changes to your expense here. Click save when you&apos;re
-                  done.
-                </p>
-              </ModalHeader>
-              <ModalBody>
-                <EditExpenseForm
-                  categoriesLoading={categoriesLoading}
-                  currenciesLoading={currenciesLoading}
-                  currencies={currencies}
-                  categories={categories}
-                  initialData={{
-                    date: (() => {
-                      const rawDate = editExpense?.date;
-                      if (!rawDate) return now(getLocalTimeZone());
+      <DeleteExpenseModal
+        isOpen={deleteModalOpen}
+        onClose={onDeleteModalClose}
+        onDelete={() => {
+          if (deleteExpenseId) {
+            handleDeleteExpense(deleteExpenseId);
+          } else {
+            toast.error("Something went wrong");
+          }
+        }}
+        isDeleting={isDeleting}
+      />
+      <EditExpenseModal
+        isOpen={editModalOpen}
+        onClose={onEditModalClose}
+        expense={editExpense}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        currencies={currencies}
+        currenciesLoading={currenciesLoading}
+      />
 
-                      const date = new Date(rawDate);
-                      const timezoneOffset = date.getTimezoneOffset() * 60000;
-                      const localISOString = new Date(
-                        date.getTime() - timezoneOffset
-                      )
-                        .toISOString()
-                        .slice(0, -1);
-
-                      const timeZone = getLocalTimeZone(); // or Intl.DateTimeFormat().resolvedOptions().timeZone;
-                      return parseZonedDateTime(
-                        `${localISOString}[${timeZone}]`
-                      ) as DateValue;
-                    })(),
-                    amount: editExpense?.amount ?? 0,
-                    // Map currency to a string (using the currency code, for example)
-                    currency: editExpense?.currency?.code ?? "",
-                    // If category is an object, map it to a string as well
-                    category: editExpense?.category?.name ?? "",
-                    description: editExpense?.description ?? "",
-                  }}
-                />
-              </ModalBody>
-              {/* <ModalFooter>
-                <Button variant="light" onPress={onClose}>
-                  Close
-                </Button>
-                <Button
-                  color="primary"
-                  isDisabled={isUpdating}
-                  isLoading={isUpdating}
-                  onPress={handleUpdateButtonClick}
-                >
-                  {!isUpdating && "Update Expense"}
-                </Button>
-              </ModalFooter> */}
-            </>
-          )}
-        </ModalContent>
-      </Modal>
       <div className="space-y-4 w-full">
         <Table
           sortDescriptor={sortDescriptor}
@@ -311,9 +201,9 @@ const ExpenseItems: React.FC<{
               <TableRow
                 key={expense.id}
                 className={`${
-                  index === currentItems.length - 1
-                    ? ""
-                    : "border-b border-border"
+                  index !== currentItems.length - 1
+                    ? "border-b border-border"
+                    : ""
                 } hover:bg-primary-opacity transition-colors duration-200 ease-in-out`}
               >
                 <TableCell className="whitespace-nowrap">
@@ -323,29 +213,29 @@ const ExpenseItems: React.FC<{
                   {currencies.length > 0 &&
                     currencies.find((c) => c.code === expense.currency.code)
                       ?.symbol}
-                  {expense.amount.toFixed(2)} {expense.currency.code}
+                  {expense.amount.toFixed(2)}
                 </TableCell>
                 <TableCell>{expense.category.name}</TableCell>
-                <TableCell className="min-w-[12.5rem]">
+                <TableCell>
                   {expense.description &&
-                  expense.description?.length > DESCRIPTION_TRUNCATE_LENGTH ? (
+                  expense.description.length > DESCRIPTION_TRUNCATE_LENGTH ? (
                     <>
-                      {/* {showDescriptionFor.has(expense.id)
+                      {showDescriptionFor.has(expense.id)
                         ? expense.description
                         : `${expense.description.slice(
                             0,
                             DESCRIPTION_TRUNCATE_LENGTH
-                          )}...`} */}
+                          )}...`}
                       <Link
-                        // onPress={() => handleRead(expense.id)}
+                        onPress={() => handleRead(expense.id)}
                         className="text-muted-foreground cursor-pointer block"
                         size="sm"
                         underline="hover"
-                        // aria-expanded={showDescriptionFor.has(expense.id)}
+                        aria-expanded={showDescriptionFor.has(expense.id)}
                       >
-                        {/* {showDescriptionFor.has(expense.id)
+                        {showDescriptionFor.has(expense.id)
                           ? "Read less"
-                          : "Read more"} */}
+                          : "Read more"}
                       </Link>
                     </>
                   ) : (
