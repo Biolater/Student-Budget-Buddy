@@ -1,4 +1,4 @@
-import { fetchExpenseCategoriesForSelect } from "@/app/actions/category.actions";
+import { fetchBudgetCategoriesForSelect, fetchExpenseCategoriesForSelect } from "@/app/actions/category.actions";
 import { useQuery } from "@tanstack/react-query";
 
 export const useCategory = () => {
@@ -9,5 +9,11 @@ export const useCategory = () => {
       staleTime: 10 * 60 * 1000, // 10 minutes
       gcTime: 60 * 60 * 1000, // 1 hour
     }),
+    budgetCategoriesQuery: useQuery({
+      queryKey: ["budgetCategories"],
+      queryFn: fetchBudgetCategoriesForSelect,
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 60 * 60 * 1000, // 1 hour
+    })
   };
 };

@@ -1,6 +1,7 @@
 import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { Currency } from "@prisma/client";
 import { DollarSign, HeartPulse, PiggyBank, Activity } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface BudgetStatsOverviewProps {
   totalBudget: number;
@@ -16,7 +17,12 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
   defaultCurrency,
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.15 }}
+      className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"
+    >
       <Card>
         <CardBody className="flex-row gap-4 p-4">
           <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
@@ -50,7 +56,7 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
         </CardBody>
       </Card>
-    </div>
+    </motion.div>
   );
 };
 

@@ -41,6 +41,7 @@ export default function CreateBudgetDrawer() {
             ease: "easeInOut",
           },
         }}
+        size="xs"
         onOpenChange={onOpenChange}
       >
         <DrawerContent>

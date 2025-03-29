@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import BudgetForm from "../../components/Budget/AddNewBudget";
 import { Button } from "@heroui/react";
 import { Plus } from "lucide-react";
+import { motion } from "framer-motion";
 import CreateBudgetDrawer from "@/app/components/Budget/CreateBudgetDrawer";
 import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
 // import { getCurrencies } from "@/app/lib/currencyUtils";
@@ -36,7 +37,12 @@ const Budget = () => {
   return (
     <main className="container mx-auto container-padding">
       {/* Budget Header  */}
-      <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex items-center justify-between flex-wrap gap-4 mb-8"
+      >
         <div>
           <h1 className="text-3xl font-bold">Budget Management</h1>
           <p className="text-muted-foreground">
@@ -44,11 +50,11 @@ const Budget = () => {
           </p>
         </div>
         <CreateBudgetDrawer />
-      </div>
+      </motion.div>
       {/* Budget Stats Overview */}
       <BudgetStatsOverview
         defaultCurrency="USD"
-        totalBudget={1000}
+        totalBudget={100}
         totalRemaining={100}
         totalSpent={200}
       />
