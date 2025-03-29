@@ -4,7 +4,7 @@ import SpendingData from "../../components/Dashboard/SpendingData";
 import FinancialInsights from "../../components/Dashboard/FinancialInsights";
 import { useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
-// import useBudget from "@/hooks/useBudget";
+// import useBudget from "@/haooks/useBudget";
 import { useEffect } from "react";
 import DashboardSkeleton from "@/app/components/Dashboard/DashboardSkeleton";
 // import {

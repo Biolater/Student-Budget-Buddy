@@ -113,3 +113,9 @@ html[data-theme="dark"] {
 .expenses-date-range button[data-slot="selector-button"] > * {
   opacity: 0;
 }
+
+@layer utilities {
+  .container-padding {
+  @apply px-4 py-8 sm:px-6 md:px-10 lg:px-14 xl:px-16 2xl:px-20;
+  }
+}

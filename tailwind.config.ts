@@ -5,8 +5,6 @@ import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
 const svgToDataUri = require("mini-svg-data-uri");
 
-const colors = require("tailwindcss/colors");
-
 
 
 export default {
@@ -48,6 +46,9 @@ export default {
       borderRadius: {
         DEFAULT: "var(--radius)",
       },
+      container: {
+        center: true,
+      }
     },
   },
   darkMode: "class",
