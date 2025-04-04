@@ -5,10 +5,6 @@ import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
 const svgToDataUri = require("mini-svg-data-uri");
 
-// Define plugin parameter types
-type AddBaseFunction = (styles: Record<string, any>) => void;
-type ThemeFunction = (path: string) => any;
-
 export default {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -49,56 +45,11 @@ export default {
       },
       container: {
         center: true,
-      }
+      },
     },
   },
   darkMode: "class",
   plugins: [
-    heroui({
-      themes: {
-        dark: {
-          colors: {
-            primary: {
-              DEFAULT: "rgba(76, 185, 39, 1)",
-              "50": "rgba(76, 185, 39, 0.5)",
-            },
-
-            focus: "#BEF264",
-          },
-        },
-      },
-    }),
-    function({ addBase, theme }: { addBase: AddBaseFunction, theme: ThemeFunction }) {
-      let allColors = flattenColorPalette(theme("colors"));
-      let newVars = Object.fromEntries(
-        Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-      );
-      
-      addBase({
-        ":root": newVars,
-      });
-    },
-    function ({ matchUtilities, theme }: any) {
-      matchUtilities(
-        {
-          "bg-grid": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="${value}"><path d="M0 .5H31.5V32"/></svg>`
-            )}")`,
-          }),
-          "bg-grid-small": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="8" height="8" fill="none" stroke="${value}"><path d="M0 .5H31.5V32"/></svg>`
-            )}")`,
-          }),
-          "bg-dot": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none"><circle fill="${value}" id="pattern-circle" cx="10" cy="10" r="1.6257413380501518"></circle></svg>`
-            )}")`,
-          }),
-        },
-        { values: flattenColorPalette(theme("backgroundColor")), type: "color" }
-      );
-    },
+    heroui(),
   ],
 } satisfies Config;
