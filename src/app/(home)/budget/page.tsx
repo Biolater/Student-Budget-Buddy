@@ -13,13 +13,16 @@ import { Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import CreateBudgetDrawer from "@/app/components/Budget/CreateBudgetDrawer";
 import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
+import BudgetCard from "@/app/components/Budget/BudgetCard";
 // import { getCurrencies } from "@/app/lib/currencyUtils";
 // import { useCurrencies } from "@/hooks/useCurrency";
 
 const Budget = () => {
   const { userId } = useAuth();
 
-  const { query: { data: budgets, isPending: budgetsLoading, isError: budgetsError } } = useBudget(userId ?? "");
+  const {
+    query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
+  } = useBudget(userId ?? "");
 
   useEffect(() => {
     if (budgetsError) {
@@ -27,9 +30,9 @@ const Budget = () => {
     }
   }, [budgetsError]);
 
-  useEffect(() => {
-    console.log(budgets);
-  }, [budgets]);
+  if (budgetsLoading) {
+    return <div>Loading...</div>;
+  }
 
   // const { query: { data: currencies, isPending: currenciesLoading, isError: currenciesError } } = useCurrencies(userId ?? "");
 
@@ -68,7 +71,9 @@ const Budget = () => {
       />
 
       {/* MAIN CONTENT */}
-
+      {budgets?.map((budget) => (
+        <BudgetCard key={budget.id} budget={budget} />
+      ))}
     </main>
   );
 };

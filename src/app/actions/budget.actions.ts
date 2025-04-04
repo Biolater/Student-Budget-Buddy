@@ -122,6 +122,10 @@ const getBudgets = async () => {
         return budgets.map((budget) => ({
             ...budget,
             amount: budget.amount.toNumber(),
+            expenses: budget.expenses.map((expense) => ({
+                ...expense,
+                amount: expense.amount.toNumber(),
+            })),
         }));
     } catch (error) {
         throw new Error('Failed to fetch budgets. Please try again.');
