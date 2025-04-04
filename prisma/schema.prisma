@@ -80,6 +80,8 @@ model Expense {
   amount            Decimal
   currencyId        String
   currency          Currency        @relation(fields: [currencyId], references: [id])
+  budgetId          String?
+  budget            Budget?         @relation(fields: [budgetId], references: [id])
   expenseCategoryId String
   category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
   description       String?
@@ -95,17 +97,19 @@ model Budget {
   userId           String
   user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   budgetCategoryId String
-  category         BudgetCategory   @relation(fields: [budgetCategoryId], references: [id]) // <-- Relation to BudgetCategory
+  category         BudgetCategory   @relation(fields: [budgetCategoryId], references: [id])
   currencyId       String
   currency         Currency         @relation(fields: [currencyId], references: [id])
   amount           Decimal
-  periodType       BudgetPeriodType // <-- ENUM for predefined periods
+  periodType       BudgetPeriodType
   description      String?
+  expenses         Expense[]
   startDate        DateTime
   endDate          DateTime
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
+  @@unique([userId, budgetCategoryId, startDate, endDate])
   @@index([userId])
-  @@index([budgetCategoryId]) // <-- Index on Foreign Key! (Important)
+  @@index([budgetCategoryId])
 }

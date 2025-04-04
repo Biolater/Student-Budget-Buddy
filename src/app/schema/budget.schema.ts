@@ -1,4 +1,11 @@
 import { z } from "zod"
+import { DateValue } from "@heroui/react"
+
+// Custom validation function for DateValue
+const isValidDateValue = (value: unknown): value is DateValue => {
+  if (!value) return false;
+  return typeof value === "object" && value !== null;
+};
 
 export const BudgetPeriodTypeEnum = z.enum([
   "MONTHLY",
@@ -14,21 +21,22 @@ export const CreateBudgetFormSchema = z
     currency: z.string().nonempty("Currency is required"),
     amount: z.coerce.number().nonnegative("Amount must be greater than 0"),
     periodType: BudgetPeriodTypeEnum,
-    startDate: z.date({ required_error: "Start date is required" }),
-    endDate: z.date({ required_error: "End date is required" }),
+    startDate: z.custom<DateValue>(isValidDateValue, "Invalid start date"),
+    endDate: z.custom<DateValue>(isValidDateValue, "Invalid end date"),
     description: z.string().optional(),
   })
   .refine(
     (data) => {
-      // Custom type → must manually enter dates (already required)
-      // Other types → frontend should pre-fill both dates before submission
-      return !!data.startDate && !!data.endDate
+      // Only require dates for CUSTOM period type
+      if (data.periodType === "CUSTOM") {
+        return !!data.startDate && !!data.endDate;
+      }
+      return true; // No validation needed for other period types
     },
     {
-      message: "Start and End date are required",
+      message: "Start and End date are required for custom period",
       path: ["startDate"],
     }
   )
-
 
 export type CreateBudgetFormSchemaType = z.infer<typeof CreateBudgetFormSchema>

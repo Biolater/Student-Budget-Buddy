@@ -4,7 +4,7 @@ import BudgetOverview from "../../components/Budget/BudgetOverview";
 import CurrentBudgets from "../../components/Budget/CurrentBudgets";
 import { type Budget } from "@prisma/client";
 import { useAuth } from "@clerk/nextjs";
-// import useBudget from "@/hooks/useBudget";
+import useBudget from "@/app/hooks/useBudget";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
 import BudgetForm from "../../components/Budget/AddNewBudget";
@@ -19,9 +19,17 @@ import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
 const Budget = () => {
   const { userId } = useAuth();
 
-  // const {
-  //   query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
-  // } = useBudget(userId);
+  const { query: { data: budgets, isPending: budgetsLoading, isError: budgetsError } } = useBudget(userId ?? "");
+
+  useEffect(() => {
+    if (budgetsError) {
+      toast.error("Failed to fetch budgets");
+    }
+  }, [budgetsError]);
+
+  useEffect(() => {
+    console.log(budgets);
+  }, [budgets]);
 
   // const { query: { data: currencies, isPending: currenciesLoading, isError: currenciesError } } = useCurrencies(userId ?? "");
 
@@ -59,15 +67,8 @@ const Budget = () => {
         totalSpent={200}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-        {/* <CurrentBudgets
-          budgets={budgets || []}
-        budgetsLoading={budgetsLoading}
-          userId={userId}
-        /> */}
-        {/* <BudgetForm currencies={currencies || []}/> */}
-        {/* <BudgetOverview /> */}
-      </div>
+      {/* MAIN CONTENT */}
+
     </main>
   );
 };

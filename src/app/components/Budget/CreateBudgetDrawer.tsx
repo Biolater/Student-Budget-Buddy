@@ -8,6 +8,24 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Plus } from "lucide-react";
+import CreateBudgetForm from "../forms/Budget/CreateBudgetForm";
+
+const MOTION_PROPS = {
+  variants: {
+    enter: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: {
+      x: 100,
+      opacity: 0,
+    },
+  },
+  transition: {
+    duration: 0.3,
+    ease: "easeInOut",
+  },
+};
 
 export default function CreateBudgetDrawer() {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
@@ -25,47 +43,30 @@ export default function CreateBudgetDrawer() {
       <Drawer
         backdrop="blur"
         isOpen={isOpen}
-        motionProps={{
-          variants: {
-            enter: {
-              opacity: 1,
-              x: 0,
-            },
-            exit: {
-              x: 100,
-              opacity: 0,
-            },
-          },
-          transition: {
-            duration: 0.3,
-            ease: "easeInOut",
-          },
-        }}
-        size="xs"
+        motionProps={MOTION_PROPS}
+        size="sm"
         onOpenChange={onOpenChange}
       >
         <DrawerContent>
           {(onClose) => (
             <>
               <DrawerHeader className="flex flex-col gap-1">
-                Custom Motion Drawer
+                <h1 className="text-lg">Create New Budget</h1>
+                <p className="text-muted-foreground text-sm">
+                  Create a new budget to manage your spending
+                </p>
               </DrawerHeader>
               <DrawerBody>
-                <p>This drawer has custom enter/exit animations.</p>
-                <p>
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Nullam pulvinar risus non risus hendrerit venenatis.
-                  Pellentesque sit amet hendrerit risus, sed porttitor quam.
-                </p>
+                <CreateBudgetForm onSuccess={onClose} />
               </DrawerBody>
-              <DrawerFooter>
+              {/*               <DrawerFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
                 <Button color="primary" onPress={onClose}>
                   Action
                 </Button>
-              </DrawerFooter>
+              </DrawerFooter> */}
             </>
           )}
         </DrawerContent>

@@ -1,7 +1,13 @@
 import { ExpenseCategoryRef } from "@/app/types/category.types";
 import { ClientCurrencyItem } from "@/app/types/currency.types";
 import { ExtendedExpense } from "@/app/types/expense.types";
-import { DateValue, Modal, ModalBody, ModalContent, ModalHeader } from "@heroui/react";
+import {
+  DateValue,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalHeader,
+} from "@heroui/react";
 import { useCallback } from "react";
 import {
   getLocalTimeZone,
@@ -52,7 +58,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
       placement="auto"
       onOpenChange={onClose}
     >
-      <ModalContent className="py-4">
+      <ModalContent>
         {(onCloseModal) => (
           <>
             <ModalHeader className="flex-col space-y-1.5">
@@ -84,6 +90,5 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
     </Modal>
   );
 };
-
 
 export default EditExpenseModal;

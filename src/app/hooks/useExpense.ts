@@ -5,17 +5,13 @@ import { createExpense, deleteExpense, fetchExpensesByUserId, updateExpense } fr
 import { ExpenseFormSchemaType } from "@/app/schema/expense.schema";
 import { addToast } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
+import { assertUser } from "../utils/auth.utils";
 
 // Generate a dynamic query key based on userId.
 const EXPENSE_QUERY_KEY = (userId: string) => ["expenses", userId];
 
 const useExpense = (userId: string | undefined | null) => {
   // Helper function to ensure the user is authenticated.
-  const assertUser = () => {
-    if (!userId) {
-      throw new Error("You must be signed in to perform this action");
-    }
-  };
 
   return {
     create: useMutation({
@@ -27,7 +23,7 @@ const useExpense = (userId: string | undefined | null) => {
       // Use a dynamic query key for better cache management.
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onMutate: async () => {
-        assertUser();
+        assertUser(userId);
       },
       onError: (error) => {
         toast.error(error instanceof Error ? error.message : "Something went wrong");
@@ -53,7 +49,7 @@ const useExpense = (userId: string | undefined | null) => {
       mutationFn: (expenseId: string) => deleteExpense(expenseId),
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onMutate: async () => {
-        assertUser();
+        assertUser(userId);
         // You might add an optimistic update here.
       },
       onError: (error) => {
@@ -88,7 +84,7 @@ const useExpense = (userId: string | undefined | null) => {
         }),
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onMutate: async () => {
-        assertUser();
+        assertUser(userId);
       },
       onSuccess: () => {
         toast.success("Expense updated successfully");

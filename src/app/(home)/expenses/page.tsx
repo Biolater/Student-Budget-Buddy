@@ -32,7 +32,7 @@ const ExpenseTracker = () => {
       isPending: isFetching,
       error: expensesError,
     },
-  } = useExpense(userId);
+  } = useExpense(userId ?? "");
 
   const {
     query: {
@@ -40,7 +40,7 @@ const ExpenseTracker = () => {
       isPending: currenciesLoading,
       error: currenciesError,
     },
-  } = useCurrency();
+  } = useCurrency(userId ?? "");
 
   const {
     expenseCategoriesQuery: {

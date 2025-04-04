@@ -2,16 +2,9 @@
 
 import { prisma } from "@/app/lib/client";
 import { ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
-import { currentUser } from "@clerk/nextjs/server";
+import { requireUser } from "../utils/auth.utils";
 
 // Helper function to ensure the user is authenticated.
-const requireUser = async () => {
-    const user = await currentUser();
-    if (!user) {
-        throw new Error("User not authenticated");
-    }
-    return user;
-};
 
 const fetchExpensesByUserId = async (userId: string) => {
     const user = await requireUser();
@@ -40,18 +33,59 @@ const createExpense = async (data: ServerExpenseData) => {
     const validatedData = ServerExpenseSchema.parse(data);
     const { date, amount, currency, category, description } = validatedData;
 
-    const expense = await prisma.expense.create({
-        data: {
-            date,
-            amount,
-            expenseCategoryId: category,
-            description,
-            currencyId: currency,
-            userId: user.id,
-        },
-    });
+    if (amount <= 0) throw new Error("Amount must be positive");
+    if (date > new Date()) throw new Error("Cannot create expenses for future dates");
 
-    return { ...expense, amount: expense.amount.toNumber() };
+    const budgetCategory = await prisma.budgetCategory.findUnique({
+        where: { id: category },
+    });
+    if (!budgetCategory) throw new Error("Invalid budget category");
+
+    const budgetCurrency = await prisma.currency.findUnique({
+        where: { id: currency },
+    });
+    if (!budgetCurrency) throw new Error("Invalid currency");
+
+    // Use transaction for consistency
+    return prisma.$transaction(async (tx) => {
+        // Find matching budget
+        const matchingBudget = await tx.budget.findFirst({
+            where: {
+                budgetCategoryId: category,
+                userId: user.id,
+                startDate: { lte: date },
+                endDate: { gte: date },
+            },
+        });
+
+        // Check for duplicate
+        const potentialDuplicate = await tx.expense.findFirst({
+            where: {
+                userId: user.id,
+                date: { equals: date },
+                amount: { equals: amount },
+                expenseCategoryId: category,
+                createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) }
+            }
+        });
+
+        if (potentialDuplicate) throw new Error("Similar expense recently created");
+
+        // Create expense
+        const expense = await tx.expense.create({
+            data: {
+                date,
+                amount,
+                expenseCategoryId: category,
+                description,
+                currencyId: currency,
+                userId: user.id,
+                ...(matchingBudget ? { budgetId: matchingBudget.id } : {})
+            },
+        });
+
+        return { ...expense, amount: expense.amount.toNumber() };
+    });
 };
 
 const deleteExpense = async (expenseId: string) => {
