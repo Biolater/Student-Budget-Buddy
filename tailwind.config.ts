@@ -5,7 +5,9 @@ import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
 const svgToDataUri = require("mini-svg-data-uri");
 
-
+// Define plugin parameter types
+type AddBaseFunction = (styles: Record<string, any>) => void;
+type ThemeFunction = (path: string) => any;
 
 export default {
   content: [
@@ -66,7 +68,16 @@ export default {
         },
       },
     }),
-    addVariablesForColors,
+    function({ addBase, theme }: { addBase: AddBaseFunction, theme: ThemeFunction }) {
+      let allColors = flattenColorPalette(theme("colors"));
+      let newVars = Object.fromEntries(
+        Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
+      );
+      
+      addBase({
+        ":root": newVars,
+      });
+    },
     function ({ matchUtilities, theme }: any) {
       matchUtilities(
         {
@@ -89,19 +100,5 @@ export default {
         { values: flattenColorPalette(theme("backgroundColor")), type: "color" }
       );
     },
-
-
   ],
 } satisfies Config;
-
-
-function addVariablesForColors({ addBase, theme }: any) {
-  let allColors = flattenColorPalette(theme("colors"));
-  let newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-  );
-
-  addBase({
-    ":root": newVars,
-  });
-}
