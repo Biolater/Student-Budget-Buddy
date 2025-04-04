@@ -25,7 +25,6 @@ export default {
         "popover-foreground": "var(--popover-foreground)",
         primary: "rgba(76, 185, 39, 1)", // RGBA equivalent of hsl(134, 60%, 53%)
         "primary-opacity": "rgba(76, 185, 39, 0.5)", // Added for opacity
-        "primary-foreground": "var(--primary-foreground)",
         secondary: "var(--secondary)",
         "secondary-foreground": "var(--secondary-foreground)",
         muted: "var(--muted)",
@@ -60,7 +59,6 @@ export default {
             primary: {
               DEFAULT: "rgba(76, 185, 39, 1)",
               "50": "rgba(76, 185, 39, 0.5)",
-              foreground: "var(--primary-foreground)",
             },
 
             focus: "#BEF264",
