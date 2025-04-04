@@ -50,6 +50,6 @@ export default {
   },
   darkMode: "class",
   plugins: [
-    heroui(),
+    // heroui(),
   ],
 } satisfies Config;

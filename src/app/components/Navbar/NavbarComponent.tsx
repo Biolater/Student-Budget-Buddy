@@ -83,7 +83,7 @@ export const NavbarComponent = () => {
       {/* Navigation links for signed in users */}
       {isLoaded && isSignedIn && (
         <NavbarContent
-          className="hidden md:flex gap-4 flex-grow"
+          className="hidden md:flex gap-4 grow"
           justify="center"
         >
           <LayoutGroup id="navbar-items">
@@ -205,7 +205,7 @@ export const NavbarComponent = () => {
             <Divider className="my-2" />
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
-                className="flex-grow"
+                className="grow"
                 variant="bordered"
                 color="primary"
                 as={Link}
@@ -214,7 +214,7 @@ export const NavbarComponent = () => {
                 Login
               </Button>
               <Button
-                className="flex-grow"
+                className="grow"
                 color="primary"
                 as={Link}
                 href="/sign-up"

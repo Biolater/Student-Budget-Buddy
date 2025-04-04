@@ -36,8 +36,7 @@ export default function HeroSection() {
       {/* Radial gradient for the container to give a faded look */}
       <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
       <section className="text-foreground overflow-hidden relative">
-        <div className="absolute inset-0 z-0">
-        </div>
+        <div className="absolute inset-0 z-0"></div>
         <div className="container mx-auto px-4 py-16 sm:py-24 lg:py-32 relative z-10">
           <motion.div
             className="text-center"

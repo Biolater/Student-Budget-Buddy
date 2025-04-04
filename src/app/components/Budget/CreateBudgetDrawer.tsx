@@ -41,7 +41,7 @@ export default function CreateBudgetDrawer() {
         New Budget
       </Button>
       <Drawer
-        backdrop="blur"
+        backdrop="blur-sm"
         isOpen={isOpen}
         motionProps={MOTION_PROPS}
         size="sm"

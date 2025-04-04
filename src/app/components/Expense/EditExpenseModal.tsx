@@ -52,7 +52,7 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
   return (
     <Modal
       scrollBehavior="inside"
-      backdrop="blur"
+      backdrop="blur-sm"
       size="2xl"
       isOpen={isOpen}
       placement="auto"

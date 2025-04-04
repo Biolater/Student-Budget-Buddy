@@ -227,7 +227,7 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
       {/* Submit Button */}
       <div className="flex md:justify-end">
         <Button
-          className="flex-grow md:flex-grow-0"
+          className="grow md:grow-0"
           color="primary"
           type="submit"
           isLoading={updateExpenseLoading}
