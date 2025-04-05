@@ -1,11 +1,7 @@
 import type { Config } from "tailwindcss";
 import { heroui } from "@heroui/react";
-import defaultTheme from "tailwindcss/defaultTheme";
-import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
-const svgToDataUri = require("mini-svg-data-uri");
-
-export default {
+const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,42 +10,41 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        card: "var(--card)",
-        "card-foreground": "var(--card-foreground)",
-        popover: "var(--popover)",
-        "popover-foreground": "var(--popover-foreground)",
-        primary: "rgba(76, 185, 39, 1)", // RGBA equivalent of hsl(134, 60%, 53%)
-        "primary-opacity": "rgba(76, 185, 39, 0.5)", // Added for opacity
-        secondary: "var(--secondary)",
-        "secondary-foreground": "var(--secondary-foreground)",
-        muted: "var(--muted)",
-        "muted-foreground": "var(--muted-foreground)",
-        accent: "var(--accent)",
-        "accent-foreground": "var(--accent-foreground)",
-        destructive: "var(--destructive)",
-        "destructive-foreground": "var(--destructive-foreground)",
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
-        chart1: "var(--chart-1)",
-        chart2: "var(--chart-2)",
-        chart3: "var(--chart-3)",
-        chart4: "var(--chart-4)",
-        chart5: "var(--chart-5)",
-      },
-      borderRadius: {
-        DEFAULT: "var(--radius)",
-      },
-      container: {
-        center: true,
-      },
+      // Keep general theme extensions here (fonts, spacing, etc.)
+      // Colors are now handled by heroui below
     },
   },
   darkMode: "class",
   plugins: [
-    // heroui(),
+    heroui({
+      themes: {
+        light: {
+          colors: {
+            background: 'hsl(0 0% 100%)',
+            foreground: 'hsl(240 10% 4%)',
+            content1: 'hsl(0 0% 100%)',
+            divider: 'hsl(240 5% 90%)',
+            primary: 'hsl(134 60% 53%)',
+            secondary: 'hsl(240 5% 96%)',
+            danger: 'hsl(0 84% 60%)',
+            // ... other semantic colors
+          }
+        },
+        dark: {
+          colors: {
+            background: 'hsl(240 10% 4%)',
+            foreground: 'hsl(0 0% 98%)',
+            content1: 'hsl(240 4% 12%)',
+            divider: 'hsl(240 4% 20%)',
+            primary: 'hsl(134 60% 53%)',
+            secondary: 'hsl(240 4% 16%)',
+            danger: 'hsl(0 72% 51%)',
+            // ... other semantic colors
+          }
+        },
+      },
+    }),
   ],
-} satisfies Config;
+};
+export default config;
+// 

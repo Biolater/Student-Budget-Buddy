@@ -36,7 +36,8 @@ export default function HeroSection() {
       {/* Radial gradient for the container to give a faded look */}
       <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
       <section className="text-foreground overflow-hidden relative">
-        <div className="absolute inset-0 z-0"></div>
+        <div className="absolute inset-0 z-0">
+        </div>
         <div className="container mx-auto px-4 py-16 sm:py-24 lg:py-32 relative z-10">
           <motion.div
             className="text-center"
@@ -88,7 +89,7 @@ export default function HeroSection() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <Card className="p-6 bg-card text-card-foreground border-none shadow-lg">
+                <Card className="p-6 border-none shadow-lg">
                   <div className="flex flex-col items-center text-center">
                     <div
                       className={`flex h-16 w-16 items-center justify-center rounded-full ${feature.color}`}
