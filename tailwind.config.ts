@@ -12,6 +12,19 @@ const config: Config = {
     extend: {
       // Keep general theme extensions here (fonts, spacing, etc.)
       // Colors are now handled by heroui below
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: "1rem",
+          sm: "1.5rem",
+          lg: "2rem",
+        }
+      },
+      // Add custom colors that use CSS variables
+      colors: {
+        muted: "hsl(var(--muted))",
+        "muted-foreground": "hsl(var(--muted-foreground))",
+      }
     },
   },
   darkMode: "class",
@@ -26,6 +39,8 @@ const config: Config = {
             divider: 'hsl(240 5% 90%)',
             primary: 'hsl(134 60% 53%)',
             secondary: 'hsl(240 5% 96%)',
+            content2: 'hsl(220 14% 96%)',
+            content3: 'hsl(220 9% 46%)',
             danger: 'hsl(0 84% 60%)',
             // ... other semantic colors
           }
@@ -38,6 +53,8 @@ const config: Config = {
             divider: 'hsl(240 4% 20%)',
             primary: 'hsl(134 60% 53%)',
             secondary: 'hsl(240 4% 16%)',
+            content2: 'hsl(240 3% 26%)',
+            content3: 'hsl(240 5% 65%)',
             danger: 'hsl(0 72% 51%)',
             // ... other semantic colors
           }
@@ -47,4 +64,3 @@ const config: Config = {
   ],
 };
 export default config;
-// 

@@ -30,6 +30,10 @@ const Budget = () => {
     }
   }, [budgetsError]);
 
+  useEffect(() => {
+    console.log(budgets)
+  }, [budgets])
+
   if (budgetsLoading) {
     return <div>Loading...</div>;
   }
@@ -71,6 +75,7 @@ const Budget = () => {
       />
 
       {/* MAIN CONTENT */}
+      <h1 className="text-3xl font-bold mb-4">Budgets</h1>
       {budgets?.map((budget) => (
         <BudgetCard key={budget.id} budget={budget} />
       ))}
