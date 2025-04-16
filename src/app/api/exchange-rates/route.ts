@@ -28,7 +28,9 @@ export async function GET(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch exchange rates from API Ro: ${response.statusText}`);
+      throw new Error(
+        `Failed to fetch exchange rates from API Ro: ${response.statusText}`
+      );
     }
 
     const data = await response.json();

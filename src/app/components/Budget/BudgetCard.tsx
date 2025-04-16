@@ -1,7 +1,8 @@
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/react";
 import { BudgetCategory, Currency, Expense } from "@prisma/client";
-
+import { getBudgetStatus, convertToBudgetCurrency } from "@/app/utils/budget.utils";
+import { useEffect } from "react";
 interface BudgetCardProps {
   budget: {
     id: string;
@@ -22,26 +23,68 @@ interface BudgetCardProps {
 }
 
 const BudgetCard = ({ budget }: BudgetCardProps) => {
+  const budgetStatus = getBudgetStatus(
+    budget.amount,
+    budget.expenses.reduce((total, expense) => total + expense.amount, 0)
+  );
+  useEffect(() => {
+    (async() => {
+      const convertedAmount = await convertToBudgetCurrency(20, "TRY", "USD");
+      console.log("convertedAmount", convertedAmount);
+    })();
+  }, [])
+  console.log("budgetStatus", budgetStatus);
   return (
     <Card>
-      <CardHeader className="w-full p-0 m-0 h-1 bg-danger rounded-t-lg" />
+      <CardHeader
+        className={`w-full p-0 m-0 h-1 bg-${budgetStatus} rounded-t-lg`}
+      />
       <CardBody className="items-start flex-row gap-4">
         <div className="size-10 bg-danger/20 rounded-full flex items-center justify-center">
           {budget.category.icon}
         </div>
         <div className="flex flex-col flex-1 gap-2">
           <div className="flex justify-between items-start flex-1">
-            <h3 className="font-semibold truncate">Groceries</h3>
-            <span className="font-bold">$300</span>
+            <h3 className="font-semibold truncate">{budget.category.name}</h3>
+            <span className="font-bold">
+              {budget.currency.symbol}
+              {budget.amount}
+            </span>
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
-            <span>$80 spent</span>
-            <span className="font-medium">53%</span>
+            <span>
+              {budget.currency.symbol}
+              {budget.expenses.reduce(
+                (total, expense) => total + expense.amount,
+                0
+              )}
+            </span>
+            <span className="font-medium">
+              {(
+                (budget.expenses.reduce(
+                  (total, expense) => total + expense.amount,
+                  0
+                ) /
+                  budget.amount) *
+                100
+              ).toFixed(2)}
+              %
+            </span>
           </div>
-          <Progress value={90} color="danger" />
+          <Progress
+            value={
+              (budget.expenses.reduce(
+                (total, expense) => total + expense.amount,
+                0
+              ) /
+                budget.amount) *
+              100
+            }
+            color={budgetStatus}
+          />
           <div className="flex justify-between text-xs text-muted-foreground pt-1">
-            <span>Mar 1</span>
-            <span>Mar 31, 2023</span>
+            <span>{budget.startDate.toDateString()}</span>
+            <span>{budget.endDate.toDateString()}</span>
           </div>
         </div>
       </CardBody>
@@ -62,7 +105,10 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             <rect width="20" height="14" x="2" y="5" rx="2"></rect>
             <line x1="2" x2="22" y1="10" y2="10"></line>
           </svg>
-          <span>2 expenses</span>
+          <span>
+            {budget.expenses.length} expense
+            {budget.expenses.length === 1 ? "" : "s"}
+          </span>
         </div>
         <div className="text-xs font-medium text-blue-600 group-hover:text-blue-700 transition-colors flex items-center">
           View Details
