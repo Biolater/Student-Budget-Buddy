@@ -6,16 +6,17 @@
 :root {
   --muted: 220 14% 96%;
   --muted-foreground: 220 9% 46%;
-  --warning: 240 100% 50%;
-  --warning-foreground: 240 100% 100%;
+  --warning: 38 92% 55%;              /* Amber 500 */
+  --warning-foreground: 24 100% 12%;  /* Deep brown-black for contrast */
   --success: 134 60% 53%;
   --success-foreground: 134 60% 100%;
 }
+
 .dark {
   --muted: 240 3% 26%;
   --muted-foreground: 240 5% 65%;
-  --warning: 240 100% 50%;
-  --warning-foreground: 240 100% 100%;
+  --warning: 38 100% 62%;             /* Lighter amber for dark backgrounds */
+  --warning-foreground: 60 100% 98%;  /* Near-white yellow for contrast */
   --success: 134 60% 53%;
   --success-foreground: 134 60% 100%;
 }

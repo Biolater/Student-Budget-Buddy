@@ -30,10 +30,6 @@ const Budget = () => {
     }
   }, [budgetsError]);
 
-  useEffect(() => {
-    console.log(budgets)
-  }, [budgets])
-
   if (budgetsLoading) {
     return <div>Loading...</div>;
   }
@@ -76,9 +72,11 @@ const Budget = () => {
 
       {/* MAIN CONTENT */}
       <h1 className="text-3xl font-bold mb-4">Budgets</h1>
-      {budgets?.map((budget) => (
-        <BudgetCard key={budget.id} budget={budget} />
-      ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {budgets?.map((budget) => (
+          <BudgetCard key={budget.id} budget={budget} />
+        ))}
+      </div>
     </main>
   );
 };

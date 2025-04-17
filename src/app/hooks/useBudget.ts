@@ -1,8 +1,8 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
-    createBudget,
-    getBudgets,
-    /*     deleteBudget,
+  createBudget,
+  getBudgets,
+  /*     deleteBudget,
         getBudgets,
         getTotalBudgetAmount, */
 } from "@/app/actions/budget.actions";
@@ -16,44 +16,47 @@ import { getLocalTimeZone } from "@internationalized/date";
 const BUDGET_MUTATION_KEY = (userId: string) => ["budgets", userId];
 
 const useBudget = (userId: string | undefined | null) => {
-    return {
-        create: useMutation({
-            mutationFn: (data: CreateBudgetFormSchemaType) => createBudget({
-                ...data,
-                startDate: data.startDate?.toDate(getLocalTimeZone()),
-                endDate: data.endDate?.toDate(getLocalTimeZone()),
-            }),
-            mutationKey: userId ? BUDGET_MUTATION_KEY(userId) : ["budgets", "guest"],
-            onMutate: async () => {
-                assertUser(userId);
-            },
-            onError: (error) => {
-                const budgetError = error as BudgetErrorType;
-                if (budgetError.name === 'BudgetValidationError') {
-                    toast.error(budgetError.message);
-                } else {
-                    toast.error("Failed to create budget. Please try again.");
-                }
-            },
-            onSuccess: () => {
-                toast.success("Budget created successfully");
-                if (userId) {
-                    queryClient.invalidateQueries({ queryKey: BUDGET_MUTATION_KEY(userId) });
-                }
-            }
+  return {
+    create: useMutation({
+      mutationFn: (data: CreateBudgetFormSchemaType) =>
+        createBudget({
+          ...data,
+          startDate: data.startDate?.toDate(getLocalTimeZone()),
+          endDate: data.endDate?.toDate(getLocalTimeZone()),
         }),
-        query: useQuery({
-            queryKey: BUDGET_MUTATION_KEY(userId ?? ""),
-            queryFn: async () => {
-                if (!userId) return [];
-                const budgets = await getBudgets();
-                return budgets ?? [];
-            },
-            enabled: !!userId,
-            staleTime: 600000,
-        })
-    }
-}
+      mutationKey: userId ? BUDGET_MUTATION_KEY(userId) : ["budgets", "guest"],
+      onMutate: async () => {
+        assertUser(userId);
+      },
+      onError: (error) => {
+        const budgetError = error as BudgetErrorType;
+        if (budgetError.name === "BudgetValidationError") {
+          toast.error(budgetError.message);
+        } else {
+          toast.error("Failed to create budget. Please try again.");
+        }
+      },
+      onSuccess: () => {
+        toast.success("Budget created successfully");
+        if (userId) {
+          queryClient.invalidateQueries({
+            queryKey: BUDGET_MUTATION_KEY(userId),
+          });
+        }
+      },
+    }),
+    query: useQuery({
+      queryKey: BUDGET_MUTATION_KEY(userId ?? ""),
+      queryFn: async () => {
+        if (!userId) return [];
+        const budgets = await getBudgets();
+        return budgets ?? [];
+      },
+      enabled: !!userId,
+      staleTime: 600000,
+    }),
+  };
+};
 
 export default useBudget;
 

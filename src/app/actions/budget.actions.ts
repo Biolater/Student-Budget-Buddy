@@ -116,7 +116,11 @@ const getBudgets = async () => {
             include: {
                 category: true,
                 currency: true,
-                expenses: true,
+                expenses: {
+                    include: {
+                        currency: true
+                    }
+                },
             }
         });
         return budgets.map((budget) => ({

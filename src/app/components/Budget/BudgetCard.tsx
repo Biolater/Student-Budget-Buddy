@@ -1,8 +1,15 @@
+import React, { useState, useEffect } from "react";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/react";
-import { BudgetCategory, Currency, Expense } from "@prisma/client";
-import { getBudgetStatus, convertToBudgetCurrency } from "@/app/utils/budget.utils";
-import { useEffect } from "react";
+import { BudgetCategory, Currency, Prisma } from "@prisma/client";
+import {
+  convertToBudgetCurrency,
+  getBudgetStatus,
+} from "@/app/utils/budget.utils";
+type ExpenseWithCurrency = Prisma.ExpenseGetPayload<{
+  include: { currency: true };
+}>;
+
 interface BudgetCardProps {
   budget: {
     id: string;
@@ -18,22 +25,37 @@ interface BudgetCardProps {
     updatedAt: Date;
     category: BudgetCategory;
     currency: Currency;
-    expenses: (Omit<Expense, "amount"> & { amount: number })[];
+    expenses: (Omit<ExpenseWithCurrency, "amount"> & { amount: number })[];
   };
 }
 
 const BudgetCard = ({ budget }: BudgetCardProps) => {
-  const budgetStatus = getBudgetStatus(
-    budget.amount,
-    budget.expenses.reduce((total, expense) => total + expense.amount, 0)
-  );
+  const [budgetStatus, setBudgetStatus] = useState<
+    "success" | "warning" | "danger" | undefined
+  >(undefined);
+  const [expensesTotal, setExpensesTotal] = useState<number>(0);
+
   useEffect(() => {
-    (async() => {
-      const convertedAmount = await convertToBudgetCurrency(20, "TRY", "USD");
-      console.log("convertedAmount", convertedAmount);
-    })();
-  }, [])
-  console.log("budgetStatus", budgetStatus);
+    const calculateExpenses = async () => {
+      let total = 0;
+      for (const expense of budget.expenses) {
+        if (expense.currency.code !== budget.currency.code) {
+          const convertedAmount = await convertToBudgetCurrency(
+            expense.amount,
+            expense.currency.code,
+            budget.currency.code
+          );
+          total += convertedAmount;
+        } else {
+          total += expense.amount;
+        }
+      }
+      setExpensesTotal(total);
+      setBudgetStatus(getBudgetStatus(budget.amount, total));
+    };
+    calculateExpenses();
+  }, [budget]);
+
   return (
     <Card>
       <CardHeader
@@ -54,33 +76,17 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>
               {budget.currency.symbol}
-              {budget.expenses.reduce(
-                (total, expense) => total + expense.amount,
-                0
-              )}
+              {expensesTotal}
             </span>
             <span className="font-medium">
-              {(
-                (budget.expenses.reduce(
-                  (total, expense) => total + expense.amount,
-                  0
-                ) /
-                  budget.amount) *
-                100
-              ).toFixed(2)}
-              %
+              {((expensesTotal / budget.amount) * 100).toFixed(2)}%
             </span>
           </div>
           <Progress
             value={
-              (budget.expenses.reduce(
-                (total, expense) => total + expense.amount,
-                0
-              ) /
-                budget.amount) *
-              100
+              budget.amount === 0 ? 0 : (expensesTotal / budget.amount) * 100
             }
-            color={budgetStatus}
+            color={budgetStatus ?? undefined}
           />
           <div className="flex justify-between text-xs text-muted-foreground pt-1">
             <span>{budget.startDate.toDateString()}</span>
@@ -110,7 +116,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             {budget.expenses.length === 1 ? "" : "s"}
           </span>
         </div>
-        <div className="text-xs font-medium text-blue-600 group-hover:text-blue-700 transition-colors flex items-center">
+        <div className="text-xs font-medium text-primary/60 hover:text-primary cursor-pointer group transition-colors flex items-center">
           View Details
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +128,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
-            className="lucide lucide-chevron-right h-3 w-3 ml-1 group-hover:translate-x-0.5 transition-transform"
+            className="lucide group-hover:translate-x-0.5 transition-transform lucide-chevron-right h-3 w-3 ml-1"
           >
             <path d="m9 18 6-6-6-6"></path>
           </svg>
