@@ -56,7 +56,7 @@ export async function getConversionRate(
 
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch exchange rates from API Ro: ${response.statusText}`
+        `Failed to fetch exchange rates from API: ${response.statusText}`
       );
     }
 
