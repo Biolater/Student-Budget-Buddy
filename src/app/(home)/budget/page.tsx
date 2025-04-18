@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import CreateBudgetDrawer from "@/app/components/Budget/CreateBudgetDrawer";
 import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
 import BudgetCard from "@/app/components/Budget/BudgetCard";
+import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDrawer";
 // import { getCurrencies } from "@/app/lib/currencyUtils";
 // import { useCurrencies } from "@/hooks/useCurrency";
 
@@ -73,8 +74,21 @@ const Budget = () => {
       {/* MAIN CONTENT */}
       <h1 className="text-3xl font-bold mb-4">Budgets</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgets?.map((budget) => (
-          <BudgetCard key={budget.id} budget={budget} />
+        {budgets?.map((budget, index) => (
+          <ViewBudgetDetailsDrawer
+            trigger={
+              <motion.div
+                key={budget.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              >
+                <BudgetCard budget={budget} />
+              </motion.div>
+            }
+          />
         ))}
       </div>
     </main>

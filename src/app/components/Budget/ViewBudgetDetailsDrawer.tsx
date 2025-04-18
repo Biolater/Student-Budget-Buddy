@@ -7,54 +7,52 @@ import {
   Button,
   useDisclosure,
 } from "@heroui/react";
-import { Plus } from "lucide-react";
-import CreateBudgetForm from "../forms/Budget/CreateBudgetForm";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
+import { FC, isValidElement, cloneElement } from "react";
 
-export default function CreateBudgetDrawer() {
+const ViewBudgetDetailsDrawer: FC<{
+  trigger: React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>;
+}> = ({ trigger }) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
+
+  const enhancedTrigger = isValidElement(trigger)
+    ? cloneElement(trigger, {
+        onClick: (e) => {
+          trigger.props?.onClick?.(e); // preserve original onClick if any
+          onOpen();
+        },
+      })
+    : trigger;
 
   return (
     <>
-      <Button
-        aria-label="Create Budget"
-        startContent={<Plus />}
-        color="primary"
-        onPress={onOpen}
-      >
-        New Budget
-      </Button>
+      {enhancedTrigger}
       <Drawer
-        backdrop="blur"
         isOpen={isOpen}
-        motionProps={MOTION_PROPS}
-        size="sm"
         onOpenChange={onOpenChange}
+        motionProps={MOTION_PROPS}
       >
         <DrawerContent>
           {(onClose) => (
             <>
               <DrawerHeader className="flex flex-col gap-1">
-                <h1 className="text-lg">Create New Budget</h1>
-                <p className="text-muted-foreground text-sm">
-                  Create a new budget to manage your spending
-                </p>
+                Drawer Title
               </DrawerHeader>
-              <DrawerBody>
-                <CreateBudgetForm onSuccess={onClose} />
-              </DrawerBody>
-              {/*               <DrawerFooter>
+              <DrawerBody>{/* Your drawer content */}</DrawerBody>
+              <DrawerFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
                 <Button color="primary" onPress={onClose}>
                   Action
                 </Button>
-              </DrawerFooter> */}
+              </DrawerFooter>
             </>
           )}
         </DrawerContent>
       </Drawer>
     </>
   );
-}
+};
+
+export default ViewBudgetDetailsDrawer;

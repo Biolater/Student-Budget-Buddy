@@ -57,7 +57,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
   }, [budget]);
 
   return (
-    <Card>
+    <Card className="group cursor-pointer transition-all">
       <CardHeader
         className={`w-full p-0 m-0 h-1 bg-${budgetStatus} rounded-t-lg`}
       />
@@ -94,7 +94,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
           </div>
         </div>
       </CardBody>
-      <CardFooter className="w-full flex items-center justify-between">
+      <CardFooter className="w-full flex items-center justify-between border-t">
         <div className="flex items-center gap-1 text-xs text-slate-500">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -116,7 +116,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             {budget.expenses.length === 1 ? "" : "s"}
           </span>
         </div>
-        <div className="text-xs font-medium text-primary/60 hover:text-primary cursor-pointer group transition-colors flex items-center">
+        <div className="text-xs font-medium text-primary/60 group-hover:text-primary cursor-pointer transition-colors flex items-center">
           View Details
           <svg
             xmlns="http://www.w3.org/2000/svg"
