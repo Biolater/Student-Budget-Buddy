@@ -62,7 +62,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
         className={`w-full p-0 m-0 h-1 bg-${budgetStatus} rounded-t-lg`}
       />
       <CardBody className="items-start flex-row gap-4">
-        <div className="size-10 bg-danger/20 rounded-full flex items-center justify-center">
+        <div className={`size-10 bg-${budgetStatus}/20 rounded-full flex items-center justify-center`}>
           {budget.category.icon}
         </div>
         <div className="flex flex-col flex-1 gap-2">
@@ -103,9 +103,9 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             className="lucide lucide-credit-card h-3 w-3"
           >
             <rect width="20" height="14" x="2" y="5" rx="2"></rect>
@@ -125,9 +125,9 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
             className="lucide group-hover:translate-x-0.5 transition-transform lucide-chevron-right h-3 w-3 ml-1"
           >
             <path d="m9 18 6-6-6-6"></path>

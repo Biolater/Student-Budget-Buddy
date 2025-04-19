@@ -76,9 +76,10 @@ const Budget = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {budgets?.map((budget, index) => (
           <ViewBudgetDetailsDrawer
+            key={budget.id}
+            budget={budget}
             trigger={
               <motion.div
-                key={budget.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
