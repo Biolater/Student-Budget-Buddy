@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/react";
+import { CreditCardIcon, ChevronRightIcon } from "./icons";
+import { cn } from "@/app/lib/utils";
 import { BudgetCategory, Currency, Prisma } from "@prisma/client";
 import {
   convertToBudgetCurrency,
@@ -59,10 +61,22 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
   return (
     <Card className="group cursor-pointer transition-all">
       <CardHeader
-        className={`w-full p-0 m-0 h-1 bg-${budgetStatus} rounded-t-lg`}
+        className={cn(
+          "w-full p-0 m-0 h-1 rounded-t-lg",
+          budgetStatus === "success" && "bg-success",
+          budgetStatus === "warning" && "bg-warning",
+          budgetStatus === "danger" && "bg-danger"
+        )}
       />
       <CardBody className="items-start flex-row gap-4">
-        <div className={`size-10 bg-${budgetStatus}/20 rounded-full flex items-center justify-center`}>
+        <div
+          className={cn(
+            "size-10 rounded-full flex items-center justify-center",
+            budgetStatus === "success" && "bg-success/20",
+            budgetStatus === "warning" && "bg-warning/20",
+            budgetStatus === "danger" && "bg-danger/20"
+          )}
+        >
           {budget.category.icon}
         </div>
         <div className="flex flex-col flex-1 gap-2">
@@ -70,13 +84,13 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
             <h3 className="font-semibold truncate">{budget.category.name}</h3>
             <span className="font-bold">
               {budget.currency.symbol}
-              {budget.amount}
+              {budget.amount.toFixed(2)}
             </span>
           </div>
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>
               {budget.currency.symbol}
-              {expensesTotal}
+              {expensesTotal.toFixed(2)}
             </span>
             <span className="font-medium">
               {((expensesTotal / budget.amount) * 100).toFixed(2)}%
@@ -95,22 +109,8 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
         </div>
       </CardBody>
       <CardFooter className="w-full flex items-center justify-between border-t">
-        <div className="flex items-center gap-1 text-xs text-slate-500">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-credit-card h-3 w-3"
-          >
-            <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-            <line x1="2" x2="22" y1="10" y2="10"></line>
-          </svg>
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <CreditCardIcon />
           <span>
             {budget.expenses.length} expense
             {budget.expenses.length === 1 ? "" : "s"}
@@ -118,20 +118,7 @@ const BudgetCard = ({ budget }: BudgetCardProps) => {
         </div>
         <div className="text-xs font-medium text-primary/60 group-hover:text-primary cursor-pointer transition-colors flex items-center">
           View Details
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide group-hover:translate-x-0.5 transition-transform lucide-chevron-right h-3 w-3 ml-1"
-          >
-            <path d="m9 18 6-6-6-6"></path>
-          </svg>
+          <ChevronRightIcon />
         </div>
       </CardFooter>
     </Card>

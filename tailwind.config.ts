@@ -45,7 +45,14 @@ const config: Config = {
             secondary: "hsl(240 5% 96%)",
             content2: "hsl(220 14% 96%)",
             content3: "hsl(220 9% 46%)",
-            danger: "hsl(0 84% 60%)",
+            danger: {
+              DEFAULT: "hsl(0 84% 60%)",
+              foreground: "hsl(0 72% 36%)",
+            },
+            success: {
+              DEFAULT: "hsl(134 60% 53%)",
+              foreground: "hsl(134 60% 100%)",
+            },
           },
         },
         dark: {
@@ -58,7 +65,14 @@ const config: Config = {
             secondary: "hsl(240 4% 16%)",
             content2: "hsl(240 3% 26%)",
             content3: "hsl(240 5% 65%)",
-            danger: "hsl(0 72% 51%)",
+            danger: {
+              DEFAULT: "hsl(0 72% 51%)",
+              foreground: "hsl(0 85% 96%)",
+            },
+            success: {
+              DEFAULT: "hsl(134 60% 53%)",
+              foreground: "hsl(134 60% 100%)",
+            },
           },
         },
       },

@@ -11,6 +11,8 @@ import {
   CardBody,
   Progress,
   Badge,
+  Chip,
+  CardFooter,
 } from "@heroui/react";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 import { format } from "date-fns";
@@ -20,6 +22,8 @@ import {
   getBudgetStatus,
 } from "@/app/utils/budget.utils";
 import { CreditCard, Wallet } from "lucide-react";
+import { cn } from "@/app/lib/utils";
+import LinkedExpenses from "./LinkedExpenses";
 
 const ViewBudgetDetailsDrawer: FC<{
   trigger: React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>;
@@ -52,8 +56,6 @@ const ViewBudgetDetailsDrawer: FC<{
     calculateExpenses();
   }, [budget]);
 
-  console.log(budget);
-
   const enhancedTrigger = isValidElement(trigger)
     ? cloneElement(trigger, {
         onClick: (e) => {
@@ -77,7 +79,12 @@ const ViewBudgetDetailsDrawer: FC<{
             <>
               <DrawerHeader className="flex items-center gap-3">
                 <div
-                  className={`size-10 bg-${budgetStatus}/20 rounded-full flex items-center justify-center`}
+                  className={cn(
+                    "size-10 rounded-full flex items-center justify-center",
+                    budgetStatus === "success" && "bg-success/20",
+                    budgetStatus === "warning" && "bg-warning/20",
+                    budgetStatus === "danger" && "bg-danger/20"
+                  )}
                 >
                   {budget.category.icon}
                 </div>
@@ -91,7 +98,12 @@ const ViewBudgetDetailsDrawer: FC<{
               </DrawerHeader>
               <DrawerBody>
                 <div
-                  className={`p-4 rounded-lg grid grid-cols-2 gap-4 bg-${budgetStatus}/20`}
+                  className={cn(
+                    "p-4 rounded-lg grid grid-cols-2 gap-4",
+                    budgetStatus === "success" && "bg-success/10",
+                    budgetStatus === "warning" && "bg-warning/10",
+                    budgetStatus === "danger" && "bg-danger/10"
+                  )}
                 >
                   <Card>
                     <CardHeader className="text-muted-foreground gap-2 pb-0">
@@ -124,7 +136,10 @@ const ViewBudgetDetailsDrawer: FC<{
                   <Card className="col-span-2">
                     <CardHeader className="text-muted-foreground justify-between pb-0">
                       <span>Budget Progress</span>
-                      <Badge color={budgetStatus}>{budgetStatus}</Badge>
+                      <Chip size="sm" color={budgetStatus ?? undefined}>
+                        {((expensesTotal / budget.amount) * 100).toFixed(2)}%
+                        used
+                      </Chip>
                     </CardHeader>
                     <CardBody>
                       <Progress
@@ -136,8 +151,19 @@ const ViewBudgetDetailsDrawer: FC<{
                         color={budgetStatus ?? undefined}
                       />
                     </CardBody>
+                    <CardFooter className="flex items-center justify-between pt-0">
+                      <span className="font-bold">
+                        {budget.currency.symbol}
+                        {expensesTotal.toFixed(2)} spent
+                      </span>
+                      <span className="font-bold">
+                        {budget.currency.symbol}
+                        {(budget.amount - expensesTotal).toFixed(2)} remaining
+                      </span>
+                    </CardFooter>
                   </Card>
                 </div>
+                <LinkedExpenses expenses={budget.expenses} />
               </DrawerBody>
               <DrawerFooter>
                 <Button color="danger" variant="light" onPress={onClose}>
