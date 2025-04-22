@@ -16,7 +16,13 @@ import {
 } from "@heroui/react";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 import { format } from "date-fns";
-import { FC, isValidElement, cloneElement, useEffect, useState } from "react";
+import React, {
+  FC,
+  isValidElement,
+  cloneElement,
+  useEffect,
+  useState,
+} from "react";
 import {
   convertToBudgetCurrency,
   getBudgetStatus,
@@ -24,10 +30,11 @@ import {
 import { CreditCard, Wallet } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import LinkedExpenses from "./LinkedExpenses";
+import { ExtendedBudget } from "@/app/types/budget.types";
 
 const ViewBudgetDetailsDrawer: FC<{
   trigger: React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>;
-  budget: any;
+  budget: ExtendedBudget;
 }> = ({ trigger, budget }) => {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
   const [budgetStatus, setBudgetStatus] = useState<
@@ -128,7 +135,7 @@ const ViewBudgetDetailsDrawer: FC<{
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-2xl">
                           {budget.currency.symbol}
-                          {expensesTotal}
+                          {expensesTotal.toFixed(2)}
                         </span>
                       </div>
                     </CardBody>
