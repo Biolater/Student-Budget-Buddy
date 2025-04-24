@@ -81,7 +81,7 @@ const ViewBudgetDetailsDrawer: FC<{
         motionProps={MOTION_PROPS}
         backdrop="blur"
       >
-        <DrawerContent>
+        <DrawerContent aria-label="View Budget Details">
           {(onClose) => (
             <>
               <DrawerHeader className="flex items-center gap-3">
@@ -150,6 +150,7 @@ const ViewBudgetDetailsDrawer: FC<{
                     </CardHeader>
                     <CardBody>
                       <Progress
+                        aria-label={`budget progress for ${budget.category.name}`}
                         value={
                           budget.amount === 0
                             ? 0
