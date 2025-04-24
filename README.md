@@ -1,36 +1,78 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<h1 align="center">🧠 Student Budget Buddy</h1>
+<p align="center">
+  <i>Track smarter. Save better. Built for students who want control over their money.</i>
+</p>
 
-## Getting Started
+<p align="center">
+  <img src="./banner.png" alt="Student Budget Buddy Banner" />
+</p>
 
-First, run the development server:
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-15-blue?style=flat-square&logo=next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-blue?style=flat-square&logo=postgresql" />
+  <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/Clerk-Auth-orange?style=flat-square&logo=clerk" />
+  <img src="https://img.shields.io/badge/Status-In%20Progress-yellow?style=flat-square" />
+</p>
+
+---
+
+## 🚀 Features
+
+- 🔄 Multi-currency expense tracking  
+- 🗂️ Category-based budgeting  
+- 📊 Interactive insights and monthly summaries  
+- 🧠 AI-powered future savings suggestions *(coming soon)*  
+- 🎯 Clean, mobile-first, student-focused design  
+
+---
+
+## 🛠️ Tech Stack
+
+| Frontend       | Backend         | ORM       | Database   | Auth        | Deployment |
+|----------------|------------------|------------|-------------|-------------|------------|
+| Next.js 15 (App Router) | Node.js, Express.js | Prisma     | PostgreSQL | Clerk       | Vercel     |
+
+---
+
+## 📌 Project Status
+
+🚧 Student Budget Buddy is currently under **active development**.  
+We're polishing the core budgeting experience and building out exciting AI features to supercharge money management for students.
+
+---
+
+## 🔮 Planned Features
+
+What’s coming next:
+
+- 🤖 **AI-powered budget insights** – smart feedback based on your habits  
+- 💡 **Smart saving tips** – cut down wasteful spending automatically  
+- 🔁 **Recurring expense detection** – see patterns and optimize  
+- 🧾 **Receipt scanning** – scan receipts and auto-categorize using OCR  
+- 📲 **PWA support** – installable, mobile-first offline experience  
+- 👯 **Shared budgets** – manage money with roommates, partners or friends  
+
+---
+
+## ⚙️ Getting Started
 
 ```bash
+# 1. Clone the repo
+git clone https://github.com/muradyusubov/student-budget-buddy.git
+
+# 2. Move into the folder
+cd student-budget-buddy
+
+# 3. Install dependencies
+npm install
+
+# 4. Setup environment variables
+cp .env.example .env
+
+# 5. Push the Prisma schema to your database
+npx prisma db push
+
+# 6. Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
