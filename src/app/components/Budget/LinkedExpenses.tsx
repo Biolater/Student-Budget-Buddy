@@ -13,7 +13,9 @@ import {
   TableRow,
   TableCell,
 } from "@heroui/table";
+import { Link as HerouiLink } from "@heroui/react";
 import { truncate } from "@/app/utils/trunucate";
+import { cn } from "@/app/lib/utils";
 
 interface LinkedExpensesProps {
   expenses: ExpenseItem[];
@@ -59,19 +61,10 @@ const LinkedExpenses: FC<LinkedExpensesProps> = ({ expenses }) => {
             <TableColumn key={column.key}>{column.label}</TableColumn>
           )}
         </TableHeader>
-        <TableBody items={expenses}>
-          {(item) => (
+        <TableBody>
+          {expenses.map((item) => (
             <TableRow key={item.id}>
-              {(columnKey) => {
-                // Only allow keys that exist on ExpenseItem
-                const key = TABLE_COLUMNS.find(
-                  (col) => col.key === columnKey
-                )?.key;
-                const { truncatedText, isTruncated } = truncate(
-                  item.description || "No description available",
-                  24
-                );
-                console.log(truncatedText, item.description);
+              {TABLE_COLUMNS.map(({ key }) => {
                 if (key === "date") {
                   return (
                     <TableCell>
@@ -81,17 +74,29 @@ const LinkedExpenses: FC<LinkedExpensesProps> = ({ expenses }) => {
                     </TableCell>
                   );
                 }
-                // If key is not a valid keyof ExpenseItem, render empty string
                 if (key === "description") {
                   return (
                     <TableCell>
-                      {truncatedText}
-                      {/*                         <Button
-                          onPress={() => handleRead(item.id)}
-                          className="text-muted-foreground cursor-pointer block"
-                        >
-                          {isTruncated ? "Read more" : "Read less"}
-                        </Button> */}
+                      {item.description && item.description.length > 24 ? (
+                        <>
+                          {showDescriptionFor.has(item.id)
+                            ? item.description
+                            : `${item.description.slice(0, 24)}...`}
+                          <HerouiLink
+                            onPress={() => handleRead(item.id)}
+                            className="text-muted-foreground cursor-pointer block"
+                            size="sm"
+                            underline="hover"
+                            aria-expanded={showDescriptionFor.has(item.id)}
+                          >
+                            {showDescriptionFor.has(item.id)
+                              ? "Read less"
+                              : "Read more"}
+                          </HerouiLink>
+                        </>
+                      ) : (
+                        item.description
+                      )}
                     </TableCell>
                   );
                 }
@@ -101,9 +106,9 @@ const LinkedExpenses: FC<LinkedExpensesProps> = ({ expenses }) => {
                     {item.amount}
                   </TableCell>
                 );
-              }}
+              })}
             </TableRow>
-          )}
+          ))}
         </TableBody>
       </Table>
     </div>

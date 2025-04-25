@@ -177,9 +177,6 @@ const ViewBudgetDetailsDrawer: FC<{
                 <Button color="danger" variant="light" onPress={onClose}>
                   Close
                 </Button>
-                <Button color="primary" onPress={onClose}>
-                  Action
-                </Button>
               </DrawerFooter>
             </>
           )}

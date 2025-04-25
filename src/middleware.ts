@@ -13,14 +13,14 @@ const isPublicRoute = createRouteMatcher([
 const isHomeRoute = createRouteMatcher(["/"]);
 
 export default clerkMiddleware(async (auth, request) => {
-  const { userId } = await auth();
+  const { userId, redirectToSignIn } = await auth();
 
   if (isHomeRoute(request) && userId) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   if (!isPublicRoute(request) && !userId) {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
+    return redirectToSignIn();
   }
 });
 

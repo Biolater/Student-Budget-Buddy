@@ -5,6 +5,7 @@ import { ArrowRight, PiggyBank, TrendingUp, Shield } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 const features = [
   {
