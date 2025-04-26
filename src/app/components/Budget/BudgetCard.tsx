@@ -1,62 +1,44 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Card, CardBody, CardFooter, CardHeader } from "@heroui/card";
 import { Progress } from "@heroui/react";
 import { CreditCardIcon, ChevronRightIcon } from "./icons";
 import { cn } from "@/app/lib/utils";
 import { BudgetCategory, Currency, Prisma } from "@prisma/client";
-import {
-  convertToBudgetCurrency,
-  getBudgetStatus,
-} from "@/app/utils/budget.utils";
+import { useBudgetStats } from "@/app/hooks/useBudgetStats";
 type ExpenseWithCurrency = Prisma.ExpenseGetPayload<{
   include: { currency: true };
 }>;
 
+import type { ExtendedBudget } from "@/app/types/budget.types";
+
 interface BudgetCardProps {
-  budget: {
-    id: string;
-    userId: string;
-    budgetCategoryId: string;
-    currencyId: string;
-    amount: number;
-    periodType: string;
-    startDate: Date;
-    endDate: Date;
-    description: string | null;
-    createdAt: Date;
-    updatedAt: Date;
-    category: BudgetCategory;
-    currency: Currency;
-    expenses: (Omit<ExpenseWithCurrency, "amount"> & { amount: number })[];
-  };
+  budget: ExtendedBudget;
 }
 
 const BudgetCard = ({ budget }: BudgetCardProps) => {
-  const [budgetStatus, setBudgetStatus] = useState<
-    "success" | "warning" | "danger" | undefined
-  >(undefined);
-  const [expensesTotal, setExpensesTotal] = useState<number>(0);
+  const { data: stats, isLoading, isError } = useBudgetStats(budget);
 
-  useEffect(() => {
-    const calculateExpenses = async () => {
-      let total = 0;
-      for (const expense of budget.expenses) {
-        if (expense.currency.code !== budget.currency.code) {
-          const convertedAmount = await convertToBudgetCurrency(
-            expense.amount,
-            expense.currency.code,
-            budget.currency.code
-          );
-          total += convertedAmount;
-        } else {
-          total += expense.amount;
-        }
-      }
-      setExpensesTotal(total);
-      setBudgetStatus(getBudgetStatus(budget.amount, total));
-    };
-    calculateExpenses();
-  }, [budget]);
+  if (isLoading) {
+    return (
+      <Card className="animate-pulse">
+        <CardHeader>Loading...</CardHeader>
+        <CardBody>
+          <div className="h-6 bg-muted rounded w-1/2 mb-2" />
+          <div className="h-4 bg-muted rounded w-1/3" />
+        </CardBody>
+      </Card>
+    );
+  }
+
+  if (isError || !stats) {
+    return (
+      <Card>
+        <CardHeader>Error loading budget stats</CardHeader>
+      </Card>
+    );
+  }
+
+  const { expensesTotal, budgetStatus } = stats;
 
   return (
     <Card className="group cursor-pointer transition-all">

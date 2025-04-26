@@ -18,8 +18,13 @@ import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDr
 // import { getCurrencies } from "@/app/lib/currencyUtils";
 // import { useCurrencies } from "@/hooks/useCurrency";
 
+import React, { useState } from "react";
+
 const Budget = () => {
   const { userId } = useAuth();
+
+  const [selectedBudget, setSelectedBudget] = useState<import("@/app/types/budget.types").ExtendedBudget | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
     query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
@@ -75,23 +80,28 @@ const Budget = () => {
       <h1 className="text-3xl font-bold mb-4">Budgets</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {budgets?.map((budget, index) => (
-          <ViewBudgetDetailsDrawer
+          <motion.div
             key={budget.id}
-            budget={budget}
-            trigger={
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <BudgetCard budget={budget} />
-              </motion.div>
-            }
-          />
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
+            onClick={() => {
+              setSelectedBudget(budget);
+              setDrawerOpen(true);
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            <BudgetCard budget={budget} />
+          </motion.div>
         ))}
       </div>
+      <ViewBudgetDetailsDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        budget={selectedBudget}
+      />
     </main>
   );
 };
