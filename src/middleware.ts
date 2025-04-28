@@ -20,7 +20,9 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   if (!isPublicRoute(request) && !userId) {
-    return redirectToSignIn();
+    return redirectToSignIn({
+      returnBackUrl: request.url,
+    });
   }
 });
 

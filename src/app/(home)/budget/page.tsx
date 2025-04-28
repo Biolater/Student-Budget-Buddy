@@ -23,11 +23,18 @@ import React, { useState } from "react";
 const Budget = () => {
   const { userId } = useAuth();
 
-  const [selectedBudget, setSelectedBudget] = useState<import("@/app/types/budget.types").ExtendedBudget | null>(null);
+  const [selectedBudget, setSelectedBudget] = useState<
+    import("@/app/types/budget.types").ExtendedBudget | null
+  >(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const {
     query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
+    budgetStats: {
+      data: budgetStatsData,
+      isPending: budgetStatsLoading,
+      isError: budgetStatsError,
+    },
   } = useBudget(userId ?? "");
 
   useEffect(() => {
@@ -35,6 +42,10 @@ const Budget = () => {
       toast.error("Failed to fetch budgets");
     }
   }, [budgetsError]);
+
+  useEffect(() => {
+    console.log(budgetStatsData)
+  }, [budgetStatsData])
 
   if (budgetsLoading) {
     return <div>Loading...</div>;

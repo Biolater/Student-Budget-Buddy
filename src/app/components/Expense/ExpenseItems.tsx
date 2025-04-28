@@ -19,6 +19,7 @@ import {
   type SortDescriptor,
   Link,
   DateValue,
+  Pagination,
 } from "@heroui/react";
 import { TABLE_HEADERS } from "@/app/constants/expense.constants";
 import { format } from "date-fns";
@@ -71,7 +72,6 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
     column: "date",
     direction: "descending",
   });
-  const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
 
   const {
     isOpen: editModalOpen,
@@ -127,8 +127,20 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
     [onEditModalOpen]
   );
 
+  const [page, setPage] = useState(1);
+  const rowsPerPage = 10;
+
+  const pages = Math.ceil(expenses.length / rowsPerPage);
+
+  const items = useMemo(() => {
+    const start = (page - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+
+    return expenses.slice(start, end);
+  }, [page, expenses]);
+
   const sortedItems = useMemo(() => {
-    return [...expenses].sort((a, b) => {
+    return [...items].sort((a, b) => {
       const first = a[sortDescriptor.column as keyof ExtendedExpense];
       const second = b[sortDescriptor.column as keyof ExtendedExpense];
       if (first == null) return 1;
@@ -136,22 +148,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
       const cmp = first < second ? -1 : first > second ? 1 : 0;
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
-  }, [sortDescriptor, expenses]);
-
-  const hasMore = expenses.length > displayCount;
-
-  const handleShowMoreClick = useCallback(() => {
-    setDisplayCount((prev) => prev + ITEMS_PER_PAGE);
-  }, []);
-
-  const handleShowLessClick = useCallback(() => {
-    setDisplayCount(ITEMS_PER_PAGE);
-  }, []);
-
-  const currentItems = useMemo(
-    () => sortedItems.slice(0, displayCount),
-    [sortedItems, displayCount]
-  );
+  }, [sortDescriptor, items]);
 
   return (
     <>
@@ -182,7 +179,20 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
           removeWrapper
-          classNames={{ base: "w-full overflow-auto" }}
+          bottomContent={
+            <div className="flex w-full justify-center">
+              <Pagination
+                isCompact
+                showControls
+                showShadow
+                color="primary"
+                page={page}
+                total={pages}
+                onChange={(page) => setPage(page)}
+              />
+            </div>
+          }
+          classNames={{ base: "w-full overflow-x-auto overflow-y-hidden" }}
           aria-label="Expense table"
         >
           <TableHeader columns={TABLE_HEADERS}>
@@ -193,17 +203,15 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
             )}
           </TableHeader>
           <TableBody
-            items={currentItems}
+            items={sortedItems}
             loadingContent={<Spinner label="Loading..." />}
             isLoading={expensesLoading}
           >
-            {currentItems.map((expense, index) => (
+            {sortedItems.map((expense, index) => (
               <TableRow
                 key={expense.id}
                 className={`${
-                  index !== currentItems.length - 1
-                    ? "border-b border-border"
-                    : ""
+                  index !== items.length - 1 ? "border-b border-border" : ""
                 } hover:bg-primary-opacity transition-colors duration-200 ease-in-out`}
               >
                 <TableCell className="whitespace-nowrap">
@@ -269,7 +277,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
           </TableBody>
         </Table>
 
-        {expenses.length > ITEMS_PER_PAGE && (
+        {/*         {expenses.length > ITEMS_PER_PAGE && (
           <div className="flex justify-center mt-4">
             {hasMore ? (
               <Button
@@ -289,7 +297,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
               </Button>
             )}
           </div>
-        )}
+        )} */}
       </div>
     </>
   );

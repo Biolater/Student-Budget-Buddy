@@ -41,14 +41,25 @@ type ViewBudgetDetailsDrawerProps = {
 
 import { useBudgetStats } from "@/app/hooks/useBudgetStats";
 
-const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({ open, onClose, budget }) => {
+const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
+  open,
+  onClose,
+  budget,
+}) => {
   const { data: stats, isLoading, isError } = useBudgetStats(budget);
 
   if (!budget) return null;
 
   if (isLoading) {
     return (
-      <Drawer isOpen={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} motionProps={MOTION_PROPS} backdrop="blur">
+      <Drawer
+        isOpen={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) onClose();
+        }}
+        motionProps={MOTION_PROPS}
+        backdrop="blur"
+      >
         <DrawerContent aria-label="View Budget Details">
           <DrawerHeader>Loading...</DrawerHeader>
           <DrawerBody>
@@ -62,7 +73,14 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({ open, onClo
 
   if (isError || !stats) {
     return (
-      <Drawer isOpen={open} onOpenChange={(isOpen) => { if (!isOpen) onClose(); }} motionProps={MOTION_PROPS} backdrop="blur">
+      <Drawer
+        isOpen={open}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) onClose();
+        }}
+        motionProps={MOTION_PROPS}
+        backdrop="blur"
+      >
         <DrawerContent aria-label="View Budget Details">
           <DrawerHeader>Error loading budget stats</DrawerHeader>
         </DrawerContent>
@@ -75,7 +93,9 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({ open, onClo
   return (
     <Drawer
       isOpen={open}
-      onOpenChange={(isOpen) => { if (!isOpen) onClose(); }}
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
       motionProps={MOTION_PROPS}
       backdrop="blur"
     >
@@ -140,8 +160,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({ open, onClo
               <CardHeader className="text-muted-foreground justify-between pb-0">
                 <span>Budget Progress</span>
                 <Chip size="sm" color={budgetStatus ?? undefined}>
-                  {((expensesTotal / budget.amount) * 100).toFixed(2)}%
-                  used
+                  {((expensesTotal / budget.amount) * 100).toFixed(2)}% used
                 </Chip>
               </CardHeader>
               <CardBody>
