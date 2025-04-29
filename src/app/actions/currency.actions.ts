@@ -64,7 +64,6 @@ export async function getConversionRate(
 
     return data.conversion_rates[targetCurrency];
   } catch (error) {
-    console.error("Failed to fetch conversion rate:", error);
     throw new Error("Could not fetch conversion rate");
   }
 }

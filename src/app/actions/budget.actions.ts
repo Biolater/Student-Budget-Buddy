@@ -7,6 +7,7 @@ import {
   CreateBudgetFormSchema,
 } from "@/app/schema/budget.schema";
 import { requireUser } from "@/app/utils/auth.utils";
+import { getConversionRate } from "./currency.actions";
 
 type ServerBudgetData = Omit<
   CreateBudgetFormSchemaType,
@@ -166,11 +167,79 @@ const getBudgetStats = async () => {
       include: {
         category: true,
         currency: true,
-        expenses: true,
-        user: true,
+        expenses: {
+          include: {
+            currency: true,
+          },
+        },
+        user: {
+          include: {
+            baseCurrency: true,
+          },
+        },
       },
     });
-    return budgets;
+
+    if (budgets.length === 0)
+      return {
+        budgets: [],
+        overallBudgetAmount: 0,
+        overallSpentAmount: 0,
+        overallRemainingAmount: 0,
+      };
+
+    const userDefaultCurrency = budgets[0].user.baseCurrency.code;
+
+    // Convert all amounts to numbers for easier calculation
+    const budgetsWithNumbers = budgets.map((budget) => ({
+      ...budget,
+      amount: budget.amount.toNumber(),
+      expenses: budget.expenses.map((expense) => ({
+        ...expense,
+        amount: expense.amount.toNumber(),
+      })),
+    }));
+
+    // Prepare promises for all conversions
+    let overallBudgetAmount = 0;
+    let overallSpentAmount = 0;
+    let overallRemainingAmount = 0;
+
+    for (const budget of budgetsWithNumbers) {
+      // Convert budget amount to default currency if needed
+      let budgetAmountInDefault = budget.amount;
+      if (budget.currency.code !== userDefaultCurrency) {
+        const conversionRate = await getConversionRate(
+          budget.currency.code,
+          userDefaultCurrency
+        );
+        budgetAmountInDefault = budget.amount * conversionRate;
+      }
+      overallBudgetAmount += budgetAmountInDefault;
+
+      // Sum expenses in default currency
+      let budgetSpent = 0;
+      for (const expense of budget.expenses) {
+        let expenseAmountInDefault = expense.amount;
+        if (expense.currency.code !== userDefaultCurrency) {
+          const conversionRate = await getConversionRate(
+            expense.currency.code,
+            userDefaultCurrency
+          );
+          expenseAmountInDefault = expense.amount * conversionRate;
+        }
+        budgetSpent += expenseAmountInDefault;
+      }
+      overallSpentAmount += budgetSpent;
+      overallRemainingAmount += budgetAmountInDefault - budgetSpent;
+    }
+
+    return {
+      budgets: budgetsWithNumbers,
+      overallBudgetAmount,
+      overallSpentAmount,
+      overallRemainingAmount,
+    };
   } catch (error) {
     throw new Error("Failed to fetch budget stats. Please try again.");
   }

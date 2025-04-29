@@ -30,7 +30,7 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Total Budget</p>
-            <p className="text-2xl font-bold">${totalBudget}</p>
+            <p className="text-2xl font-bold">${totalBudget.toFixed(2)}</p>
           </div>
         </CardBody>
       </Card>
@@ -41,7 +41,7 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Total Spent</p>
-            <p className="text-2xl font-bold">${totalSpent}</p>
+            <p className="text-2xl font-bold">${totalSpent.toFixed(2)}</p>
           </div>
         </CardBody>
       </Card>
@@ -52,7 +52,7 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Remaining</p>
-            <p className="text-2xl font-bold">${totalRemaining}</p>
+            <p className="text-2xl font-bold">${totalRemaining.toFixed(2)}</p>
           </div>
         </CardBody>
       </Card>

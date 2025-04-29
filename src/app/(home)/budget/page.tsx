@@ -21,12 +21,13 @@ import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDr
 import React, { useState } from "react";
 
 const Budget = () => {
-  const { userId } = useAuth();
-
+  const { userId, isLoaded } = useAuth();
   const [selectedBudget, setSelectedBudget] = useState<
     import("@/app/types/budget.types").ExtendedBudget | null
   >(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const budgetHook = useBudget(userId);
 
   const {
     query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
@@ -35,36 +36,25 @@ const Budget = () => {
       isPending: budgetStatsLoading,
       isError: budgetStatsError,
     },
-  } = useBudget(userId ?? "");
-
+  } = budgetHook;
   useEffect(() => {
-    if (budgetsError) {
-      toast.error("Failed to fetch budgets");
+    if (budgetsError || budgetStatsError) {
+      toast.error("Failed to fetch budget data. Please try again later.");
     }
-  }, [budgetsError]);
+  }, [budgetsError, budgetStatsError]);
 
-  useEffect(() => {
-    console.log(budgetStatsData)
-  }, [budgetStatsData])
-
-  if (budgetsLoading) {
-    return <div>Loading...</div>;
+  if (!isLoaded) {
+    return <div>Loading authentication...</div>;
   }
-
-  // const { query: { data: currencies, isPending: currenciesLoading, isError: currenciesError } } = useCurrencies(userId ?? "");
-
-  // useEffect(() => {
-  //   if (budgetsError) {
-  //     toast.error("Failed to fetch budgets");
-  //   }
-  //   if (currenciesError) {
-  //     toast.error("Failed to fetch currencies");
-  //   }
-  // }, [budgetsError, currenciesError]);
+  if (!userId) {
+    return <div>Please log in to view your budgets.</div>;
+  }
+  if (budgetsLoading || budgetStatsLoading) {
+    return <div>Loading budget data...</div>;
+  }
 
   return (
     <main className="container mx-auto container-padding">
-      {/* Budget Header  */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -79,34 +69,47 @@ const Budget = () => {
         </div>
         <CreateBudgetDrawer />
       </motion.div>
-      {/* Budget Stats Overview */}
       <BudgetStatsOverview
-        defaultCurrency="USD"
-        totalBudget={100}
-        totalRemaining={100}
-        totalSpent={200}
+        defaultCurrency={budgets?.[0]?.currency?.symbol ?? "USD"}
+        totalBudget={
+          budgetStatsData && !Array.isArray(budgetStatsData)
+            ? budgetStatsData.overallBudgetAmount ?? 0
+            : 0
+        }
+        totalRemaining={
+          budgetStatsData && !Array.isArray(budgetStatsData)
+            ? budgetStatsData.overallRemainingAmount ?? 0
+            : 0
+        }
+        totalSpent={
+          budgetStatsData && !Array.isArray(budgetStatsData)
+            ? budgetStatsData.overallSpentAmount ?? 0
+            : 0
+        }
       />
-
-      {/* MAIN CONTENT */}
-      <h1 className="text-3xl font-bold mb-4">Budgets</h1>
+      <h1 className="text-3xl font-bold my-4">Budgets</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgets?.map((budget, index) => (
-          <motion.div
-            key={budget.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
-            whileHover={{ y: -5, transition: { duration: 0.2 } }}
-            onClick={() => {
-              setSelectedBudget(budget);
-              setDrawerOpen(true);
-            }}
-            style={{ cursor: "pointer" }}
-          >
-            <BudgetCard budget={budget} />
-          </motion.div>
-        ))}
+        {budgets && budgets.length > 0 ? (
+          budgets.map((budget, index) => (
+            <motion.div
+              key={budget.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              onClick={() => {
+                setSelectedBudget(budget);
+                setDrawerOpen(true);
+              }}
+              style={{ cursor: "pointer" }}
+            >
+              <BudgetCard budget={budget} />
+            </motion.div>
+          ))
+        ) : (
+          <p>No budgets found. Create one to get started!</p>
+        )}
       </div>
       <ViewBudgetDetailsDrawer
         open={drawerOpen}

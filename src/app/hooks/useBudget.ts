@@ -56,16 +56,16 @@ const useBudget = (userId: string | undefined | null) => {
       enabled: !!userId,
       staleTime: 600000,
     }),
-   budgetStats: useQuery({
-    queryKey: BUDGET_MUTATION_KEY(userId ?? ""),
-    queryFn: async () => {
-      if (!userId) return [];
-      const budgetStats = await getBudgetStats();
-      return budgetStats ?? [];
-    },
-    enabled: !!userId,
-    staleTime: 600000,
-   })
+    budgetStats: useQuery({
+      queryKey: ["budgetStats", userId],
+      queryFn: async () => {
+        if (!userId) return [];
+        const budgetStats = await getBudgetStats();
+        return budgetStats ?? [];
+      },
+      enabled: !!userId,
+      staleTime: 600000,
+    }),
   };
 };
 
