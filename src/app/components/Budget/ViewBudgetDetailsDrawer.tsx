@@ -16,17 +16,7 @@ import {
 } from "@heroui/react";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 import { format } from "date-fns";
-import React, {
-  FC,
-  isValidElement,
-  cloneElement,
-  useEffect,
-  useState,
-} from "react";
-import {
-  convertToBudgetCurrency,
-  getBudgetStatus,
-} from "@/app/utils/budget.utils";
+import React, { FC } from "react";
 import { CreditCard, Wallet } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import LinkedExpenses from "./LinkedExpenses";
@@ -37,6 +27,7 @@ type ViewBudgetDetailsDrawerProps = {
   open: boolean;
   onClose: () => void;
   budget?: ExtendedBudget | null;
+  onDeleteBudget: (budgetId: string) => void;
 };
 
 import { useBudgetStats } from "@/app/hooks/useBudgetStats";
@@ -45,6 +36,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   open,
   onClose,
   budget,
+  onDeleteBudget,
 }) => {
   const { data: stats, isLoading, isError } = useBudgetStats(budget);
 
@@ -119,7 +111,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
             </p>
           </div>
         </DrawerHeader>
-        <DrawerBody className="gap-4">
+        <DrawerBody className="gap-4 overflow-x-hidden">
           <div
             className={cn(
               "p-4 rounded-lg grid grid-cols-2 gap-4",
@@ -192,12 +184,14 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
             targetAverage={0}
             spendingTip={""}
           />
-        </DrawerBody>
-        <DrawerFooter>
-          <Button color="danger" variant="light" onPress={onClose}>
-            Close
+          <Button
+            onPress={() => onDeleteBudget(budget.id)}
+            className="overflow-visible p-5"
+            color="danger"
+          >
+            Delete Budget
           </Button>
-        </DrawerFooter>
+        </DrawerBody>
       </DrawerContent>
     </Drawer>
   );

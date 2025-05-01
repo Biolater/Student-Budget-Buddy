@@ -19,6 +19,7 @@ import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDr
 // import { useCurrencies } from "@/hooks/useCurrency";
 
 import React, { useState } from "react";
+import ConfirmBudgetDeletionModal from "@/app/components/Budget/ConfirmBudgetDeletionModal";
 
 const Budget = () => {
   const { userId, isLoaded } = useAuth();
@@ -26,8 +27,13 @@ const Budget = () => {
     import("@/app/types/budget.types").ExtendedBudget | null
   >(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deleteBudgetId, setDeleteBudgetId] = useState<string | null>(null);
 
   const budgetHook = useBudget(userId);
+
+  const handleDrawerDelete = (budgetId: string) => {
+    setDeleteBudgetId(budgetId);
+  };
 
   const {
     query: { data: budgets, isPending: budgetsLoading, isError: budgetsError },
@@ -36,12 +42,21 @@ const Budget = () => {
       isPending: budgetStatsLoading,
       isError: budgetStatsError,
     },
+    deleteBudget: {
+      mutateAsync: deleteBudget,
+      isPending: deleteBudgetLoading,
+      isError: deleteBudgetError,
+    },
   } = budgetHook;
+
   useEffect(() => {
     if (budgetsError || budgetStatsError) {
       toast.error("Failed to fetch budget data. Please try again later.");
     }
-  }, [budgetsError, budgetStatsError]);
+    if (deleteBudgetError) {
+      toast.error("Failed to delete budget. Please try again later.");
+    }
+  }, [budgetsError, budgetStatsError, deleteBudgetError]);
 
   if (!isLoaded) {
     return <div>Loading authentication...</div>;
@@ -52,6 +67,14 @@ const Budget = () => {
   if (budgetsLoading || budgetStatsLoading) {
     return <div>Loading budget data...</div>;
   }
+
+  const handleDeleteBudget = async () => {
+    if (!deleteBudgetId) return;
+    await deleteBudget(deleteBudgetId);
+    setDeleteBudgetId(null);
+    setSelectedBudget(null);
+    setDrawerOpen(false);
+  };
 
   return (
     <main className="container mx-auto container-padding">
@@ -115,6 +138,13 @@ const Budget = () => {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         budget={selectedBudget}
+        onDeleteBudget={handleDrawerDelete}
+      />
+      <ConfirmBudgetDeletionModal
+        isOpen={!!deleteBudgetId}
+        onClose={() => setDeleteBudgetId(null)}
+        onDelete={handleDeleteBudget}
+        isDeleting={deleteBudgetLoading}
       />
     </main>
   );

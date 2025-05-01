@@ -17,13 +17,6 @@ type ServerBudgetData = Omit<
   endDate: Date;
 };
 
-class BudgetValidationError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "BudgetValidationError";
-  }
-}
-
 interface CreateBudgetResponse {
   id: string;
   amount: number;
@@ -125,6 +118,27 @@ const createBudget = async (
       expenseCount: matchingExpenses.length,
     };
   });
+};
+
+const deleteBudget = async (budgetId: string) => {
+  const user = await requireUser();
+  const userId = user.id;
+
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId, userId },
+    });
+    if (!budget) throw new Error("Budget not found");
+    prisma.$transaction([
+      prisma.budget.delete({ where: { id: budgetId, userId } }),
+      prisma.expense.updateMany({
+        where: { budgetId },
+        data: { budgetId: null },
+      }),
+    ]);
+  } catch (error) {
+    throw error;
+  }
 };
 
 const getBudgets = async () => {
@@ -245,7 +259,7 @@ const getBudgetStats = async () => {
   }
 };
 
-export { createBudget, type CreateBudgetResponse, getBudgets, getBudgetStats };
+export { createBudget, type CreateBudgetResponse, getBudgets, getBudgetStats, deleteBudget };
 
 // const createBudget = async (data: NewBudgetSchema) => {
 //   const { category, currency, amount, period } = data;

@@ -1,6 +1,7 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   createBudget,
+  deleteBudget,
   getBudgets,
   getBudgetStats,
   /*     deleteBudget,
@@ -65,6 +66,24 @@ const useBudget = (userId: string | undefined | null) => {
       },
       enabled: !!userId,
       staleTime: 600000,
+    }),
+    deleteBudget: useMutation({
+      mutationFn: (budgetId: string) => deleteBudget(budgetId),
+      mutationKey: ["deleteBudget", userId],
+      onMutate: async () => {
+        assertUser(userId);
+      },
+      onError: (error) => {
+        toast.error("Failed to delete budget. Please try again.");
+      },
+      onSuccess: () => {
+        toast.success("Budget deleted successfully");
+        if (userId) {
+          queryClient.invalidateQueries({
+            queryKey: BUDGET_MUTATION_KEY(userId),
+          });
+        }
+      },
     }),
   };
 };
