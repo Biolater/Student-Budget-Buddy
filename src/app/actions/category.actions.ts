@@ -5,6 +5,10 @@ import { prisma } from "@/app/lib/client";
 export async function fetchExpenseCategoriesForSelect() {
     try {
         return await prisma.expenseCategory.findMany({
+            cacheStrategy: {
+                ttl: 60 * 60 * 1000, // 1 
+                swr: 60 * 60 * 1000, // 1 
+            },
             select: {
                 id: true,
                 name: true,
@@ -20,6 +24,10 @@ export async function fetchExpenseCategoriesForSelect() {
 export async function fetchBudgetCategoriesForSelect() {
     try {
         return await prisma.budgetCategory.findMany({
+            cacheStrategy: {
+                ttl: 60 * 60 * 1000, // 1 
+                swr: 60 * 60 * 1000, // 1 
+            },
             select: {
                 id: true,
                 name: true,

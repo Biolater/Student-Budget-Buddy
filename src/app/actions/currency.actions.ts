@@ -6,6 +6,10 @@ import { ConversionRateResponse } from "../types/currency.types";
 export async function fetchCurrenciesForSelect() {
   try {
     return await prisma.currency.findMany({
+      cacheStrategy: {
+        ttl: 60 * 60 * 1000, // 1 
+        swr: 60 * 60 * 1000, // 1 
+      },
       select: {
         id: true,
         code: true,

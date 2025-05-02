@@ -21,7 +21,7 @@ const DeleteExpenseModal: React.FC<DeleteExpenseModalProps> = ({
 }) => {
   return (
     <Modal
-      backdrop="blur-sm"
+      backdrop="blur"
       isOpen={isOpen}
       placement="auto"
       onOpenChange={onClose}

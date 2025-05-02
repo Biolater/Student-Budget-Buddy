@@ -15,21 +15,25 @@ import CreateBudgetDrawer from "@/app/components/Budget/CreateBudgetDrawer";
 import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
 import BudgetCard from "@/app/components/Budget/BudgetCard";
 import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDrawer";
+import BudgetCardSkeleton from "@/app/components/Budget/BudgetCardSkeleton";
 // import { getCurrencies } from "@/app/lib/currencyUtils";
 // import { useCurrencies } from "@/hooks/useCurrency";
 
 import React, { useState } from "react";
 import ConfirmBudgetDeletionModal from "@/app/components/Budget/ConfirmBudgetDeletionModal";
+import type { ExtendedBudget } from "@/app/types/budget.types";
+import { GlobalLoading } from "@/app/components/GlobalLoading";
+import { useCurrency } from "@/app/hooks/useCurrency";
 
 const Budget = () => {
   const { userId, isLoaded } = useAuth();
-  const [selectedBudget, setSelectedBudget] = useState<
-    import("@/app/types/budget.types").ExtendedBudget | null
-  >(null);
+  const [selectedBudget, setSelectedBudget] = useState<ExtendedBudget | null>(
+    null
+  );
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteBudgetId, setDeleteBudgetId] = useState<string | null>(null);
-
   const budgetHook = useBudget(userId);
+  const currencyHook = useCurrency(userId);
 
   const handleDrawerDelete = (budgetId: string) => {
     setDeleteBudgetId(budgetId);
@@ -49,24 +53,22 @@ const Budget = () => {
     },
   } = budgetHook;
 
+  const {
+    fetchDefaultUserCurrency: {
+      data: defaultCurrency,
+      isLoading: defaultCurrencyLoading,
+      isError: defaultCurrencyError,
+    },
+  } = currencyHook;
+
   useEffect(() => {
-    if (budgetsError || budgetStatsError) {
+    if (budgetsError || budgetStatsError || defaultCurrencyError) {
       toast.error("Failed to fetch budget data. Please try again later.");
     }
     if (deleteBudgetError) {
       toast.error("Failed to delete budget. Please try again later.");
     }
   }, [budgetsError, budgetStatsError, deleteBudgetError]);
-
-  if (!isLoaded) {
-    return <div>Loading authentication...</div>;
-  }
-  if (!userId) {
-    return <div>Please log in to view your budgets.</div>;
-  }
-  if (budgetsLoading || budgetStatsLoading) {
-    return <div>Loading budget data...</div>;
-  }
 
   const handleDeleteBudget = async () => {
     if (!deleteBudgetId) return;
@@ -75,6 +77,10 @@ const Budget = () => {
     setSelectedBudget(null);
     setDrawerOpen(false);
   };
+
+  if (!isLoaded || !userId) {
+    return <GlobalLoading isLoading={true} message="Loading budget data..." />;
+  }
 
   return (
     <main className="container mx-auto container-padding">
@@ -93,7 +99,8 @@ const Budget = () => {
         <CreateBudgetDrawer />
       </motion.div>
       <BudgetStatsOverview
-        defaultCurrency={budgets?.[0]?.currency?.symbol ?? "USD"}
+        isLoading={budgetStatsLoading || defaultCurrencyLoading}
+        defaultCurrencySymbol={defaultCurrency?.symbol ?? "$"}
         totalBudget={
           budgetStatsData && !Array.isArray(budgetStatsData)
             ? budgetStatsData.overallBudgetAmount ?? 0
@@ -112,7 +119,11 @@ const Budget = () => {
       />
       <h1 className="text-3xl font-bold my-4">Budgets</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgets && budgets.length > 0 ? (
+        {budgetsLoading ? (
+          Array.from({ length: 3 }).map((_, index) => (
+            <BudgetCardSkeleton key={index} />
+          ))
+        ) : budgets && budgets.length > 0 ? (
           budgets.map((budget, index) => (
             <motion.div
               key={budget.id}

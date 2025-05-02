@@ -156,6 +156,11 @@ const getBudgets = async () => {
             currency: true,
           },
         },
+        user: {
+          include: {
+            baseCurrency: true,
+          },
+        },
       },
     });
     return budgets.map((budget) => ({

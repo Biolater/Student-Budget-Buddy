@@ -8,7 +8,7 @@ import {
   useDisclosure,
 } from "@heroui/react";
 import { Plus } from "lucide-react";
-import CreateBudgetForm from "../forms/Budget/CreateBudgetForm";
+import CreateBudgetForm from "../forms/CreateBudgetForm";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 
 export default function CreateBudgetDrawer() {
@@ -43,14 +43,6 @@ export default function CreateBudgetDrawer() {
               <DrawerBody>
                 <CreateBudgetForm onSuccess={onClose} />
               </DrawerBody>
-              {/*               <DrawerFooter>
-                <Button color="danger" variant="light" onPress={onClose}>
-                  Close
-                </Button>
-                <Button color="primary" onPress={onClose}>
-                  Action
-                </Button>
-              </DrawerFooter> */}
             </>
           )}
         </DrawerContent>

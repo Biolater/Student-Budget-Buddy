@@ -19,6 +19,7 @@ import {
 import { useEffect } from "react";
 import { parseDate, parseDateTime } from "@internationalized/date";
 import useBudget from "@/app/hooks/useBudget";
+import CreateBudgetFormSkeleton from "../Budget/CreateBudgetFormSkeleton";
 
 interface CreateBudgetFormProps {
   onSuccess?: () => void;
@@ -28,7 +29,7 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
   const { userId } = useAuth();
 
   if (!userId) {
-    return <div>Loading...</div>;
+    return <CreateBudgetFormSkeleton />;
   }
 
   const {
@@ -172,7 +173,7 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
   };
 
   if (categoriesLoading || currenciesLoading) {
-    return <div>Loading...</div>;
+    return <CreateBudgetFormSkeleton />
   }
 
   if (categoriesError || currenciesError) {

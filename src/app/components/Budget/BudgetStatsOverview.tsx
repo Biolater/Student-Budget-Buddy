@@ -2,19 +2,22 @@ import { Card, CardHeader, CardBody, CardFooter } from "@heroui/card";
 import { Currency } from "@prisma/client";
 import { DollarSign, HeartPulse, PiggyBank, Activity } from "lucide-react";
 import { motion } from "framer-motion";
+import { Skeleton } from "@heroui/react";
 
 interface BudgetStatsOverviewProps {
   totalBudget: number;
   totalSpent: number;
   totalRemaining: number;
-  defaultCurrency: string;
+  isLoading: boolean;
+  defaultCurrencySymbol: string;
 }
 
 const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
   totalBudget,
   totalSpent,
   totalRemaining,
-  defaultCurrency,
+  isLoading,
+  defaultCurrencySymbol,
 }) => {
   return (
     <motion.div
@@ -30,7 +33,12 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Total Budget</p>
-            <p className="text-2xl font-bold">${totalBudget.toFixed(2)}</p>
+            <Skeleton className="rounded-lg" isLoaded={!isLoading}>
+              <p className="text-2xl font-bold">
+                {defaultCurrencySymbol}
+                {totalBudget.toFixed(2)}
+              </p>
+            </Skeleton>
           </div>
         </CardBody>
       </Card>
@@ -41,7 +49,12 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Total Spent</p>
-            <p className="text-2xl font-bold">${totalSpent.toFixed(2)}</p>
+            <Skeleton className="rounded-lg" isLoaded={!isLoading}>
+              <p className="text-2xl font-bold">
+                {defaultCurrencySymbol}
+                {totalSpent.toFixed(2)}
+              </p>
+            </Skeleton>
           </div>
         </CardBody>
       </Card>
@@ -52,7 +65,12 @@ const BudgetStatsOverview: React.FC<BudgetStatsOverviewProps> = ({
           </div>
           <div className="flex flex-col">
             <p className="text-sm text-muted-foreground">Remaining</p>
-            <p className="text-2xl font-bold">${totalRemaining.toFixed(2)}</p>
+            <Skeleton className="rounded-lg" isLoaded={!isLoading}>
+              <p className="text-2xl font-bold">
+                {defaultCurrencySymbol}
+                {totalRemaining.toFixed(2)}
+              </p>
+            </Skeleton>
           </div>
         </CardBody>
       </Card>

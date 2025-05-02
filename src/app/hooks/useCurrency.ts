@@ -1,7 +1,7 @@
 import { fetchCurrenciesForSelect, fetchDefaultUserCurrency } from "@/app/actions/currency.actions";
 import { useQuery } from "@tanstack/react-query";
 
-export const useCurrency = (userId: string) => {
+export const useCurrency = (userId: string | undefined | null) => {
   return {
     query: useQuery({
       queryKey: ["currencies"],
@@ -11,8 +11,8 @@ export const useCurrency = (userId: string) => {
     }),
     fetchDefaultUserCurrency: useQuery({
       queryKey: ["defaultUserCurrency", userId],
-      queryFn: ({ queryKey }) => {
-        const [, userId] = queryKey
+      queryFn: () => {
+        if (!userId) return null;
         return fetchDefaultUserCurrency(userId)
       },
       enabled: !!userId, // avoid running the query if userId is not ready

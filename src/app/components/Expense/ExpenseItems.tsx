@@ -128,7 +128,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
   );
 
   const [page, setPage] = useState(1);
-  const rowsPerPage = 10;
+  const rowsPerPage = 5;
 
   const pages = Math.ceil(expenses.length / rowsPerPage);
 
