@@ -2,6 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   createBudget,
   deleteBudget,
+  getBudgetInsights,
   getBudgets,
   getBudgetStats,
   /*     deleteBudget,
@@ -85,6 +86,17 @@ const useBudget = (userId: string | undefined | null) => {
         }
       },
     }),
+    getBudgetInsights: (budgetId: string) =>
+      useQuery({
+        queryKey: ["budgetInsights", userId],
+        queryFn: async () => {
+          if (!userId) return [];
+          const budgetInsights = await getBudgetInsights(budgetId);
+          return budgetInsights.data ?? [];
+        },
+        enabled: !!budgetId && !!userId,
+        staleTime: 600000,
+      }),
   };
 };
 

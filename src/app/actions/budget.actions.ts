@@ -8,6 +8,8 @@ import {
 } from "@/app/schema/budget.schema";
 import { requireUser } from "@/app/utils/auth.utils";
 import { getConversionRate } from "./currency.actions";
+import { apiRequest } from "../lib/apiClient";
+import { BudgetInsights } from "../types/budget.types";
 
 type ServerBudgetData = Omit<
   CreateBudgetFormSchemaType,
@@ -264,98 +266,32 @@ const getBudgetStats = async () => {
   }
 };
 
-export { createBudget, type CreateBudgetResponse, getBudgets, getBudgetStats, deleteBudget };
+const getBudgetInsights = async (budgetId: string) => {
+  const user = await requireUser();
+  const userId = user.id;
+  if (!budgetId) throw new Error("Budget ID is required");
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId, userId },
+    });
+    if (!budget) throw new Error("Budget not found");
 
-// const createBudget = async (data: NewBudgetSchema) => {
-//   const { category, currency, amount, period } = data;
-//   const user = await currentUser();
-//   if (!user) return null;
-//   const userId = user.id;
-//   try {
-//     if (!category || !currency || !amount || !period) {
-//       throw new Error("Missing required fields");
-//     }
-//     const budget = await prisma.budget.create({
-//       data: {
-//         category,
-//         currencyId: `${currency.toLowerCase()}-id`,
-//         amount,
-//         period,
-//         userId,
-//       },
-//     });
+    const insights = await apiRequest<BudgetInsights>({
+      endpoint: `/inisghts/budget/${budgetId}`,
+      method: "GET",
+    });
+    console.log(insights)
+    return insights;
+  } catch (error) {
+    throw error;
+  }
+};
 
-//     return {
-//       ...budget,
-//       amount: budget.amount.toNumber(),
-//       expenses: [],
-//     };
-//   } catch (error) {
-//     throw error; // re-throw the error
-//   }
-// };
-
-// const deleteBudget = async (budgetId: string) => {
-//   const user = await currentUser();
-//   if (!user) throw new Error("You must be signed in to delete a budget");
-
-//   const userId = user.id;
-//   try {
-//     await prisma.budget.delete({ where: { id: budgetId, userId } });
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
-// const getBudgets = async () => {
-//   const user = await currentUser();
-//   if (!user) throw new Error("You must be signed in to get budgets");
-//   const userId = user.id;
-
-//   try {
-//     const budgets = await prisma.budget.findMany({ where: { userId }, include: {
-//       currency: true
-//     } },);
-//     const formattedBudgets = await Promise.all(
-//       budgets.map(async (budget) => {
-//         const expenses = await prisma.expense.findMany({
-//           where: { category: budget.category, userId },
-//         });
-//         const formattedExpenses = expenses.map((expense) => ({
-//           ...expense,
-//           amount: expense.amount.toNumber(),
-//         }));
-//         const formattedBudget = {
-//           ...budget,
-//           amount: budget.amount.toNumber(),
-//           expenses: formattedExpenses,
-//         };
-//       return formattedBudget;
-//       })
-//     );
-//     return formattedBudgets;
-//   } catch (error) {
-//     throw new Error("Failed to fetch budgets. Please try again later.");
-//   }
-// };
-
-// const getTotalBudgetAmount = async () => {
-//   const user = await currentUser();
-//   if (!user) throw new Error("You must be signed in to get budgets");
-//   const userId = user.id;
-//   try {
-//     const budgets = await prisma.budget.findMany({
-//       where: { userId },
-//       select: { amount: true },
-//     });
-//     const totalBudgetAmount = budgets.reduce(
-//       (acc, budget) => acc + budget.amount.toNumber(),
-//       0
-//     );
-//     return totalBudgetAmount;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
-
-// export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount };
+export {
+  createBudget,
+  type CreateBudgetResponse,
+  getBudgets,
+  getBudgetStats,
+  deleteBudget,
+  getBudgetInsights,
+};

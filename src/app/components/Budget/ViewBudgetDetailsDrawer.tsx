@@ -16,7 +16,7 @@ import {
 } from "@heroui/react";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 import { format } from "date-fns";
-import React, { FC } from "react";
+import React, { FC, useEffect } from "react";
 import { CreditCard, Wallet } from "lucide-react";
 import { cn } from "@/app/lib/utils";
 import LinkedExpenses from "./LinkedExpenses";
@@ -31,6 +31,7 @@ type ViewBudgetDetailsDrawerProps = {
 };
 
 import { useBudgetStats } from "@/app/hooks/useBudgetStats";
+import useBudget from "@/app/hooks/useBudget";
 
 const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   open,
@@ -39,10 +40,16 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   onDeleteBudget,
 }) => {
   const { data: stats, isLoading, isError } = useBudgetStats(budget);
+  const { getBudgetInsights } = useBudget(budget?.userId ?? "");
+  const { data: insights, isLoading: insightsLoading, isError: insightsError } = getBudgetInsights(budget?.id ?? "");
+
+  useEffect(() => {
+    console.log("Insights updated:", insights);
+  }, [insights]);
 
   if (!budget) return null;
 
-  if (isLoading) {
+  if (isLoading || insightsLoading) {
     return (
       <Drawer
         isOpen={open}
@@ -63,7 +70,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
     );
   }
 
-  if (isError || !stats) {
+  if (isError || !stats || insightsError) {
     return (
       <Drawer
         isOpen={open}
