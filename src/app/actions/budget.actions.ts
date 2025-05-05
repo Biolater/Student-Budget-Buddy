@@ -277,11 +277,13 @@ const getBudgetInsights = async (budgetId: string) => {
     if (!budget) throw new Error("Budget not found");
 
     const insights = await apiRequest<BudgetInsights>({
-      endpoint: `/inisghts/budget/${budgetId}`,
+      endpoint: `/insights/budget/${budgetId}`,
       method: "GET",
     });
-    console.log(insights)
-    return insights;
+
+    if (!insights.success) throw new Error("Failed to fetch budget insights");
+
+    return insights.data;
   } catch (error) {
     throw error;
   }

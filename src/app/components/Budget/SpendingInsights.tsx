@@ -6,12 +6,14 @@ interface SpendingInsightsProps {
   dailyAverage: number;
   targetAverage: number;
   spendingTip: string;
+  currencySymbol: string;
 }
 
 const SpendingInsights: FC<SpendingInsightsProps> = ({
   dailyAverage,
   targetAverage,
   spendingTip,
+  currencySymbol,
 }) => {
   return (
     <Card
@@ -29,7 +31,10 @@ const SpendingInsights: FC<SpendingInsightsProps> = ({
             <p className="text-sm text-muted-foreground">Daily Average</p>
           </div>
           <div>
-            <p className="text-sm font-medium">$5.33/day</p>
+            <p className="text-sm font-medium">
+              {currencySymbol}
+              {dailyAverage.toFixed(2)}/day
+            </p>
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -38,7 +43,10 @@ const SpendingInsights: FC<SpendingInsightsProps> = ({
             <p className="text-sm text-muted-foreground">Target Average</p>
           </div>
           <div>
-            <p className="text-sm font-medium">$5.00/day</p>
+            <p className="text-sm font-medium">
+              {currencySymbol}
+              {targetAverage.toFixed(2)}/day
+            </p>
           </div>
         </div>
         <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
@@ -46,10 +54,7 @@ const SpendingInsights: FC<SpendingInsightsProps> = ({
             <Info className="size-5 text-blue-500 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-700">Spending Tip</p>
-              <p className="text-xs text-blue-600 mt-1">
-                You're currently on track with your transport budget. Keep it
-                up!
-              </p>
+              <p className="text-xs text-blue-600 mt-1">{spendingTip}</p>
             </div>
           </div>
         </div>

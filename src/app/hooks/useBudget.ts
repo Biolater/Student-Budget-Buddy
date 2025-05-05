@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   createBudget,
   deleteBudget,
-  getBudgetInsights,
+  getBudgetInsights as getBudgetInsightsAction,
   getBudgets,
   getBudgetStats,
   /*     deleteBudget,
@@ -15,6 +15,7 @@ import { CreateBudgetFormSchemaType } from "../schema/budget.schema";
 import { assertUser } from "../utils/auth.utils";
 import { type BudgetErrorType } from "@/app/types/errors";
 import { getLocalTimeZone } from "@internationalized/date";
+import { BudgetInsights } from "../types/budget.types";
 
 const BUDGET_MUTATION_KEY = (userId: string) => ["budgets", userId];
 
@@ -87,12 +88,12 @@ const useBudget = (userId: string | undefined | null) => {
       },
     }),
     getBudgetInsights: (budgetId: string) =>
-      useQuery({
-        queryKey: ["budgetInsights", userId],
+      useQuery<BudgetInsights | undefined, Error>({
+        queryKey: ["budgetInsights", budgetId],
+        retry: false,
         queryFn: async () => {
-          if (!userId) return [];
-          const budgetInsights = await getBudgetInsights(budgetId);
-          return budgetInsights.data ?? [];
+          const budgetInsights = await getBudgetInsightsAction(budgetId);
+          return budgetInsights ?? undefined;
         },
         enabled: !!budgetId && !!userId,
         staleTime: 600000,

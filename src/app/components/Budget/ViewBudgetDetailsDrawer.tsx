@@ -41,15 +41,15 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
 }) => {
   const { data: stats, isLoading, isError } = useBudgetStats(budget);
   const { getBudgetInsights } = useBudget(budget?.userId ?? "");
-  const { data: insights, isLoading: insightsLoading, isError: insightsError } = getBudgetInsights(budget?.id ?? "");
-
-  useEffect(() => {
-    console.log("Insights updated:", insights);
-  }, [insights]);
+  const {
+    data: insights,
+    isLoading: insightsLoading,
+    isError: insightsError,
+  } = getBudgetInsights(budget?.id ?? "");
 
   if (!budget) return null;
 
-  if (isLoading || insightsLoading) {
+/*   if (isLoading || insightsLoading) {
     return (
       <Drawer
         isOpen={open}
@@ -68,7 +68,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
         </DrawerContent>
       </Drawer>
     );
-  }
+  } */
 
   if (isError || !stats || insightsError) {
     return (
@@ -187,9 +187,10 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
           </div>
           <LinkedExpenses expenses={budget.expenses} />
           <SpendingInsights
-            dailyAverage={0}
-            targetAverage={0}
-            spendingTip={""}
+            dailyAverage={insights?.dailyAverage ?? 0}
+            targetAverage={insights?.targetDailyAverage ?? 0}
+            spendingTip={insights?.tip ?? ""}
+            currencySymbol={budget.currency.symbol}
           />
           <Button
             onPress={() => onDeleteBudget(budget.id)}
