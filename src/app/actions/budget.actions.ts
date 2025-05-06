@@ -10,6 +10,7 @@ import { requireUser } from "@/app/utils/auth.utils";
 import { getConversionRate } from "./currency.actions";
 import { apiRequest } from "../lib/apiClient";
 import { BudgetInsights } from "../types/budget.types";
+import { auth } from "@clerk/nextjs/server";
 
 type ServerBudgetData = Omit<
   CreateBudgetFormSchemaType,
@@ -73,7 +74,7 @@ const createBudget = async (
 
     const budget = await tx.budget.create({
       data: {
-        userId: user.id,
+        userId: user.userId!,
         budgetCategoryId: budgetCategory,
         startDate,
         endDate,
@@ -91,7 +92,7 @@ const createBudget = async (
     // 2. Find existing expenses that should be linked to this budget
     const matchingExpenses = await tx.expense.findMany({
       where: {
-        userId: user.id,
+        userId: user.userId!,
         expenseCategoryId: budgetCategory,
         date: {
           gte: startDate,
@@ -124,7 +125,7 @@ const createBudget = async (
 
 const deleteBudget = async (budgetId: string) => {
   const user = await requireUser();
-  const userId = user.id;
+  const userId = user.userId!;
 
   try {
     const budget = await prisma.budget.findUnique({
@@ -145,7 +146,7 @@ const deleteBudget = async (budgetId: string) => {
 
 const getBudgets = async () => {
   const user = await requireUser();
-  const userId = user.id;
+  const userId = user.userId!;
 
   try {
     const budgets = await prisma.budget.findMany({
@@ -180,7 +181,7 @@ const getBudgets = async () => {
 
 const getBudgetStats = async () => {
   const user = await requireUser();
-  const userId = user.id;
+  const userId = user.userId!;
 
   try {
     const budgets = await prisma.budget.findMany({
@@ -268,7 +269,12 @@ const getBudgetStats = async () => {
 
 const getBudgetInsights = async (budgetId: string) => {
   const user = await requireUser();
-  const userId = user.id;
+  const userId = user.userId;
+
+  const token = await user.getToken();
+
+  if (!userId || !token) throw new Error("User not authenticated");
+
   if (!budgetId) throw new Error("Budget ID is required");
   try {
     const budget = await prisma.budget.findUnique({
@@ -279,9 +285,14 @@ const getBudgetInsights = async (budgetId: string) => {
     const insights = await apiRequest<BudgetInsights>({
       endpoint: `/insights/budget/${budgetId}`,
       method: "GET",
+      init: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
     });
 
-    if (!insights.success) throw new Error("Failed to fetch budget insights");
+    if (!insights.success) throw new Error(insights.error?.message);
 
     return insights.data;
   } catch (error) {

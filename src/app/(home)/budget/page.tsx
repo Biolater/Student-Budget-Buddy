@@ -21,15 +21,21 @@ import BudgetCardSkeleton from "@/app/components/Budget/BudgetCardSkeleton";
 
 import React, { useState } from "react";
 import ConfirmBudgetDeletionModal from "@/app/components/Budget/ConfirmBudgetDeletionModal";
-import type { ExtendedBudget } from "@/app/types/budget.types";
+import type { BudgetWithStats, ExtendedBudget } from "@/app/types/budget.types";
 import { GlobalLoading } from "@/app/components/GlobalLoading";
 import { useCurrency } from "@/app/hooks/useCurrency";
+import { useQueries } from "@tanstack/react-query";
+import { fetchBudgetStats } from "@/app/utils/budget.utils";
 
 const Budget = () => {
   const { userId, isLoaded } = useAuth();
   const [selectedBudget, setSelectedBudget] = useState<ExtendedBudget | null>(
     null
   );
+  const [budgetsWithStats, setBudgetsWithStats] = useState<
+    BudgetWithStats[] | null
+  >(null);
+  const [budgetsWithStatsLoading, setBudgetsWithStatsLoading] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteBudgetId, setDeleteBudgetId] = useState<string | null>(null);
   const budgetHook = useBudget(userId);
@@ -70,6 +76,27 @@ const Budget = () => {
     }
   }, [budgetsError, budgetStatsError, deleteBudgetError]);
 
+  useEffect(() => {
+    const fetchAllBudgetStats = async () => {
+      if (budgets) {
+        setBudgetsWithStatsLoading(true);
+        const budgetsWithStatsData = await Promise.all(
+          budgets.map(async (budget) => {
+            const stats = await fetchBudgetStats(budget);
+            return { ...budget, stats };
+          })
+        );
+        setBudgetsWithStats(budgetsWithStatsData);
+        setBudgetsWithStatsLoading(false);
+      } else {
+        setBudgetsWithStats(null);
+        setBudgetsWithStatsLoading(false);
+      }
+    };
+
+    fetchAllBudgetStats();
+  }, [budgets]);
+
   const handleDeleteBudget = async () => {
     if (!deleteBudgetId) return;
     await deleteBudget(deleteBudgetId);
@@ -99,7 +126,11 @@ const Budget = () => {
         <CreateBudgetDrawer />
       </motion.div>
       <BudgetStatsOverview
-        isLoading={budgetStatsLoading || defaultCurrencyLoading}
+        isLoading={
+          budgetStatsLoading ||
+          defaultCurrencyLoading ||
+          budgetsWithStatsLoading
+        }
         defaultCurrencySymbol={defaultCurrency?.symbol ?? "$"}
         totalBudget={
           budgetStatsData && !Array.isArray(budgetStatsData)
@@ -119,12 +150,12 @@ const Budget = () => {
       />
       <h1 className="text-3xl font-bold my-4">Budgets</h1>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgetsLoading ? (
+        {budgetsLoading || budgetsWithStatsLoading ? (
           Array.from({ length: 3 }).map((_, index) => (
             <BudgetCardSkeleton key={index} />
           ))
         ) : budgets && budgets.length > 0 ? (
-          budgets.map((budget, index) => (
+          budgetsWithStats?.map((budget, index) => (
             <motion.div
               key={budget.id}
               initial={{ opacity: 0, y: 20 }}
@@ -138,7 +169,7 @@ const Budget = () => {
               }}
               style={{ cursor: "pointer" }}
             >
-              <BudgetCard budget={budget} />
+              <BudgetCard budget={budget} stats={budget.stats} />
             </motion.div>
           ))
         ) : (

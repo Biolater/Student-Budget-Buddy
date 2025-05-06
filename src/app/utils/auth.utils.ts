@@ -1,9 +1,9 @@
 'use server';
 
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 
 export const requireUser = async () => {
-    const user = await currentUser();
+    const user = await auth();
     if (!user) {
         throw new Error("User not authenticated");
     }

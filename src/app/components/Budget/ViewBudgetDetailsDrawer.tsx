@@ -49,7 +49,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
 
   if (!budget) return null;
 
-/*   if (isLoading || insightsLoading) {
+  if (isLoading || insightsLoading) {
     return (
       <Drawer
         isOpen={open}
@@ -68,7 +68,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
         </DrawerContent>
       </Drawer>
     );
-  } */
+  }
 
   if (isError || !stats || insightsError) {
     return (

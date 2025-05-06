@@ -13,24 +13,12 @@ import type { ExtendedBudget } from "@/app/types/budget.types";
 
 interface BudgetCardProps {
   budget: ExtendedBudget;
+  stats: any;
 }
 
-const BudgetCard = ({ budget }: BudgetCardProps) => {
-  const { data: stats, isLoading, isError } = useBudgetStats(budget);
+const BudgetCard = ({ budget, stats }: BudgetCardProps) => {
 
-  if (isLoading) {
-    return (
-      <Card className="animate-pulse">
-        <CardHeader>Loading...</CardHeader>
-        <CardBody>
-          <div className="h-6 bg-muted rounded w-1/2 mb-2" />
-          <div className="h-4 bg-muted rounded w-1/3" />
-        </CardBody>
-      </Card>
-    );
-  }
-
-  if (isError || !stats) {
+  if (!stats) {
     return (
       <Card>
         <CardHeader>Error loading budget stats</CardHeader>

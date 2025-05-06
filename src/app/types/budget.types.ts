@@ -8,6 +8,15 @@ interface ExtendedBudget extends Omit<Budget, "amount"> {
   amount: number;
 }
 
+interface BudgetWithStats extends ExtendedBudget {
+  stats: BudgetStats;
+}
+
+interface BudgetStats {
+  expensesTotal: number;
+  budgetStatus: "success" | "warning" | "danger";
+} 
+
 // Define a simple User type for the structure within BudgetInsights
 interface BudgetInsightsUser {
   id: string;
@@ -32,4 +41,4 @@ interface BudgetInsights {
   targetDailyAverage: number;
 }
 
-export type { ExtendedBudget, BudgetInsights };
+export type { ExtendedBudget, BudgetInsights, BudgetWithStats };
