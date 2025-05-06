@@ -2,102 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: hsl(0, 0%, 100%);
-    /* white */
-    --foreground: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --card: hsl(0, 0%, 95%);
-    /* light gray */
-    --card-foreground: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --popover: hsl(0, 0%, 100%);
-    /* white */
-    --popover-foreground: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --primary: rgba(76, 185, 39, 1);
-    /* green */
-    --primary-foreground: hsl(0, 0%, 100%);
-    /* white */
-    --secondary: hsl(0, 0%, 96%);
-    /* light gray */
-    --secondary-foreground: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --muted: hsl(0, 0%, 96%);
-    /* light gray */
-    --muted-foreground: hsl(0, 0%, 45%);
-    /* muted gray */
-    --accent: hsl(0, 0%, 96%);
-    /* light gray */
-    --accent-foreground: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --destructive: hsl(0, 80%, 60%);
-    /* red */
-    --destructive-foreground: hsl(0, 0%, 100%);
-    /* white */
-    --border: hsl(0, 0%, 89%);
-    /* light gray */
-    --input: hsl(0, 0%, 89%);
-    /* light gray */
-    --ring: hsl(134, 60%, 53%);
-    /* green */
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --background: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --foreground: hsl(0, 0%, 98%);
-    /* light gray */
-    --card: hsl(0, 0%, 12%);
-    /* dark gray */
-    --card-foreground: hsl(0, 0%, 98%);
-    /* light gray */
-    --popover: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --popover-foreground: hsl(0, 0%, 98%);
-    /* light gray */
-    --primary: rgba(76, 185, 39, 1);
-    /* green */
-    --primary-foreground: hsl(0, 0%, 5%);
-    /* very dark gray */
-    --secondary: hsl(0, 0%, 16%);
-    /* dark gray */
-    --secondary-foreground: hsl(0, 0%, 98%);
-    /* light gray */
-    --muted: hsl(0, 0%, 16%);
-    /* dark gray */
-    --muted-foreground: hsl(0, 0%, 67%);
-    /* muted gray */
-    --accent: hsl(0, 0%, 16%);
-    /* dark gray */
-    --accent-foreground: hsl(0, 0%, 98%);
-    /* light gray */
-    --destructive: hsl(0, 80%, 40%);
-    /* dark red */
-    --destructive-foreground: hsl(0, 0%, 98%);
-    /* light gray */
-    --border: hsl(0, 0%, 16%);
-    /* dark gray */
-    --input: hsl(0, 0%, 16%);
-    /* dark gray */
-    --ring: hsl(134, 60%, 53%);
-    /* green */
-  }
+/* CSS Variables for theme colors */
+:root {
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+  --warning: 38 92% 55%;              /* Amber 500 */
+  --warning-foreground: 24 100% 12%;  /* Deep brown-black for contrast */
+  --success: 134 60% 53%;
+  --success-foreground: 134 60% 100%;
 }
 
-@layer base {
-  html {
-    @apply !bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
-  }
+.dark {
+  --muted: 240 3% 26%;
+  --muted-foreground: 240 5% 65%;
+  --warning: 38 100% 62%;             /* Lighter amber for dark backgrounds */
+  --warning-foreground: 60 100% 98%;  /* Near-white yellow for contrast */
+  --success: 134 60% 53%;
+  --success-foreground: 134 60% 100%;
 }
 
-html[data-theme="light"],
-html[data-theme="dark"] {
-  transition: none !important;
-}
+/* You can add custom global styles below */
 
 .expenses-date-range {
   position: absolute;
@@ -112,4 +36,8 @@ html[data-theme="dark"] {
 }
 .expenses-date-range button[data-slot="selector-button"] > * {
   opacity: 0;
+}
+
+.container-padding {
+  @apply py-4 md:py-8;
 }

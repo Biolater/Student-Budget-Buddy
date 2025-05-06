@@ -1,59 +1,141 @@
 'use server';
+
 import { prisma } from "@/app/lib/client";
-import { ExpenseFormSchemaType, ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
-// import { type Expense } from "@prisma/client";
-import { currentUser } from "@clerk/nextjs/server";
-// import { convertCurrency, getDefaultCurrency } from "../lib/currencyUtils";
+import { ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
+import { requireUser } from "../utils/auth.utils";
+
+// Helper function to ensure the user is authenticated.
 
 const fetchExpensesByUserId = async (userId: string) => {
-    try {
-        const user = await currentUser();
-        if (!user) {
-            throw new Error("User not authenticated");
-        }
-        const expenses = await prisma.expense.findMany({
-            where: { userId: userId },
-            orderBy: { date: "desc" },
-            include: {
-                category: true,
-                currency: true,
-            }
-        });
-        return expenses.map(expense => ({
-            ...expense,
-            amount: expense.amount.toNumber(),
-        }));
-    } catch (error) {
-        throw error;
+    const user = await requireUser();
+    // Optionally, ensure the requested userId matches the authenticated user.
+    if (user.id !== userId) {
+        throw new Error("Unauthorized access");
     }
-}
+
+    const expenses = await prisma.expense.findMany({
+        where: { userId },
+        orderBy: { date: "desc" },
+        include: {
+            category: true,
+            currency: true,
+        },
+    });
+
+    return expenses.map(expense => ({
+        ...expense,
+        amount: expense.amount.toNumber(),
+    }));
+};
 
 const createExpense = async (data: ServerExpenseData) => {
-    try {   
-        const validatedData = ServerExpenseSchema.parse(data);
-        const { date, amount, currency, category, description } = validatedData;
-        const user = await currentUser();
-        if (!user) {
-            throw new Error("User not authenticated");
-        }
-        const expense = await prisma.expense.create({
+    const user = await requireUser();
+    const validatedData = ServerExpenseSchema.parse(data);
+    const { date, amount, currency, category, description } = validatedData;
+
+    if (amount <= 0) throw new Error("Amount must be positive");
+    if (date > new Date()) throw new Error("Cannot create expenses for future dates");
+
+    const budgetCategory = await prisma.budgetCategory.findUnique({
+        where: { id: category },
+    });
+    if (!budgetCategory) throw new Error("Invalid budget category");
+
+    const budgetCurrency = await prisma.currency.findUnique({
+        where: { id: currency },
+    });
+    if (!budgetCurrency) throw new Error("Invalid currency");
+
+    // Use transaction for consistency
+    return prisma.$transaction(async (tx) => {
+        // Find matching budget
+        const matchingBudget = await tx.budget.findFirst({
+            where: {
+                budgetCategoryId: category,
+                userId: user.id,
+                startDate: { lte: date },
+                endDate: { gte: date },
+            },
+        });
+
+        // Check for duplicate
+        const potentialDuplicate = await tx.expense.findFirst({
+            where: {
+                userId: user.id,
+                date: { equals: date },
+                amount: { equals: amount },
+                expenseCategoryId: category,
+                createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) }
+            }
+        });
+
+        if (potentialDuplicate) throw new Error("Similar expense recently created");
+
+        // Create expense
+        const expense = await tx.expense.create({
             data: {
                 date,
                 amount,
                 expenseCategoryId: category,
                 description,
                 currencyId: currency,
-                userId: user.id
-            }
+                userId: user.id,
+                ...(matchingBudget ? { budgetId: matchingBudget.id } : {})
+            },
         });
 
         return { ...expense, amount: expense.amount.toNumber() };
-    } catch (error) {
-        throw error;
-    }
-}
+    });
+};
 
-export { createExpense, fetchExpensesByUserId };
+const deleteExpense = async (expenseId: string) => {
+    const user = await requireUser();
+    // Verify that the expense exists and belongs to the user.
+    const expense = await prisma.expense.findUnique({
+        where: { id: expenseId },
+    });
+
+    if (!expense) {
+        throw new Error("Expense not found");
+    }
+    if (expense.userId !== user.id) {
+        throw new Error("You are not authorized to delete this expense");
+    }
+
+    await prisma.expense.delete({ where: { id: expenseId } });
+    return { success: true, message: "Expense deleted successfully" };
+};
+
+const updateExpense = async (expenseId: string, data: ServerExpenseData) => {
+    const user = await requireUser();
+    const validatedData = ServerExpenseSchema.parse(data);
+    const { date, amount, currency, category, description } = validatedData;
+
+    // Verify that the expense exists and belongs to the user.
+    const expense = await prisma.expense.findUnique({ where: { id: expenseId } });
+    if (!expense) {
+        throw new Error("Expense not found");
+    }
+    if (expense.userId !== user.id) {
+        throw new Error("You are not authorized to update this expense");
+    }
+
+    const updatedExpense = await prisma.expense.update({
+        where: { id: expenseId },
+        data: {
+            date,
+            amount,
+            expenseCategoryId: category,
+            description,
+            currencyId: currency,
+        },
+    });
+
+    return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
+};
+
+export { createExpense, fetchExpensesByUserId, deleteExpense, updateExpense };
+
 
 // // Types
 // export type Category =

@@ -1,15 +1,7 @@
 import type { Config } from "tailwindcss";
 import { heroui } from "@heroui/react";
-import defaultTheme from "tailwindcss/defaultTheme";
-import flattenColorPalette from "tailwindcss/lib/util/flattenColorPalette";
 
-const svgToDataUri = require("mini-svg-data-uri");
-
-const colors = require("tailwindcss/colors");
-
-
-
-export default {
+const config: Config = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -18,35 +10,24 @@ export default {
   ],
   theme: {
     extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        card: "var(--card)",
-        "card-foreground": "var(--card-foreground)",
-        popover: "var(--popover)",
-        "popover-foreground": "var(--popover-foreground)",
-        primary: "rgba(76, 185, 39, 1)", // RGBA equivalent of hsl(134, 60%, 53%)
-        "primary-opacity": "rgba(76, 185, 39, 0.5)", // Added for opacity
-        "primary-foreground": "var(--primary-foreground)",
-        secondary: "var(--secondary)",
-        "secondary-foreground": "var(--secondary-foreground)",
-        muted: "var(--muted)",
-        "muted-foreground": "var(--muted-foreground)",
-        accent: "var(--accent)",
-        "accent-foreground": "var(--accent-foreground)",
-        destructive: "var(--destructive)",
-        "destructive-foreground": "var(--destructive-foreground)",
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
-        chart1: "var(--chart-1)",
-        chart2: "var(--chart-2)",
-        chart3: "var(--chart-3)",
-        chart4: "var(--chart-4)",
-        chart5: "var(--chart-5)",
+      // Keep general theme extensions here (fonts, spacing, etc.)
+      // Colors are now handled by heroui below
+      container: {
+        center: true,
+        padding: {
+          DEFAULT: "1rem",
+          sm: "1.5rem",
+          lg: "2rem",
+        },
       },
-      borderRadius: {
-        DEFAULT: "var(--radius)",
+      // Add custom colors that use CSS variables
+      colors: {
+        muted: "hsl(var(--muted))",
+        "muted-foreground": "hsl(var(--muted-foreground))",
+        warning: "hsl(var(--warning))",
+        "warning-foreground": "hsl(var(--warning-foreground))",
+        success: "hsl(var(--success))",
+        "success-foreground": "hsl(var(--success-foreground))",
       },
     },
   },
@@ -54,55 +35,48 @@ export default {
   plugins: [
     heroui({
       themes: {
+        light: {
+          colors: {
+            background: "hsl(0 0% 100%)",
+            foreground: "hsl(240 10% 4%)",
+            content1: "hsl(0 0% 100%)",
+            divider: "hsl(240 5% 90%)",
+            primary: "hsl(134 60% 53%)",
+            secondary: "hsl(240 5% 96%)",
+            content2: "hsl(220 14% 96%)",
+            content3: "hsl(220 9% 46%)",
+            danger: {
+              DEFAULT: "hsl(0 84% 60%)",
+              foreground: "hsl(0 72% 36%)",
+            },
+            success: {
+              DEFAULT: "hsl(134 60% 53%)",
+              foreground: "hsl(134 60% 100%)",
+            },
+          },
+        },
         dark: {
           colors: {
-            primary: {
-              DEFAULT: "rgba(76, 185, 39, 1)",
-              "50": "rgba(76, 185, 39, 0.5)",
-              foreground: "var(--primary-foreground)",
+            background: "hsl(240 10% 4%)",
+            foreground: "hsl(0 0% 98%)",
+            content1: "hsl(240 4% 12%)",
+            divider: "hsl(240 4% 20%)",
+            primary: "hsl(134 60% 53%)",
+            secondary: "hsl(240 4% 16%)",
+            content2: "hsl(240 3% 26%)",
+            content3: "hsl(240 5% 65%)",
+            danger: {
+              DEFAULT: "hsl(0 72% 51%)",
+              foreground: "hsl(0 85% 96%)",
             },
-
-            focus: "#BEF264",
+            success: {
+              DEFAULT: "hsl(134 60% 53%)",
+              foreground: "hsl(134 60% 100%)",
+            },
           },
         },
       },
     }),
-    addVariablesForColors,
-    function ({ matchUtilities, theme }: any) {
-      matchUtilities(
-        {
-          "bg-grid": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="none" stroke="${value}"><path d="M0 .5H31.5V32"/></svg>`
-            )}")`,
-          }),
-          "bg-grid-small": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="8" height="8" fill="none" stroke="${value}"><path d="M0 .5H31.5V32"/></svg>`
-            )}")`,
-          }),
-          "bg-dot": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none"><circle fill="${value}" id="pattern-circle" cx="10" cy="10" r="1.6257413380501518"></circle></svg>`
-            )}")`,
-          }),
-        },
-        { values: flattenColorPalette(theme("backgroundColor")), type: "color" }
-      );
-    },
-
-
   ],
-} satisfies Config;
-
-
-function addVariablesForColors({ addBase, theme }: any) {
-  let allColors = flattenColorPalette(theme("colors"));
-  let newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-  );
-
-  addBase({
-    ":root": newVars,
-  });
-}
+};
+export default config;

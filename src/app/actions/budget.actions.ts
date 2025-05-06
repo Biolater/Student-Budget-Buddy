@@ -1,101 +1,310 @@
-// import { prisma } from "@/app/lib/client";
-// import { type NewBudgetSchema } from "@/app/components/Budget/AddNewBudget";
-// import { currentUser } from "@clerk/nextjs/server";
+"use server";
 
-// const createBudget = async (data: any) => {
+import { prisma } from "@/app/lib/client";
+import { getLocalTimeZone } from "@internationalized/date";
+import {
+  CreateBudgetFormSchemaType,
+  CreateBudgetFormSchema,
+} from "@/app/schema/budget.schema";
+import { requireUser } from "@/app/utils/auth.utils";
+import { getConversionRate } from "./currency.actions";
+import { apiRequest } from "../lib/apiClient";
+import { BudgetInsights } from "../types/budget.types";
+import { auth } from "@clerk/nextjs/server";
 
-// }
+type ServerBudgetData = Omit<
+  CreateBudgetFormSchemaType,
+  "startDate" | "endDate"
+> & {
+  startDate: Date;
+  endDate: Date;
+};
 
-// const createBudget = async (data: NewBudgetSchema) => {
-//   const { category, currency, amount, period } = data;
-//   const user = await currentUser();
-//   if (!user) return null;
-//   const userId = user.id;
-//   try {
-//     if (!category || !currency || !amount || !period) {
-//       throw new Error("Missing required fields");
-//     }
-//     const budget = await prisma.budget.create({
-//       data: {
-//         category,
-//         currencyId: `${currency.toLowerCase()}-id`,
-//         amount,
-//         period,
-//         userId,
-//       },
-//     });
+interface CreateBudgetResponse {
+  id: string;
+  amount: number;
+  periodType: string;
+  startDate: Date;
+  endDate: Date;
+  category: {
+    name: string;
+    icon: string;
+  };
+  currency: {
+    code: string;
+    symbol: string;
+  };
+  expenseCount: number;
+}
 
-//     return {
-//       ...budget,
-//       amount: budget.amount.toNumber(),
-//       expenses: [],
-//     };
-//   } catch (error) {
-//     throw error; // re-throw the error
-//   }
-// };
+const createBudget = async (
+  data: ServerBudgetData
+): Promise<CreateBudgetResponse> => {
+  const user = await requireUser();
+  const {
+    budgetCategory,
+    startDate,
+    endDate,
+    amount,
+    currency,
+    description,
+    periodType,
+  } = data;
 
-// const deleteBudget = async (budgetId: string) => {
-//   const user = await currentUser();
-//   if (!user) throw new Error("You must be signed in to delete a budget");
+  if (startDate >= endDate) {
+    throw new Error("Start date must be before end date");
+  }
 
-//   const userId = user.id;
-//   try {
-//     await prisma.budget.delete({ where: { id: budgetId, userId } });
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+  // Create the budget and update existing expenses in a single transaction
+  return prisma.$transaction(async (tx) => {
+    // 1. Create the budget
+    const categoryExists = await tx.budgetCategory.findUnique({
+      cacheStrategy: {
+        ttl: 86400, // 24 hours = 60 * 60 * 24 seconds
+        swr: 3600, // 1 hour = 60 * 60 seconds
+      },
+      where: { id: budgetCategory },
+    });
+    if (!categoryExists) throw new Error("Invalid budget category");
 
-// const getBudgets = async () => {
-//   const user = await currentUser();
-//   if (!user) throw new Error("You must be signed in to get budgets");
-//   const userId = user.id;
+    const currencyExists = await tx.currency.findUnique({
+      where: { id: currency },
+    });
+    if (!currencyExists) throw new Error("Invalid currency");
 
-//   try {
-//     const budgets = await prisma.budget.findMany({ where: { userId }, include: {
-//       currency: true
-//     } },);
-//     const formattedBudgets = await Promise.all(
-//       budgets.map(async (budget) => {
-//         const expenses = await prisma.expense.findMany({
-//           where: { category: budget.category, userId },
-//         });
-//         const formattedExpenses = expenses.map((expense) => ({
-//           ...expense,
-//           amount: expense.amount.toNumber(),
-//         }));
-//         const formattedBudget = {
-//           ...budget,
-//           amount: budget.amount.toNumber(),
-//           expenses: formattedExpenses,
-//         };
-//       return formattedBudget;
-//       })
-//     );
-//     return formattedBudgets;
-//   } catch (error) {
-//     throw new Error("Failed to fetch budgets. Please try again later.");
-//   }
-// };
+    const budget = await tx.budget.create({
+      data: {
+        userId: user.userId!,
+        budgetCategoryId: budgetCategory,
+        startDate,
+        endDate,
+        amount,
+        currencyId: currency,
+        description,
+        periodType,
+      },
+      include: {
+        category: true,
+        currency: true,
+      },
+    });
 
-// const getTotalBudgetAmount = async () => {
-//   const user = await currentUser();
-//   if (!user) throw new Error("You must be signed in to get budgets");
-//   const userId = user.id;
-//   try {
-//     const budgets = await prisma.budget.findMany({
-//       where: { userId },
-//       select: { amount: true },
-//     });
-//     const totalBudgetAmount = budgets.reduce(
-//       (acc, budget) => acc + budget.amount.toNumber(),
-//       0
-//     );
-//     return totalBudgetAmount;
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+    // 2. Find existing expenses that should be linked to this budget
+    const matchingExpenses = await tx.expense.findMany({
+      where: {
+        userId: user.userId!,
+        expenseCategoryId: budgetCategory,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+        budgetId: null, // Only get expenses that don't have a budget yet
+      },
+    });
 
-// export { createBudget, getBudgets, deleteBudget, getTotalBudgetAmount };
+    // 3. Update those expenses to link them to this new budget
+    if (matchingExpenses.length > 0) {
+      await tx.expense.updateMany({
+        where: {
+          id: { in: matchingExpenses.map((expense) => expense.id) },
+        },
+        data: {
+          budgetId: budget.id,
+        },
+      });
+    }
+
+    // Return the created budget with expense count
+    return {
+      ...budget,
+      amount: budget.amount.toNumber(),
+      expenseCount: matchingExpenses.length,
+    };
+  });
+};
+
+const deleteBudget = async (budgetId: string) => {
+  const user = await requireUser();
+  const userId = user.userId!;
+
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId, userId },
+    });
+    if (!budget) throw new Error("Budget not found");
+    prisma.$transaction([
+      prisma.budget.delete({ where: { id: budgetId, userId } }),
+      prisma.expense.updateMany({
+        where: { budgetId },
+        data: { budgetId: null },
+      }),
+    ]);
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getBudgets = async () => {
+  const user = await requireUser();
+  const userId = user.userId!;
+
+  try {
+    const budgets = await prisma.budget.findMany({
+      where: { userId },
+      include: {
+        category: true,
+        currency: true,
+        expenses: {
+          include: {
+            currency: true,
+          },
+        },
+        user: {
+          include: {
+            baseCurrency: true,
+          },
+        },
+      },
+    });
+    return budgets.map((budget) => ({
+      ...budget,
+      amount: budget.amount.toNumber(),
+      expenses: budget.expenses.map((expense) => ({
+        ...expense,
+        amount: expense.amount.toNumber(),
+      })),
+    }));
+  } catch (error) {
+    throw new Error("Failed to fetch budgets. Please try again.");
+  }
+};
+
+const getBudgetStats = async () => {
+  const user = await requireUser();
+  const userId = user.userId!;
+
+  try {
+    const budgets = await prisma.budget.findMany({
+      where: { userId },
+      include: {
+        category: true,
+        currency: true,
+        expenses: {
+          include: {
+            currency: true,
+          },
+        },
+        user: {
+          include: {
+            baseCurrency: true,
+          },
+        },
+      },
+    });
+
+    if (budgets.length === 0)
+      return {
+        budgets: [],
+        overallBudgetAmount: 0,
+        overallSpentAmount: 0,
+        overallRemainingAmount: 0,
+      };
+
+    const userDefaultCurrency = budgets[0].user.baseCurrency.code;
+
+    // Convert all amounts to numbers for easier calculation
+    const budgetsWithNumbers = budgets.map((budget) => ({
+      ...budget,
+      amount: budget.amount.toNumber(),
+      expenses: budget.expenses.map((expense) => ({
+        ...expense,
+        amount: expense.amount.toNumber(),
+      })),
+    }));
+
+    // Prepare promises for all conversions
+    let overallBudgetAmount = 0;
+    let overallSpentAmount = 0;
+    let overallRemainingAmount = 0;
+
+    for (const budget of budgetsWithNumbers) {
+      // Convert budget amount to default currency if needed
+      let budgetAmountInDefault = budget.amount;
+      if (budget.currency.code !== userDefaultCurrency) {
+        const conversionRate = await getConversionRate(
+          budget.currency.code,
+          userDefaultCurrency
+        );
+        budgetAmountInDefault = budget.amount * conversionRate;
+      }
+      overallBudgetAmount += budgetAmountInDefault;
+
+      // Sum expenses in default currency
+      let budgetSpent = 0;
+      for (const expense of budget.expenses) {
+        let expenseAmountInDefault = expense.amount;
+        if (expense.currency.code !== userDefaultCurrency) {
+          const conversionRate = await getConversionRate(
+            expense.currency.code,
+            userDefaultCurrency
+          );
+          expenseAmountInDefault = expense.amount * conversionRate;
+        }
+        budgetSpent += expenseAmountInDefault;
+      }
+      overallSpentAmount += budgetSpent;
+      overallRemainingAmount += budgetAmountInDefault - budgetSpent;
+    }
+
+    return {
+      budgets: budgetsWithNumbers,
+      overallBudgetAmount,
+      overallSpentAmount,
+      overallRemainingAmount,
+    };
+  } catch (error) {
+    throw new Error("Failed to fetch budget stats. Please try again.");
+  }
+};
+
+const getBudgetInsights = async (budgetId: string) => {
+  const user = await requireUser();
+  const userId = user.userId;
+
+  const token = await user.getToken();
+
+  if (!userId || !token) throw new Error("User not authenticated");
+
+  if (!budgetId) throw new Error("Budget ID is required");
+  try {
+    const budget = await prisma.budget.findUnique({
+      where: { id: budgetId, userId },
+    });
+    if (!budget) throw new Error("Budget not found");
+
+    const insights = await apiRequest<BudgetInsights>({
+      endpoint: `/insights/budget/${budgetId}`,
+      method: "GET",
+      init: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+
+    if (!insights.success) throw new Error(insights.error?.message);
+
+    return insights.data;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export {
+  createBudget,
+  type CreateBudgetResponse,
+  getBudgets,
+  getBudgetStats,
+  deleteBudget,
+  getBudgetInsights,
+};

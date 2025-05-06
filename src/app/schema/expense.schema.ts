@@ -14,10 +14,7 @@ export const ExpenseFormSchema = z.object({
         .refine((value) => value !== undefined && value !== null, {
             message: "Date is required",
         }),
-    amount: z.coerce
-        .number()
-        .min(0.01, "Amount must be greater than 0")
-        .positive("Amount must be positive"),
+    amount: z.coerce.number().nonnegative("Amount must be greater than 0"),
     currency: z.string().nonempty("Currency is required"),
     category: z.string().nonempty("Category is required"),
     description: z.string().optional(),

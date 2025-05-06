@@ -19,6 +19,7 @@ enum BudgetPeriodType {
   QUARTERLY
   SEMESTERLY
   YEARLY
+  CUSTOM
 }
 
 model ExpenseCategory {
@@ -75,10 +76,12 @@ model Expense {
   id                String          @id @default(uuid())
   userId            String
   user              User            @relation(fields: [userId], references: [id])
-  date             DateTime 
+  date              DateTime
   amount            Decimal
   currencyId        String
   currency          Currency        @relation(fields: [currencyId], references: [id])
+  budgetId          String?
+  budget            Budget?         @relation(fields: [budgetId], references: [id], onDelete: SetNull)
   expenseCategoryId String
   category          ExpenseCategory @relation(fields: [expenseCategoryId], references: [id])
   description       String?
@@ -90,20 +93,23 @@ model Expense {
 }
 
 model Budget {
-  id               String            @id @default(uuid())
+  id               String           @id @default(uuid())
   userId           String
-  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   budgetCategoryId String
-  category         BudgetCategory    @relation(fields: [budgetCategoryId], references: [id]) // <-- Relation to BudgetCategory
+  category         BudgetCategory   @relation(fields: [budgetCategoryId], references: [id])
   currencyId       String
-  currency         Currency          @relation(fields: [currencyId], references: [id])
+  currency         Currency         @relation(fields: [currencyId], references: [id])
   amount           Decimal
-  periodType       BudgetPeriodType? // <-- ENUM for predefined periods
+  periodType       BudgetPeriodType
+  description      String?
+  expenses         Expense[]
   startDate        DateTime
-  endDate          DateTime?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  endDate          DateTime
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
+  @@unique([userId, budgetCategoryId, startDate, endDate])
   @@index([userId])
-  @@index([budgetCategoryId]) // <-- Index on Foreign Key! (Important)
+  @@index([budgetCategoryId])
 }

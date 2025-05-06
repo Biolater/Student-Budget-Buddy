@@ -5,6 +5,7 @@ import { ArrowRight, PiggyBank, TrendingUp, Shield } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useAuth } from "@/app/contexts/AuthContext";
 
 const features = [
   {
@@ -89,7 +90,7 @@ export default function HeroSection() {
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: "spring", stiffness: 300 }}
               >
-                <Card className="p-6 bg-card text-card-foreground border-none shadow-lg">
+                <Card className="p-6 border-none shadow-lg">
                   <div className="flex flex-col items-center text-center">
                     <div
                       className={`flex h-16 w-16 items-center justify-center rounded-full ${feature.color}`}
