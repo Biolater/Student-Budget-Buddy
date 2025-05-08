@@ -40,7 +40,7 @@ export default function CreateBudgetDrawer() {
                   Create a new budget to manage your spending
                 </p>
               </DrawerHeader>
-              <DrawerBody>
+              <DrawerBody className="py-4">
                 <CreateBudgetForm onSuccess={onClose} />
               </DrawerBody>
             </>

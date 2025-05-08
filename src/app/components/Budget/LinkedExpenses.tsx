@@ -100,7 +100,7 @@ const LinkedExpenses: FC<LinkedExpensesProps> = ({ expenses, isLoading }) => {
                 {TABLE_COLUMNS.map(({ key }) => {
                   if (key === "date") {
                     return (
-                      <TableCell>
+                      <TableCell key={`${item.id}-${key}`}>
                         {item.date
                           ? new Date(item.date).toLocaleDateString()
                           : ""}
@@ -109,7 +109,7 @@ const LinkedExpenses: FC<LinkedExpensesProps> = ({ expenses, isLoading }) => {
                   }
                   if (key === "description") {
                     return (
-                      <TableCell>
+                      <TableCell key={`${item.id}-${key}`}>
                         {item.description && item.description.length > 24 ? (
                           <>
                             {showDescriptionFor.has(item.id)
@@ -134,7 +134,7 @@ const LinkedExpenses: FC<LinkedExpensesProps> = ({ expenses, isLoading }) => {
                     );
                   }
                   return (
-                    <TableCell>
+                    <TableCell key={`${item.id}-${key}`}>
                       {item.currency.symbol}
                       {item.amount}
                     </TableCell>

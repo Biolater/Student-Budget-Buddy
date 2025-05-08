@@ -32,7 +32,7 @@ type ViewBudgetDetailsDrawerProps = {
 };
 
 import { useBudgetStats } from "@/app/hooks/useBudgetStats";
-import useBudget from "@/app/hooks/useBudget";
+import { useBudgetInsights } from "@/app/hooks/useBudget";
 
 const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   open,
@@ -41,12 +41,11 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   onDeleteBudget,
 }) => {
   const { data: stats, isLoading, isError } = useBudgetStats(budget);
-  const { getBudgetInsights } = useBudget(budget?.userId ?? "");
   const {
     data: insights,
     isLoading: insightsLoading,
     isError: insightsError,
-  } = getBudgetInsights(budget?.id ?? "");
+  } = useBudgetInsights(budget?.id ?? "", budget?.userId ?? "");
 
   if (!budget) return null;
 
@@ -95,7 +94,9 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
           </Skeleton>
           <div>
             <Skeleton
-              className="rounded-lg mb-2"
+              className={cn("rounded-lg", {
+                "mb-2": isLoading && insightsLoading,
+              })}
               isLoaded={!isLoading && !insightsLoading}
             >
               <h3 className="font-semibold">{budget.category.name}</h3>
@@ -111,7 +112,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
             </Skeleton>
           </div>
         </DrawerHeader>
-        <DrawerBody className="gap-4 overflow-x-hidden">
+        <DrawerBody className="gap-4 overflow-x-hidden py-4">
           <div
             className={cn(
               "p-4 rounded-lg grid grid-cols-2 gap-4",

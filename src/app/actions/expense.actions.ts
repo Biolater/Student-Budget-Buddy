@@ -1,141 +1,146 @@
-'use server';
+"use server";
 
 import { prisma } from "@/app/lib/client";
-import { ServerExpenseData, ServerExpenseSchema } from "@/app/schema/expense.schema";
+import {
+  ServerExpenseData,
+  ServerExpenseSchema,
+} from "@/app/schema/expense.schema";
 import { requireUser } from "../utils/auth.utils";
 
 // Helper function to ensure the user is authenticated.
 
 const fetchExpensesByUserId = async (userId: string) => {
-    const user = await requireUser();
-    // Optionally, ensure the requested userId matches the authenticated user.
-    if (user.id !== userId) {
-        throw new Error("Unauthorized access");
-    }
+  const user = await requireUser();
+  if (!user || !user.userId) throw new Error("User not authenticated");
+  // Optionally, ensure the requested userId matches the authenticated user.
+  if (user.userId !== userId) {
+    throw new Error("Unauthorized access");
+  }
 
-    const expenses = await prisma.expense.findMany({
-        where: { userId },
-        orderBy: { date: "desc" },
-        include: {
-            category: true,
-            currency: true,
-        },
-    });
+  const expenses = await prisma.expense.findMany({
+    where: { userId },
+    orderBy: { date: "desc" },
+    include: {
+      category: true,
+      currency: true,
+    },
+  });
 
-    return expenses.map(expense => ({
-        ...expense,
-        amount: expense.amount.toNumber(),
-    }));
+  return expenses.map((expense) => ({
+    ...expense,
+    amount: expense.amount.toNumber(),
+  }));
 };
 
 const createExpense = async (data: ServerExpenseData) => {
-    const user = await requireUser();
-    const validatedData = ServerExpenseSchema.parse(data);
-    const { date, amount, currency, category, description } = validatedData;
+  const user = await requireUser();
+  if (!user || !user.userId) throw new Error("User not authenticated");
+  const validatedData = ServerExpenseSchema.parse(data);
+  const { date, amount, currency, category, description } = validatedData;
 
-    if (amount <= 0) throw new Error("Amount must be positive");
-    if (date > new Date()) throw new Error("Cannot create expenses for future dates");
+  if (amount <= 0) throw new Error("Amount must be positive");
+  if (date > new Date())
+    throw new Error("Cannot create expenses for future dates");
 
-    const budgetCategory = await prisma.budgetCategory.findUnique({
-        where: { id: category },
+  const budgetCategory = await prisma.budgetCategory.findUnique({
+    where: { id: category },
+  });
+  if (!budgetCategory) throw new Error("Invalid budget category");
+
+  const budgetCurrency = await prisma.currency.findUnique({
+    where: { id: currency },
+  });
+  if (!budgetCurrency) throw new Error("Invalid currency");
+
+  // Use transaction for consistency
+  return prisma.$transaction(async (tx) => {
+    // Find matching budget
+    const matchingBudget = await tx.budget.findFirst({
+      where: {
+        budgetCategoryId: category,
+        userId: user.userId,
+        startDate: { lte: date },
+        endDate: { gte: date },
+      },
     });
-    if (!budgetCategory) throw new Error("Invalid budget category");
 
-    const budgetCurrency = await prisma.currency.findUnique({
-        where: { id: currency },
+    // Check for duplicate
+    const potentialDuplicate = await tx.expense.findFirst({
+      where: {
+        userId: user.userId,
+        date: { equals: date },
+        amount: { equals: amount },
+        expenseCategoryId: category,
+        createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+      },
     });
-    if (!budgetCurrency) throw new Error("Invalid currency");
 
-    // Use transaction for consistency
-    return prisma.$transaction(async (tx) => {
-        // Find matching budget
-        const matchingBudget = await tx.budget.findFirst({
-            where: {
-                budgetCategoryId: category,
-                userId: user.id,
-                startDate: { lte: date },
-                endDate: { gte: date },
-            },
-        });
+    if (potentialDuplicate) throw new Error("Similar expense recently created");
 
-        // Check for duplicate
-        const potentialDuplicate = await tx.expense.findFirst({
-            where: {
-                userId: user.id,
-                date: { equals: date },
-                amount: { equals: amount },
-                expenseCategoryId: category,
-                createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) }
-            }
-        });
-
-        if (potentialDuplicate) throw new Error("Similar expense recently created");
-
-        // Create expense
-        const expense = await tx.expense.create({
-            data: {
-                date,
-                amount,
-                expenseCategoryId: category,
-                description,
-                currencyId: currency,
-                userId: user.id,
-                ...(matchingBudget ? { budgetId: matchingBudget.id } : {})
-            },
-        });
-
-        return { ...expense, amount: expense.amount.toNumber() };
+    // Create expense
+    const expense = await tx.expense.create({
+      data: {
+        date,
+        amount,
+        expenseCategoryId: category,
+        description,
+        currencyId: currency,
+        userId: user.userId,
+        ...(matchingBudget ? { budgetId: matchingBudget.id } : {}),
+      },
     });
+
+    return { ...expense, amount: expense.amount.toNumber() };
+  });
 };
 
 const deleteExpense = async (expenseId: string) => {
-    const user = await requireUser();
-    // Verify that the expense exists and belongs to the user.
-    const expense = await prisma.expense.findUnique({
-        where: { id: expenseId },
-    });
+  const user = await requireUser();
+  // Verify that the expense exists and belongs to the user.
+  const expense = await prisma.expense.findUnique({
+    where: { id: expenseId },
+  });
 
-    if (!expense) {
-        throw new Error("Expense not found");
-    }
-    if (expense.userId !== user.id) {
-        throw new Error("You are not authorized to delete this expense");
-    }
+  if (!expense) {
+    throw new Error("Expense not found");
+  }
+  if (expense.userId !== user.userId) {
+    throw new Error("You are not authorized to delete this expense");
+  }
 
-    await prisma.expense.delete({ where: { id: expenseId } });
-    return { success: true, message: "Expense deleted successfully" };
+  await prisma.expense.delete({ where: { id: expenseId } });
+  return { success: true, message: "Expense deleted successfully" };
 };
 
 const updateExpense = async (expenseId: string, data: ServerExpenseData) => {
-    const user = await requireUser();
-    const validatedData = ServerExpenseSchema.parse(data);
-    const { date, amount, currency, category, description } = validatedData;
+  const user = await requireUser();
+  const validatedData = ServerExpenseSchema.parse(data);
+  const { date, amount, currency, category, description } = validatedData;
 
-    // Verify that the expense exists and belongs to the user.
-    const expense = await prisma.expense.findUnique({ where: { id: expenseId } });
-    if (!expense) {
-        throw new Error("Expense not found");
-    }
-    if (expense.userId !== user.id) {
-        throw new Error("You are not authorized to update this expense");
-    }
+  // Verify that the expense exists and belongs to the user.
+  const expense = await prisma.expense.findUnique({ where: { id: expenseId } });
+  if (!expense) {
+    throw new Error("Expense not found");
+  }
+  if (expense.userId !== user.userId) {
+    throw new Error("You are not authorized to update this expense");
+  }
 
-    const updatedExpense = await prisma.expense.update({
-        where: { id: expenseId },
-        data: {
-            date,
-            amount,
-            expenseCategoryId: category,
-            description,
-            currencyId: currency,
-        },
-    });
+  const updatedExpense = await prisma.expense.update({
+    where: { id: expenseId },
+    data: {
+      date,
+      amount,
+      expenseCategoryId: category,
+      description,
+      currencyId: currency,
+    },
+  });
 
-    return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
+  return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
 };
 
 export { createExpense, fetchExpensesByUserId, deleteExpense, updateExpense };
-
 
 // // Types
 // export type Category =

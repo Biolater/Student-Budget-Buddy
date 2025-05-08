@@ -14,7 +14,7 @@ const APIS = () => {
       setToken(token as string);
     };
     fetchToken();
-  }, []);
+  }, [getToken]);
 
   const testApi = async () => {
     if (!token) return;

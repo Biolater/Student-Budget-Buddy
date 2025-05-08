@@ -42,7 +42,6 @@ const convertToBudgetCurrency = async (
   fromCurrency: string,
   toCurrency: string
 ) => {
-  console.log("CONVERTING", amount, fromCurrency, toCurrency);
   if (fromCurrency === toCurrency) return amount;
 
   const conversion_rate = await getConversionRate(fromCurrency, toCurrency);

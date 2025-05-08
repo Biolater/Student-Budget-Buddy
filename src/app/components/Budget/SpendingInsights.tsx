@@ -23,7 +23,7 @@ const SpendingInsights: FC<SpendingInsightsProps> = ({
         base: "overflow-visible",
       }}
     >
-      <CardHeader>
+      <CardHeader className="pb-0">
         <h3 className="font-semibold">Spending Insights</h3>
       </CardHeader>
       <CardBody className="flex flex-col gap-4">
@@ -41,7 +41,7 @@ const SpendingInsights: FC<SpendingInsightsProps> = ({
             </div>
           </div>
         </Skeleton>
-        
+
         <Skeleton className="rounded-lg" isLoaded={!isLoading}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ const SpendingInsights: FC<SpendingInsightsProps> = ({
             </div>
           </div>
         </Skeleton>
-        
+
         <Skeleton className="rounded-lg" isLoaded={!isLoading}>
           <div className="p-3 rounded-lg bg-blue-50 border border-blue-100">
             <div className="flex items-start gap-2">

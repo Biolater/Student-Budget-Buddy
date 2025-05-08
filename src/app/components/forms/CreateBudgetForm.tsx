@@ -28,10 +28,7 @@ interface CreateBudgetFormProps {
 const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
   const { userId } = useAuth();
 
-  if (!userId) {
-    return <CreateBudgetFormSkeleton />;
-  }
-
+  // Move all hooks before any conditional statements
   const {
     budgetCategoriesQuery: {
       data: categories,
@@ -46,7 +43,7 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
       isPending: currenciesLoading,
       error: currenciesError,
     },
-  } = useCurrency(userId);
+  } = useCurrency(userId || "");
 
   const {
     create: { mutateAsync: createBudget, isPending: createBudgetLoading },
@@ -69,6 +66,12 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
 
   const periodTypeValue = watch("periodType");
 
+  const onSubmit = async (data: CreateBudgetFormSchemaType) => {
+    await createBudget(data);
+    onSuccess?.();
+  };
+
+  // Move useEffect before any conditional returns
   useEffect(() => {
     // When period type changes, set the appropriate start/end dates
     if (periodTypeValue && periodTypeValue !== "CUSTOM") {
@@ -167,13 +170,13 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
     }
   }, [periodTypeValue, setValue]);
 
-  const onSubmit = async (data: CreateBudgetFormSchemaType) => {
-    await createBudget(data);
-    onSuccess?.();
-  };
+  // Add conditional returns after all hooks have been called
+  if (!userId) {
+    return <CreateBudgetFormSkeleton />;
+  }
 
   if (categoriesLoading || currenciesLoading) {
-    return <CreateBudgetFormSkeleton />
+    return <CreateBudgetFormSkeleton />;
   }
 
   if (categoriesError || currenciesError) {

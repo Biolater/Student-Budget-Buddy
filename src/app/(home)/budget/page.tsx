@@ -74,7 +74,7 @@ const Budget = () => {
     if (deleteBudgetError) {
       toast.error("Failed to delete budget. Please try again later.");
     }
-  }, [budgetsError, budgetStatsError, deleteBudgetError]);
+  }, [budgetsError, budgetStatsError, deleteBudgetError, defaultCurrencyError]);
 
   useEffect(() => {
     const fetchAllBudgetStats = async () => {
