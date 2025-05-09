@@ -1,6 +1,3 @@
-/* Import custom date picker styles */
-@import './datepicker-custom.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
