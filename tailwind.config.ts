@@ -37,42 +37,71 @@ const config: Config = {
       themes: {
         light: {
           colors: {
-            background: "hsl(0 0% 100%)",
-            foreground: "hsl(240 10% 4%)",
-            content1: "hsl(0 0% 100%)",
-            divider: "hsl(240 5% 90%)",
-            primary: "hsl(134 60% 53%)",
-            secondary: "hsl(240 5% 96%)",
-            content2: "hsl(220 14% 96%)",
-            content3: "hsl(220 9% 46%)",
+            background: "hsl(210 20% 98%)", // Softer off-white with a hint of blue
+            foreground: "hsl(240 10% 20%)", // Softer black for better contrast
+            content1: "hsl(210 30% 99%)", // Slightly blueish card background
+            divider: "hsl(240 5% 84%)", // Softer divider
+            primary: {
+              DEFAULT: "hsl(150 70% 30%)", // Darker green for buttons and UI elements
+              foreground: "hsl(0 0% 100%)", // White text for elements with primary background
+            },
+            secondary: "hsl(220 16% 94%)", // Slightly warmer secondary
+            content2: "hsl(220 20% 92%)", // Softer content background
+            content3: "hsl(220 15% 50%)", // Better contrast for tertiary content
+            content4: "hsl(220 25% 88%)", // Additional content layer
+            default: {
+              DEFAULT: "hsl(220 16% 96%)", // Default buttons/elements
+              foreground: "hsl(240 10% 20%)", // Default text on default backgrounds
+            },
+            focus: "hsl(215 100% 52% / 0.5)", // Focus ring color
+            overlay: "hsl(240 10% 8% / 0.5)", // Overlay for modals/popups
+            warning: {
+              DEFAULT: "hsl(38 95% 60%)", // Warning color
+              foreground: "hsl(38 10% 10%)", // Dark text on warning background
+            },
             danger: {
-              DEFAULT: "hsl(0 84% 60%)",
-              foreground: "hsl(0 72% 36%)",
+              DEFAULT: "hsl(0 65% 60%)",
+              foreground: "hsl(0 72% 95%)",
             },
             success: {
-              DEFAULT: "hsl(134 60% 53%)",
-              foreground: "hsl(134 60% 100%)",
+              DEFAULT: "hsl(150 55% 45%)",
+              foreground: "hsl(0 0% 100%)",
             },
           },
         },
         dark: {
           colors: {
-            background: "hsl(240 10% 4%)",
-            foreground: "hsl(0 0% 98%)",
-            content1: "hsl(240 4% 12%)",
-            divider: "hsl(240 4% 20%)",
-            primary: "hsl(134 60% 53%)",
-            secondary: "hsl(240 4% 16%)",
-            content2: "hsl(240 3% 26%)",
-            content3: "hsl(240 5% 65%)",
+            background: "hsl(240 10% 10%)", // Lighter dark background (not so harsh)
+            foreground: "hsl(0 0% 94%)", // Softer white for text
+            content1: "hsl(240 7% 16%)", // Slightly lighter card background
+            divider: "hsl(240 4% 24%)", // Slightly lighter divider
+            primary: {
+              DEFAULT: "hsl(150 70% 30%)", // Same darker green for consistency
+              foreground: "hsl(0 0% 100%)", // White text for elements with primary background
+            },
+            secondary: "hsl(240 5% 22%)", // Slightly lighter secondary
+            content2: "hsl(240 6% 30%)", // Lighter content background
+            content3: "hsl(240 5% 70%)", // Lighter tertiary content
+            content4: "hsl(240 5% 25%)", // Additional content layer (darker for dark mode)
+            default: {
+              DEFAULT: "hsl(240 5% 26%)", // Default buttons/elements in dark mode
+              foreground: "hsl(0 0% 94%)", // Light text on default backgrounds in dark mode
+            },
+            focus: "hsl(215 100% 65% / 0.5)", // Brighter focus ring for dark mode
+            overlay: "hsl(240 10% 5% / 0.7)", // Darker overlay for modals/popups in dark mode
+            warning: {
+              DEFAULT: "hsl(38 90% 55%)", // Slightly dimmer warning color for dark mode
+              foreground: "hsl(0 0% 10%)", // Dark text on warning background
+            },
             danger: {
-              DEFAULT: "hsl(0 72% 51%)",
+              DEFAULT: "hsl(0 65% 55%)", // Slightly softer red
               foreground: "hsl(0 85% 96%)",
             },
             success: {
-              DEFAULT: "hsl(134 60% 53%)",
-              foreground: "hsl(134 60% 100%)",
+              DEFAULT: "hsl(150 55% 45%)", // Same success color for consistency
+              foreground: "hsl(0 0% 100%)",
             },
+            
           },
         },
       },

@@ -19,7 +19,7 @@ const APIS = () => {
   const testApi = async () => {
     if (!token) return;
     const response = await fetch(
-      "http://localhost:3001/api/v1/insights/budget/3aa71b1b-e17d-45be-b6a1-f8744be6ad8d",
+      "http://localhost:3001/api/v1/dashboard/summary",
       {
         headers: {
           Authorization: `Bearer ${token}`,

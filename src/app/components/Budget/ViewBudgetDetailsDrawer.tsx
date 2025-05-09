@@ -95,7 +95,7 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
           <div>
             <Skeleton
               className={cn("rounded-lg", {
-                "mb-2": isLoading && insightsLoading,
+                "mb-2": isLoading || insightsLoading,
               })}
               isLoaded={!isLoading && !insightsLoading}
             >
@@ -219,14 +219,14 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
           </div>
           <LinkedExpenses
             expenses={budget.expenses}
-            isLoading={isLoading && insightsLoading}
+            isLoading={isLoading || insightsLoading}
           />
           <SpendingInsights
             dailyAverage={insights?.dailyAverage ?? 0}
             targetAverage={insights?.targetDailyAverage ?? 0}
             spendingTip={insights?.tip ?? ""}
             currencySymbol={budget.currency.symbol}
-            isLoading={isLoading && insightsLoading}
+            isLoading={isLoading || insightsLoading}
           />
           <Button
             onPress={() => onDeleteBudget(budget.id)}

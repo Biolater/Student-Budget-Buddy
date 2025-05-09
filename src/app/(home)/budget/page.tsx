@@ -173,7 +173,9 @@ const Budget = () => {
             </motion.div>
           ))
         ) : (
-          <p>No budgets found. Create one to get started!</p>
+          <p className="text-muted-foreground">
+            No budgets found. Create one to get started!
+          </p>
         )}
       </div>
       <ViewBudgetDetailsDrawer

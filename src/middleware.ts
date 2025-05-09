@@ -15,15 +15,26 @@ const isHomeRoute = createRouteMatcher(["/"]);
 export default clerkMiddleware(async (auth, request) => {
   const { userId, redirectToSignIn } = await auth();
 
-  if (isHomeRoute(request) && userId) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  // Handle home route
+  if (isHomeRoute(request)) {
+    if (userId) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
   }
 
-  if (!isPublicRoute(request) && !userId) {
-    return redirectToSignIn({
-      returnBackUrl: request.url,
-    });
+  // Handle protected routes
+  if (!isPublicRoute(request)) {
+    if (!userId) {
+      return redirectToSignIn({
+        returnBackUrl: request.url,
+      });
+    }
+    return NextResponse.next();
   }
+
+  // Allow access to public routes
+  return NextResponse.next();
 });
 
 export const config = {
