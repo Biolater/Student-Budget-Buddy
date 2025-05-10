@@ -10,6 +10,8 @@
   --warning-foreground: 24 100% 12%; /* Deep brown-black for contrast */
   --success: 134 60% 53%;
   --success-foreground: 134 60% 100%;
+  --border: 220 13% 91%;
+  --border-strong: 220 13% 75%;
 }
 
 .dark {
@@ -19,6 +21,8 @@
   --warning-foreground: 60 100% 98%; /* Near-white yellow for contrast */
   --success: 134 60% 53%;
   --success-foreground: 134 60% 100%;
+  --border: 240 3% 30%;
+  --border-strong: 240 5% 40%;
 }
 
 /* You can add custom global styles below */
@@ -37,6 +41,8 @@
 .expenses-date-range button[data-slot="selector-button"] > * {
   opacity: 0;
 }
+
+
 
 .container-padding {
   @apply py-4 md:py-8;

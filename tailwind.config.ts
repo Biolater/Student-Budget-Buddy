@@ -20,6 +20,10 @@ const config: Config = {
           lg: "2rem",
         },
       },
+      borderColor: {
+        DEFAULT: "hsl(var(--border))",
+        strong: "hsl(var(--border-strong))",
+      },
       // Add custom colors that use CSS variables
       colors: {
         muted: "hsl(var(--muted))",
@@ -101,7 +105,6 @@ const config: Config = {
               DEFAULT: "hsl(150 55% 45%)", // Same success color for consistency
               foreground: "hsl(0 0% 100%)",
             },
-            
           },
         },
       },

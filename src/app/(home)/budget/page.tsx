@@ -16,8 +16,6 @@ import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
 import BudgetCard from "@/app/components/Budget/BudgetCard";
 import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDrawer";
 import BudgetCardSkeleton from "@/app/components/Budget/BudgetCardSkeleton";
-// import { getCurrencies } from "@/app/lib/currencyUtils";
-// import { useCurrencies } from "@/hooks/useCurrency";
 
 import React, { useState } from "react";
 import ConfirmBudgetDeletionModal from "@/app/components/Budget/ConfirmBudgetDeletionModal";
