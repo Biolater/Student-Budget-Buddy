@@ -108,7 +108,7 @@ const Budget = () => {
   }
 
   return (
-    <main className="container mx-auto container-padding">
+    <main className="container container-padding">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
