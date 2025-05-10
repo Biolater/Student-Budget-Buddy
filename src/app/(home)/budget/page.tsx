@@ -16,8 +16,6 @@ import BudgetStatsOverview from "@/app/components/Budget/BudgetStatsOverview";
 import BudgetCard from "@/app/components/Budget/BudgetCard";
 import ViewBudgetDetailsDrawer from "@/app/components/Budget/ViewBudgetDetailsDrawer";
 import BudgetCardSkeleton from "@/app/components/Budget/BudgetCardSkeleton";
-// import { getCurrencies } from "@/app/lib/currencyUtils";
-// import { useCurrencies } from "@/hooks/useCurrency";
 
 import React, { useState } from "react";
 import ConfirmBudgetDeletionModal from "@/app/components/Budget/ConfirmBudgetDeletionModal";
@@ -74,7 +72,7 @@ const Budget = () => {
     if (deleteBudgetError) {
       toast.error("Failed to delete budget. Please try again later.");
     }
-  }, [budgetsError, budgetStatsError, deleteBudgetError]);
+  }, [budgetsError, budgetStatsError, deleteBudgetError, defaultCurrencyError]);
 
   useEffect(() => {
     const fetchAllBudgetStats = async () => {
@@ -110,7 +108,7 @@ const Budget = () => {
   }
 
   return (
-    <main className="container mx-auto container-padding">
+    <main className="container container-padding">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -173,7 +171,9 @@ const Budget = () => {
             </motion.div>
           ))
         ) : (
-          <p>No budgets found. Create one to get started!</p>
+          <p className="text-muted-foreground">
+            No budgets found. Create one to get started!
+          </p>
         )}
       </div>
       <ViewBudgetDetailsDrawer

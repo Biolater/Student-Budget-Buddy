@@ -6,9 +6,10 @@
       "turbo": "next dev --turbo",
       "dev": "next dev -H 0.0.0.0 --port 3000",
       "seed": "tsx .",
-      "build": "next build",
+      "build": "npm run prisma:generate && next build",
       "start": "next start",
-      "lint": "next lint"
+      "lint": "next lint",
+      "prisma:generate": "prisma generate --no-engine"
    },
    "dependencies": {
       "@clerk/nextjs": "^6.3.2",

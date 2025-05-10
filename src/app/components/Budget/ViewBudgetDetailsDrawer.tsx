@@ -13,6 +13,7 @@ import {
   Badge,
   Chip,
   CardFooter,
+  Skeleton,
 } from "@heroui/react";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 import { format } from "date-fns";
@@ -31,7 +32,7 @@ type ViewBudgetDetailsDrawerProps = {
 };
 
 import { useBudgetStats } from "@/app/hooks/useBudgetStats";
-import useBudget from "@/app/hooks/useBudget";
+import { useBudgetInsights } from "@/app/hooks/useBudget";
 
 const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   open,
@@ -40,37 +41,15 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
   onDeleteBudget,
 }) => {
   const { data: stats, isLoading, isError } = useBudgetStats(budget);
-  const { getBudgetInsights } = useBudget(budget?.userId ?? "");
   const {
     data: insights,
     isLoading: insightsLoading,
     isError: insightsError,
-  } = getBudgetInsights(budget?.id ?? "");
+  } = useBudgetInsights(budget?.id ?? "", budget?.userId ?? "");
 
   if (!budget) return null;
 
-  if (isLoading || insightsLoading) {
-    return (
-      <Drawer
-        isOpen={open}
-        onOpenChange={(isOpen) => {
-          if (!isOpen) onClose();
-        }}
-        motionProps={MOTION_PROPS}
-        backdrop="blur"
-      >
-        <DrawerContent aria-label="View Budget Details">
-          <DrawerHeader>Loading...</DrawerHeader>
-          <DrawerBody>
-            <div className="h-6 bg-muted rounded w-1/2 mb-2 animate-pulse" />
-            <div className="h-4 bg-muted rounded w-1/3 animate-pulse" />
-          </DrawerBody>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
-  if (isError || !stats || insightsError) {
+  if (isError || insightsError) {
     return (
       <Drawer
         isOpen={open}
@@ -87,8 +66,6 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
     );
   }
 
-  const { expensesTotal, budgetStatus } = stats;
-
   return (
     <Drawer
       isOpen={open}
@@ -100,31 +77,49 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
     >
       <DrawerContent aria-label="View Budget Details">
         <DrawerHeader className="flex items-center gap-3">
-          <div
-            className={cn(
-              "size-10 rounded-full flex items-center justify-center",
-              budgetStatus === "success" && "bg-success/20",
-              budgetStatus === "warning" && "bg-warning/20",
-              budgetStatus === "danger" && "bg-danger/20"
-            )}
+          <Skeleton
+            isLoaded={!isLoading && !insightsLoading}
+            className="rounded-full"
           >
-            {budget.category.icon}
-          </div>
+            <div
+              className={cn(
+                "size-10 rounded-full flex items-center justify-center",
+                stats?.budgetStatus === "success" && "bg-success/20",
+                stats?.budgetStatus === "warning" && "bg-warning/20",
+                stats?.budgetStatus === "danger" && "bg-danger/20"
+              )}
+            >
+              {budget.category.icon}
+            </div>
+          </Skeleton>
           <div>
-            <h3 className="font-semibold">{budget.category.name}</h3>
-            <p className="text-muted-foreground">
-              {format(new Date(budget.startDate), "MMM d")} -{" "}
-              {format(new Date(budget.endDate), "MMM d, yyyy")}
-            </p>
+            <Skeleton
+              className={cn("rounded-lg", {
+                "mb-2": isLoading || insightsLoading,
+              })}
+              isLoaded={!isLoading && !insightsLoading}
+            >
+              <h3 className="font-semibold">{budget.category.name}</h3>
+            </Skeleton>
+            <Skeleton
+              className="rounded-lg"
+              isLoaded={!isLoading && !insightsLoading}
+            >
+              <p className="text-muted-foreground">
+                {format(new Date(budget.startDate), "MMM d")} -{" "}
+                {format(new Date(budget.endDate), "MMM d, yyyy")}
+              </p>
+            </Skeleton>
           </div>
         </DrawerHeader>
-        <DrawerBody className="gap-4 overflow-x-hidden">
+        <DrawerBody className="gap-4 overflow-x-hidden py-4">
           <div
             className={cn(
               "p-4 rounded-lg grid grid-cols-2 gap-4",
-              budgetStatus === "success" && "bg-success/10",
-              budgetStatus === "warning" && "bg-warning/10",
-              budgetStatus === "danger" && "bg-danger/10"
+              stats?.budgetStatus === "success" && "bg-success/10",
+              stats?.budgetStatus === "warning" && "bg-warning/10",
+              stats?.budgetStatus === "danger" && "bg-danger/10",
+              isLoading && insightsLoading && "bg-muted animate-pulse"
             )}
           >
             <Card>
@@ -134,10 +129,15 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
               </CardHeader>
               <CardBody>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-2xl">
-                    {budget.currency.symbol}
-                    {budget.amount}
-                  </span>
+                  <Skeleton
+                    className="rounded-lg"
+                    isLoaded={!isLoading && !insightsLoading}
+                  >
+                    <span className="font-bold text-2xl">
+                      {budget.currency.symbol}
+                      {budget.amount}
+                    </span>
+                  </Skeleton>
                 </div>
               </CardBody>
             </Card>
@@ -148,49 +148,85 @@ const ViewBudgetDetailsDrawer: FC<ViewBudgetDetailsDrawerProps> = ({
               </CardHeader>
               <CardBody>
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-2xl">
-                    {budget.currency.symbol}
-                    {expensesTotal.toFixed(2)}
-                  </span>
+                  <Skeleton
+                    className="rounded-lg"
+                    isLoaded={!isLoading && !insightsLoading}
+                  >
+                    <span className="font-bold text-2xl">
+                      {budget.currency.symbol}
+                      {stats?.expensesTotal?.toFixed(2)}
+                    </span>
+                  </Skeleton>
                 </div>
               </CardBody>
             </Card>
             <Card className="col-span-2">
               <CardHeader className="text-muted-foreground justify-between pb-0">
                 <span>Budget Progress</span>
-                <Chip size="sm" color={budgetStatus ?? undefined}>
-                  {((expensesTotal / budget.amount) * 100).toFixed(2)}% used
-                </Chip>
+                <Skeleton
+                  className="rounded-lg"
+                  isLoaded={!isLoading && !insightsLoading}
+                >
+                  <Chip size="sm" color={stats?.budgetStatus ?? undefined}>
+                    {(
+                      ((stats?.expensesTotal ?? 0) / budget.amount) *
+                      100
+                    ).toFixed(2)}
+                    % used
+                  </Chip>
+                </Skeleton>
               </CardHeader>
               <CardBody>
-                <Progress
-                  aria-label={`budget progress for ${budget.category.name}`}
-                  value={
-                    budget.amount === 0
-                      ? 0
-                      : (expensesTotal / budget.amount) * 100
-                  }
-                  color={budgetStatus ?? undefined}
-                />
+                <Skeleton
+                  className="rounded-lg"
+                  isLoaded={!isLoading && !insightsLoading}
+                >
+                  <Progress
+                    aria-label={`budget progress for ${budget.category.name}`}
+                    value={
+                      budget.amount === 0
+                        ? 0
+                        : ((stats?.expensesTotal ?? 0) / budget.amount) * 100
+                    }
+                    color={stats?.budgetStatus ?? undefined}
+                  />
+                </Skeleton>
               </CardBody>
               <CardFooter className="flex items-center justify-between pt-0">
-                <span className="font-bold">
-                  {budget.currency.symbol}
-                  {expensesTotal.toFixed(2)} spent
-                </span>
-                <span className="font-bold">
-                  {budget.currency.symbol}
-                  {(budget.amount - expensesTotal).toFixed(2)} remaining
-                </span>
+                <Skeleton
+                  className="rounded-lg"
+                  isLoaded={!isLoading && !insightsLoading}
+                >
+                  <span className="font-bold">
+                    {budget.currency.symbol}
+                    {stats?.expensesTotal?.toFixed(2)} spent
+                  </span>
+                </Skeleton>
+                <Skeleton
+                  className="rounded-lg"
+                  isLoaded={!isLoading && !insightsLoading}
+                >
+                  <span className="font-bold">
+                    {budget.currency.symbol}
+                    {(budget.amount - (stats?.expensesTotal ?? 0)).toFixed(
+                      2
+                    )}{" "}
+                    remaining
+                  </span>
+                </Skeleton>
               </CardFooter>
             </Card>
           </div>
-          <LinkedExpenses expenses={budget.expenses} />
+          <LinkedExpenses
+            expenses={budget.expenses}
+            isLoading={isLoading || insightsLoading}
+          />
           <SpendingInsights
             dailyAverage={insights?.dailyAverage ?? 0}
             targetAverage={insights?.targetDailyAverage ?? 0}
             spendingTip={insights?.tip ?? ""}
             currencySymbol={budget.currency.symbol}
+            isLoading={isLoading || insightsLoading}
           />
           <Button
             onPress={() => onDeleteBudget(budget.id)}

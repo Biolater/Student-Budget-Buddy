@@ -17,6 +17,20 @@ import { type BudgetErrorType } from "@/app/types/errors";
 import { getLocalTimeZone } from "@internationalized/date";
 import { BudgetInsights } from "../types/budget.types";
 
+// Create a separate custom hook for budget insights
+export const useBudgetInsights = (budgetId: string, userId: string | undefined | null) => {
+  return useQuery<BudgetInsights | undefined, Error>({
+    queryKey: ["budgetInsights", budgetId],
+    retry: false,
+    queryFn: async () => {
+      const budgetInsights = await getBudgetInsightsAction(budgetId);
+      return budgetInsights ?? undefined;
+    },
+    enabled: !!budgetId && !!userId,
+    staleTime: 600000,
+  });
+};
+
 const BUDGET_MUTATION_KEY = (userId: string) => ["budgets", userId];
 
 const useBudget = (userId: string | undefined | null) => {
@@ -87,17 +101,7 @@ const useBudget = (userId: string | undefined | null) => {
         }
       },
     }),
-    getBudgetInsights: (budgetId: string) =>
-      useQuery<BudgetInsights | undefined, Error>({
-        queryKey: ["budgetInsights", budgetId],
-        retry: false,
-        queryFn: async () => {
-          const budgetInsights = await getBudgetInsightsAction(budgetId);
-          return budgetInsights ?? undefined;
-        },
-        enabled: !!budgetId && !!userId,
-        staleTime: 600000,
-      }),
+
   };
 };
 

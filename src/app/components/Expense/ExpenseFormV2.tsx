@@ -1,7 +1,5 @@
 "use client";
 
-import { useCategory } from "@/app/hooks/useCategory";
-import { useCurrency } from "@/app/hooks/useCurrency";
 import {
   ExpenseFormSchema,
   type ExpenseFormSchemaType,
@@ -20,15 +18,8 @@ import ExpenseFormSkeleton from "./ExpenseFormSkeleton";
 import useExpense from "@/app/hooks/useExpense";
 import { useAuth } from "@/app/contexts/AuthContext";
 import { FC } from "react";
-import { Currency } from "@prisma/client";
 import { ClientCurrencyItem } from "../../types/currency.types";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
-import {
-  toZoned,
-  now,
-  getLocalTimeZone,
-  parseAbsolute,
-} from "@internationalized/date";
 
 interface ExpenseFormProps {
   currencies: ClientCurrencyItem[];
@@ -49,6 +40,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
     control,
     formState: { errors },
     handleSubmit,
+    reset,
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
   });
@@ -60,6 +52,13 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
   const onSubmit = async (data: ExpenseFormSchemaType) => {
     try {
       await createExpense(data);
+      reset({
+        date: undefined,
+        currency: undefined,
+        category: undefined,
+        amount: undefined,
+        description: "",
+      });
     } catch (error) {
       console.error("Error creating expense:", error);
     }

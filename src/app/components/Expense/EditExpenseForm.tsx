@@ -71,15 +71,15 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
     }
   };
 
-  if (currenciesLoading || categoriesLoading) {
-    return <ExpenseFormSkeleton />;
-  }
-
   useEffect(() => {
     if (updateExpenseSuccess) {
       onSuccess?.();
     }
   }, [updateExpenseSuccess, onSuccess]);
+
+  if (currenciesLoading || categoriesLoading) {
+    return <ExpenseFormSkeleton />;
+  }
 
   return (
     <form

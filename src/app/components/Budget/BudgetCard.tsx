@@ -13,7 +13,10 @@ import type { ExtendedBudget } from "@/app/types/budget.types";
 
 interface BudgetCardProps {
   budget: ExtendedBudget;
-  stats: any;
+  stats: {
+    expensesTotal: number;
+    budgetStatus: "success" | "warning" | "danger";
+  } | null;
 }
 
 const BudgetCard = ({ budget, stats }: BudgetCardProps) => {

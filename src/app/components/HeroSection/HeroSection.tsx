@@ -6,6 +6,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useAuth } from "@/app/contexts/AuthContext";
+import "./grid-background.css";
 
 const features = [
   {
@@ -33,12 +34,19 @@ const features = [
 
 export default function HeroSection() {
   return (
-    <div className="min-h-screen  w-full dark:bg-black bg-white  dark:bg-grid-white/[0.2] bg-grid-black/[0.2] relative flex items-center justify-center">
+    <div className="min-h-screen w-full relative flex items-center justify-center overflow-hidden bg-dot-pattern">
+      {/* Grid background with animated gradient overlay */}
+      <div className="absolute inset-0 bg-grid-pattern dark:bg-grid-pattern-dark">
+        {/* Gradient spots for visual interest */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/20 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/20 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-4000"></div>
+      </div>
+
       {/* Radial gradient for the container to give a faded look */}
-      <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+      <div className="absolute pointer-events-none inset-0 flex items-center justify-center dark:bg-black/60 bg-white/60 [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
       <section className="text-foreground overflow-hidden relative">
-        <div className="absolute inset-0 z-0">
-        </div>
+        <div className="absolute inset-0 z-0"></div>
         <div className="container mx-auto px-4 py-16 sm:py-24 lg:py-32 relative z-10">
           <motion.div
             className="text-center"

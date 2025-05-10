@@ -58,6 +58,8 @@ export const NavbarComponent = () => {
       maxWidth="2xl"
       isBordered
       onMenuOpenChange={setIsMenuOpen}
+      isMenuOpen={isMenuOpen}
+      isBlurred
       classNames={{
         item: [
           "data-[active=true]:bg-secondary data-[active=true]:text-foreground",
@@ -82,10 +84,7 @@ export const NavbarComponent = () => {
 
       {/* Navigation links for signed in users */}
       {isLoaded && isSignedIn && (
-        <NavbarContent
-          className="hidden md:flex gap-4 grow"
-          justify="center"
-        >
+        <NavbarContent className="hidden md:flex gap-4 grow" justify="center">
           <LayoutGroup id="navbar-items">
             {navLinks.map((link) => (
               <li className="relative py-1.5" key={link.href}>
@@ -93,7 +92,9 @@ export const NavbarComponent = () => {
                   id={link.href}
                   href={link.href}
                   className={`relative transition-colors hover:text-foreground px-3 ${
-                    pathname === link.href ? "text-foreground" : "text-muted-foreground"
+                    pathname === link.href
+                      ? "text-foreground"
+                      : "text-muted-foreground"
                   } rounded-md text-sm z-10`}
                   aria-current={pathname === link.href ? "page" : undefined}
                 >
@@ -177,6 +178,7 @@ export const NavbarComponent = () => {
           isSignedIn &&
           navLinks.map((item, index) => (
             <NavbarMenuItem
+              onClick={() => setIsMenuOpen(false)}
               key={`${item.href}-${index}`}
               isActive={pathname === item.href}
             >
@@ -187,21 +189,17 @@ export const NavbarComponent = () => {
           ))}
         {!isSignedIn && (
           <>
-            <NavbarMenuItem>
-              <Link color="foreground" className="w-full" href="/about">
-                About
-              </Link>
-            </NavbarMenuItem>
-            <NavbarMenuItem>
-              <Link color="foreground" className="w-full" href="/features">
-                Features
-              </Link>
-            </NavbarMenuItem>
-            <NavbarMenuItem>
-              <Link color="foreground" className="w-full" href="/benefits">
-                Benefits
-              </Link>
-            </NavbarMenuItem>
+            {["About", "Features", "Benefits"].map((item) => (
+              <NavbarMenuItem onClick={() => setIsMenuOpen(false)} key={item}>
+                <Link
+                  color="foreground"
+                  className="w-full"
+                  href={`/${item.toLowerCase()}`}
+                >
+                  {item}
+                </Link>
+              </NavbarMenuItem>
+            ))}
             <Divider className="my-2" />
             <div className="flex flex-col sm:flex-row gap-2">
               <Button
@@ -228,3 +226,4 @@ export const NavbarComponent = () => {
     </Navbar>
   );
 };
+  
