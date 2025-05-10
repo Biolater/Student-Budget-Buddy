@@ -42,8 +42,6 @@
   opacity: 0;
 }
 
-
-
 .container-padding {
   @apply py-4 md:py-8;
 }

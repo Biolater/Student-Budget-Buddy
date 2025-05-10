@@ -48,6 +48,15 @@ const config: Config = {
             primary: {
               DEFAULT: "hsl(150 70% 30%)", // Darker green for buttons and UI elements
               foreground: "hsl(0 0% 100%)", // White text for elements with primary background
+              "100": "hsl(150 70% 95%)",
+              "200": "hsl(150 70% 85%)",
+              "300": "hsl(150 70% 70%)",
+              "400": "hsl(150 70% 55%)",
+              "500": "hsl(150 70% 45%)",
+              "600": "hsl(150 70% 30%)", // Same as DEFAULT
+              "700": "hsl(150 70% 25%)",
+              "800": "hsl(150 70% 20%)",
+              "900": "hsl(150 70% 15%)",
             },
             secondary: "hsl(220 16% 94%)", // Slightly warmer secondary
             content2: "hsl(220 20% 92%)", // Softer content background
@@ -57,7 +66,7 @@ const config: Config = {
               DEFAULT: "hsl(220 16% 96%)", // Default buttons/elements
               foreground: "hsl(240 10% 20%)", // Default text on default backgrounds
             },
-            focus: "hsl(215 100% 52% / 0.5)", // Focus ring color
+            focus: "hsl(150 70% 30% / 0.5)", // Focus ring color matching primary
             overlay: "hsl(240 10% 8% / 0.5)", // Overlay for modals/popups
             warning: {
               DEFAULT: "hsl(38 95% 60%)", // Warning color
@@ -82,6 +91,15 @@ const config: Config = {
             primary: {
               DEFAULT: "hsl(150 70% 30%)", // Same darker green for consistency
               foreground: "hsl(0 0% 100%)", // White text for elements with primary background
+              "100": "hsl(150 70% 90%)",
+              "200": "hsl(150 70% 80%)",
+              "300": "hsl(150 70% 65%)",
+              "400": "hsl(150 70% 50%)",
+              "500": "hsl(150 70% 40%)",
+              "600": "hsl(150 70% 30%)", // Same as DEFAULT
+              "700": "hsl(150 70% 25%)",
+              "800": "hsl(150 70% 20%)",
+              "900": "hsl(150 70% 15%)",
             },
             secondary: "hsl(240 5% 22%)", // Slightly lighter secondary
             content2: "hsl(240 6% 30%)", // Lighter content background
@@ -91,7 +109,7 @@ const config: Config = {
               DEFAULT: "hsl(240 5% 26%)", // Default buttons/elements in dark mode
               foreground: "hsl(0 0% 94%)", // Light text on default backgrounds in dark mode
             },
-            focus: "hsl(215 100% 65% / 0.5)", // Brighter focus ring for dark mode
+            focus: "hsl(150 70% 40% / 0.5)", // Focus ring matching primary but slightly brighter for dark mode
             overlay: "hsl(240 10% 5% / 0.7)", // Darker overlay for modals/popups in dark mode
             warning: {
               DEFAULT: "hsl(38 90% 55%)", // Slightly dimmer warning color for dark mode
