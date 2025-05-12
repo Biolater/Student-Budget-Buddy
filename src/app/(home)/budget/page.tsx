@@ -95,11 +95,6 @@ const Budget = () => {
     fetchAllBudgetStats();
   }, [budgets]);
 
-  useEffect(() => {
-    console.log("budgetsWithStats", budgetsWithStats);
-    console.log("selectedBudget", selectedBudget);
-  }, [budgetsWithStats, selectedBudget]);
-
   const handleDeleteBudget = async () => {
     if (!deleteBudgetId) return;
     await deleteBudget(deleteBudgetId);
