@@ -11,6 +11,7 @@ const APIS = () => {
   useEffect(() => {
     const fetchToken = async () => {
       const token = await getToken();
+      console.log(token);
       setToken(token as string);
     };
     fetchToken();
@@ -19,7 +20,7 @@ const APIS = () => {
   const testApi = async () => {
     if (!token) return;
     const response = await fetch(
-      "http://localhost:3001/api/v1/dashboard/summary",
+      "http://localhost:3001/api/v1/dashboard/spending-trends",
       {
         headers: {
           Authorization: `Bearer ${token}`,
