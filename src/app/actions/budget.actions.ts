@@ -268,34 +268,63 @@ const getBudgetStats = async () => {
 };
 
 const getBudgetInsights = async (budgetId: string) => {
-  const user = await requireUser();
-  const userId = user.userId;
-
-  const token = await user.getToken();
-
-  if (!userId || !token) throw new Error("User not authenticated");
-
-  if (!budgetId) throw new Error("Budget ID is required");
+  console.log('[Budget Insights] Function called with budgetId:', budgetId);
   try {
-    const budget = await prisma.budget.findUnique({
-      where: { id: budgetId, userId },
-    });
-    if (!budget) throw new Error("Budget not found");
+    const user = await requireUser();
+    const userId = user.userId;
+    console.log('[Budget Insights] User ID:', userId);
 
-    const insights = await apiRequest<BudgetInsights>({
-      endpoint: `/insights/budget/${budgetId}`,
-      method: "GET",
-      init: {
-        headers: {
-          Authorization: `Bearer ${token}`,
+    const token = await user.getToken();
+    console.log('[Budget Insights] Token obtained:', !!token);
+
+    if (!userId || !token) {
+      console.log('[Budget Insights] Authentication error - missing userId or token');
+      throw new Error("User not authenticated");
+    }
+
+    if (!budgetId) {
+      console.log('[Budget Insights] Missing budgetId');
+      throw new Error("Budget ID is required");
+    }
+
+    try {
+      console.log('[Budget Insights] Checking if budget exists in database');
+      const budget = await prisma.budget.findUnique({
+        where: { id: budgetId, userId },
+      });
+      
+      if (!budget) {
+        console.log('[Budget Insights] Budget not found in database');
+        throw new Error("Budget not found");
+      }
+      console.log('[Budget Insights] Budget found in database');
+
+      console.log('[Budget Insights] Making API request to insights endpoint');
+      const insights = await apiRequest<BudgetInsights>({
+        endpoint: `/insights/budget/${budgetId}`,
+        method: "GET",
+        init: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      },
-    });
+      });
 
-    if (!insights.success) throw new Error(insights.error?.message);
+      console.log('[Budget Insights] API response received:', { success: insights.success });
+      
+      if (!insights.success) {
+        console.log('[Budget Insights] API request failed:', insights.error);
+        throw new Error(insights.error?.message);
+      }
 
-    return insights.data;
+      console.log('[Budget Insights] Returning insights data');
+      return insights.data;
+    } catch (error) {
+      console.log('[Budget Insights] Error in budget lookup or API request:', error instanceof Error ? error.message : error);
+      throw error;
+    }
   } catch (error) {
+    console.log('[Budget Insights] Top-level error:', error instanceof Error ? error.message : error);
     throw error;
   }
 };
