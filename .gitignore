@@ -47,3 +47,5 @@ next-env.d.ts
 /.clerk/
 
 certificates
+/src/app/testApis
+src/app/testApis/page.tsx
