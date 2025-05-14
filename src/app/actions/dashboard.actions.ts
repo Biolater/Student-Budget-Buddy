@@ -25,7 +25,7 @@ export async function fetchFinancialOverviewData(
       },
     });
 
-    return summary;
+    return summary.data;
   } catch (error) {
     throw error;
   }

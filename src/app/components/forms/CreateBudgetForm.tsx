@@ -43,7 +43,7 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
       isPending: currenciesLoading,
       error: currenciesError,
     },
-  } = useCurrency(userId || "");
+  } = useCurrency();
 
   const {
     create: { mutateAsync: createBudget, isPending: createBudgetLoading },

@@ -1,4 +1,5 @@
 "use client";
+
 import DashboardSkeleton from "@/app/components/Dashboard/DashboardSkeleton";
 import FinancialOverview from "@/app/components/Dashboard/FinancialOverview";
 

@@ -37,7 +37,7 @@ const Budget = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteBudgetId, setDeleteBudgetId] = useState<string | null>(null);
   const budgetHook = useBudget(userId);
-  const currencyHook = useCurrency(userId);
+  const currencyHook = useCurrency();
 
   const handleDrawerDelete = (budgetId: string) => {
     setDeleteBudgetId(budgetId);

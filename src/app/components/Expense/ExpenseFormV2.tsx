@@ -5,6 +5,7 @@ import {
   type ExpenseFormSchemaType,
 } from "@/app/schema/expense.schema";
 import {
+  addToast,
   Button,
   DatePicker,
   Input,
@@ -17,7 +18,7 @@ import { Controller, useForm } from "react-hook-form";
 import ExpenseFormSkeleton from "./ExpenseFormSkeleton";
 import useExpense from "@/app/hooks/useExpense";
 import { useAuth } from "@/app/contexts/AuthContext";
-import { FC } from "react";
+import { type FC, useEffect } from "react";
 import { ClientCurrencyItem } from "../../types/currency.types";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
 
@@ -46,12 +47,18 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
   });
 
   const {
-    create: { mutateAsync: createExpense, isPending: createExpenseLoading },
+    create: {
+      mutateAsync: createExpense,
+      isPending: createExpenseLoading,
+    },
   } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
     try {
+      // Attempt to create the expense
       await createExpense(data);
+      
+      // Reset form on success
       reset({
         date: undefined,
         currency: undefined,
@@ -59,8 +66,36 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
         amount: undefined,
         description: "",
       });
+      
+      // Show success message
+      addToast({
+        title: "Success",
+        description: "Expense created successfully",
+        color: "success",
+      });
     } catch (error) {
-      console.error("Error creating expense:", error);
+      // Extract error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : "Failed to create expense";
+      
+      // Show error in toast notification
+      addToast({
+        title: "Error Creating Expense",
+        description: errorMessage,
+        color: "danger",
+      });
+      
+      console.error("Error in form submission:", error);
+      
+      // Special handling for common errors
+      if (errorMessage.includes("future dates")) {
+        addToast({
+          title: "Date Error",
+          description: "Please select a date in the past",
+          color: "warning",
+        });
+      }
     }
   };
 

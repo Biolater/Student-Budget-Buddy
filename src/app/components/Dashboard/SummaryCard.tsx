@@ -1,10 +1,11 @@
 import { FC } from "react";
-import { Card, CardBody, CardHeader } from "@heroui/react";
+import { Card, CardBody, CardHeader, Skeleton } from "@heroui/react";
 
 interface SummaryCardProps {
   title: string;
   currencySymbol: string;
   amount: number;
+  isLoading: boolean;
   icon: React.ReactNode;
 }
 
@@ -12,6 +13,7 @@ const SummaryCard: FC<SummaryCardProps> = ({
   title,
   currencySymbol,
   amount,
+  isLoading,
   icon,
 }) => {
   return (
@@ -24,8 +26,10 @@ const SummaryCard: FC<SummaryCardProps> = ({
           </div>
         </div>
         <div className="flex items-center text-3xl">
-          <span className="text-2xl font-bold">{currencySymbol}</span>
-          <span className="text-2xl font-bold">{amount.toFixed(2)}</span>
+          <Skeleton className="rounded-lg" isLoaded={!isLoading}>
+            <span className="text-2xl font-bold">{currencySymbol}</span>
+            <span className="text-2xl font-bold">{amount.toFixed(2)}</span>
+          </Skeleton>
         </div>
       </CardBody>
     </Card>
