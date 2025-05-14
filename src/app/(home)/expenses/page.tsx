@@ -40,7 +40,7 @@ const ExpenseTracker = () => {
       isPending: currenciesLoading,
       error: currenciesError,
     },
-  } = useCurrency(userId ?? "");
+  } = useCurrency();
 
   const {
     expenseCategoriesQuery: {

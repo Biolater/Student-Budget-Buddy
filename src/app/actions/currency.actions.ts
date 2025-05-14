@@ -2,6 +2,7 @@
 
 import { prisma } from "@/app/lib/client";
 import { ConversionRateResponse } from "../types/currency.types";
+import { requireUser } from "../utils/auth.utils";
 
 export async function fetchCurrenciesForSelect() {
   try {
@@ -18,15 +19,15 @@ export async function fetchCurrenciesForSelect() {
       },
     });
   } catch (error) {
-    console.error("Failed to fetch currencies:", error);
-    throw new Error("Could not fetch currencies");
+    throw error
   }
 }
 
-export async function fetchDefaultUserCurrency(userId: string) {
+export async function fetchDefaultUserCurrency() {
   try {
+    const currentUser = await requireUser();
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: currentUser.userId! },
       select: {
         baseCurrency: {
           select: {
@@ -41,8 +42,7 @@ export async function fetchDefaultUserCurrency(userId: string) {
 
     return user?.baseCurrency || null;
   } catch (error) {
-    console.error("Failed to fetch default user currency:", error);
-    throw new Error("Could not fetch default user currency");
+    throw error
   }
 }
 
@@ -68,7 +68,6 @@ export async function getConversionRate(
 
     return data.conversion_rates[targetCurrency];
   } catch (error) {
-    console.log("CURRENCY ERROR", error)
-    throw new Error("Could not fetch conversion rate");
+    throw error
   }
 }
