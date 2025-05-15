@@ -14,10 +14,6 @@ export const useDashboard = () => {
       queryKey: ["getFinancialOverviewData", timePeriod],
       queryFn: () => fetchFinancialOverviewData({ timePeriod }),
       enabled: !!timePeriod,
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-      refetchInterval: false,
-      retry: 1,
     });
   };
 
