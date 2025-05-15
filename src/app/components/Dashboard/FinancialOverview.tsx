@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronsUpDown, TrendingUp } from "lucide-react";
@@ -10,6 +12,9 @@ import {
   SharedSelection,
   addToast,
 } from "@heroui/react";
+
+// Import error handling utilities
+import { getApiErrorDetails } from "@/app/types/error.types";
 
 // App imports
 import { useDashboard } from "@/app/hooks/useDashboard";
@@ -88,16 +93,29 @@ const FinancialOverview = () => {
   useEffect(() => {
     // Show error messages if API calls fail
     if (financialOverviewError) {
+      // Extract error details using our type-safe utility function
+      const { code, isApiError } = getApiErrorDetails(financialOverviewError);
+
+      console.error("Financial Overview Error:", {
+        message: financialOverviewError.message,
+        code,
+        isApiError,
+      });
+
+      // Display toast with error information
       addToast({
-        title: "Error fetching financial overview data",
+        // Use a more friendly title with error code for debugging
+        title: `Error Loading Financial Data ${isApiError ? `(${code})` : ""}`,
+        // Show the actual error message
         description: financialOverviewError.message,
+        // Use danger color that matches our primary dark green color scheme
         color: "danger",
       });
     }
 
     if (defaultUserCurrencyError) {
       addToast({
-        title: "Error fetching default user currency",
+        title: "Error fetching currency settings",
         description: defaultUserCurrencyError.message,
         color: "danger",
       });

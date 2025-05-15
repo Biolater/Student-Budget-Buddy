@@ -6,11 +6,16 @@ import {
   FetchFinancialOverviewDataParams,
   SummaryData,
 } from "../types/dashboard.types";
+import { ResponseHandler } from "../lib/ResponseHandler";
 
+/**
+ * Alternative implementation using ResponseHandler.execute method
+ * This approach reduces boilerplate with a cleaner OOP pattern
+ */
 export async function fetchFinancialOverviewData(
   params: FetchFinancialOverviewDataParams
 ) {
-  try {
+  return ResponseHandler.execute(async () => {
     const user = await requireUser();
     const token = await user.getToken();
     const { timePeriod } = params;
@@ -25,10 +30,10 @@ export async function fetchFinancialOverviewData(
       },
     });
 
-    console.log("this is the summary", summary);
+    if (!summary.success || summary.data === null) {
+      throw new Error(summary.error?.message || "Data not available");
+    }
 
     return summary.data;
-  } catch (error) {
-    throw error;
-  }
+  });
 }
