@@ -20,7 +20,7 @@ const APIS = () => {
   const testApi = async () => {
     if (!token) return;
     const response = await fetch(
-      "http://localhost:3001/api/v1/dashboard/spending-trends",
+      "http://localhost:3001/api/v1/dashboard/spending-by-category",
       {
         headers: {
           Authorization: `Bearer ${token}`,

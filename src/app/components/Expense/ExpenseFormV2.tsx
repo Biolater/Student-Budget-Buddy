@@ -21,85 +21,96 @@ import { useAuth } from "@/app/contexts/AuthContext";
 import { type FC, useEffect } from "react";
 import { ClientCurrencyItem } from "../../types/currency.types";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
+import { getLocalTimeZone, now, today } from "@internationalized/date";
 
 interface ExpenseFormProps {
   currencies: ClientCurrencyItem[];
   categories: ExpenseCategoryRef[];
-  categoriesLoading: boolean;
-  currenciesLoading: boolean;
+  loading: boolean;
+  defaultUserCurrency: ClientCurrencyItem | null | undefined;
 }
 
 const ExpenseFormV2: FC<ExpenseFormProps> = ({
   currencies,
   categories,
-  currenciesLoading,
-  categoriesLoading,
+  loading,
+  defaultUserCurrency,
 }) => {
   const { userId } = useAuth();
   const {
     watch,
     control,
-    formState: { errors },
+    formState: { errors, defaultValues },
     handleSubmit,
     reset,
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
+    // Start with empty defaults to avoid uncontrolled to controlled warnings
+    defaultValues: {
+      currency: undefined,
+      date: now(getLocalTimeZone()),
+      category: undefined,
+      amount: undefined,
+      description: "",
+    },
   });
 
   const {
     create: {
       mutateAsync: createExpense,
       isPending: createExpenseLoading,
+      error: createExpenseError,
+      isSuccess: createExpenseSuccess,
     },
   } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
-    try {
-      // Attempt to create the expense
-      await createExpense(data);
-      
-      // Reset form on success
-      reset({
-        date: undefined,
-        currency: undefined,
-        category: undefined,
-        amount: undefined,
-        description: "",
-      });
-      
-      // Show success message
+    // Attempt to create the expense
+    await createExpense(data);
+
+    if (createExpenseSuccess) {
       addToast({
         title: "Success",
-        description: "Expense created successfully",
+        description: "Expense created successfully.",
         color: "success",
       });
-    } catch (error) {
-      // Extract error message
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to create expense";
-      
-      // Show error in toast notification
-      addToast({
-        title: "Error Creating Expense",
-        description: errorMessage,
-        color: "danger",
-      });
-      
-      console.error("Error in form submission:", error);
-      
-      // Special handling for common errors
-      if (errorMessage.includes("future dates")) {
-        addToast({
-          title: "Date Error",
-          description: "Please select a date in the past",
-          color: "warning",
-        });
-      }
     }
+
+    // Reset form on success
+    reset({
+      date: undefined,
+      currency: undefined,
+      category: undefined,
+      amount: undefined,
+      description: "",
+    });
   };
 
-  if (currenciesLoading || categoriesLoading) {
+  // Effect to handle errors
+  useEffect(() => {
+    if (createExpenseError) {
+      addToast({
+        title: "Error",
+        description: "Failed to create expense.",
+        color: "danger",
+      });
+    }
+  }, [createExpenseError]);
+
+  // Effect to set default currency when it becomes available
+  useEffect(() => {
+    if (defaultUserCurrency?.id) {
+      reset(
+        { currency: defaultUserCurrency.id, date: now(getLocalTimeZone()) },
+        {
+          keepDefaultValues: true, // Preserves other default values
+          keepDirty: false, // Marks the field as pristine (not user-modified)
+        }
+      );
+    }
+  }, [defaultUserCurrency, reset]);
+
+  if (loading) {
     return <ExpenseFormSkeleton />;
   }
 
@@ -122,6 +133,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   onChange={field.onChange}
                   isInvalid={!!errors.date}
                   value={field.value}
+                  maxValue={today(getLocalTimeZone())}
                   isRequired
                 />
               )}

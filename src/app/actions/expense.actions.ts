@@ -6,11 +6,23 @@ import {
   ServerExpenseSchema,
 } from "@/app/schema/expense.schema";
 import { requireUser } from "../utils/auth.utils";
+import { ResponseHandler } from "../lib/ResponseHandler";
+import ApiResponse from "../types/api-response.types";
+import { Expense, ExpenseCategory, Currency } from "@prisma/client";
+import { ExtendedExpense } from "../types/expense.types";
+
+// Define a type for expense data returned from the create operation
+type CreatedExpense = Omit<Expense, "amount"> & { amount: number };
+
+// Export the type for reuse in other files
+export type { CreatedExpense };
 
 // Helper function to ensure the user is authenticated.
 
-const fetchExpensesByUserId = async (userId: string) => {
-  try {
+const fetchExpensesByUserId = async (
+  userId: string
+): Promise<ApiResponse<ExtendedExpense[]>> => {
+  return ResponseHandler.execute<ExtendedExpense[]>(async () => {
     const user = await requireUser();
     if (!user || !user.userId) throw new Error("User not authenticated");
     // Optionally, ensure the requested userId matches the authenticated user.
@@ -31,14 +43,13 @@ const fetchExpensesByUserId = async (userId: string) => {
       ...expense,
       amount: expense.amount.toNumber(),
     }));
-  } catch (error) {
-    console.error("Error fetching expenses:", error);
-    throw error;
-  }
+  });
 };
 
-const createExpense = async (data: ServerExpenseData) => {
-  try {
+const createExpense = async (
+  data: ServerExpenseData
+): Promise<ApiResponse<CreatedExpense>> => {
+  return ResponseHandler.execute<CreatedExpense>(async () => {
     const user = await requireUser();
     if (!user || !user.userId) throw new Error("User not authenticated");
     const validatedData = ServerExpenseSchema.parse(data);
@@ -59,7 +70,7 @@ const createExpense = async (data: ServerExpenseData) => {
     if (!budgetCurrency) throw Error("Invalid currency");
 
     // Use transaction for consistency
-    return prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx) => {
       // Find matching budget
       const matchingBudget = await tx.budget.findFirst({
         where: {
@@ -98,43 +109,42 @@ const createExpense = async (data: ServerExpenseData) => {
 
       return { ...expense, amount: expense.amount.toNumber() };
     });
-  } catch (error) {
-    console.error("Error creating expense:", error);
-    throw error;
-  }
+  });
 };
 
-const deleteExpense = async (expenseId: string) => {
-  try {
+const deleteExpense = async (expenseId: string): Promise<ApiResponse<Expense>> => {
+  return ResponseHandler.execute<Expense>(async () => {
     const user = await requireUser();
-    // Verify that the expense exists and belongs to the user.
+    if (!user) throw new Error("User not authenticated");
+
+    // Safety check - only delete expense that belongs to the user
     const expense = await prisma.expense.findUnique({
       where: { id: expenseId },
     });
 
-    if (!expense) {
-      throw Error("Expense not found");
-    }
-    if (expense.userId !== user.userId) {
-      throw Error("You are not authorized to delete this expense");
-    }
+    if (!expense) throw new Error("Expense not found");
+    if (expense.userId !== user.userId)
+      throw new Error("Not authorized to delete this expense");
 
-    await prisma.expense.delete({ where: { id: expenseId } });
-    return { success: true, message: "Expense deleted successfully" };
-  } catch (error) {
-    console.error("Error deleting expense:", error);
-    throw error;
-  }
+    return await prisma.expense.delete({
+      where: { id: expenseId },
+    });
+  });
 };
 
-const updateExpense = async (expenseId: string, data: ServerExpenseData) => {
-  try {
+const updateExpense = async (
+  expenseId: string,
+  data: ServerExpenseData
+): Promise<ApiResponse<CreatedExpense>> => {
+  return ResponseHandler.execute<CreatedExpense>(async () => {
     const user = await requireUser();
     const validatedData = ServerExpenseSchema.parse(data);
     const { date, amount, currency, category, description } = validatedData;
 
     // Verify that the expense exists and belongs to the user.
-    const expense = await prisma.expense.findUnique({ where: { id: expenseId } });
+    const expense = await prisma.expense.findUnique({
+      where: { id: expenseId },
+    });
     if (!expense) {
       throw Error("Expense not found");
     }
@@ -154,11 +164,7 @@ const updateExpense = async (expenseId: string, data: ServerExpenseData) => {
     });
 
     return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
-  } catch (error) {
-    console.error("Error updating expense:", error);
-    throw error;
-  }
+  });
 };
 
 export { createExpense, fetchExpensesByUserId, deleteExpense, updateExpense };
-

@@ -5,65 +5,39 @@ import {
   deleteExpense,
   fetchExpensesByUserId,
   updateExpense,
+  CreatedExpense,
 } from "@/app/actions/expense.actions";
 import { ExpenseFormSchemaType } from "@/app/schema/expense.schema";
 import { addToast } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
+import ApiResponse from "@/app/types/api-response.types";
+import { ExtendedExpense } from "../types/expense.types";
+import { Expense } from "@prisma/client";
 
 // Generate a dynamic query key based on userId.
 const EXPENSE_QUERY_KEY = (userId: string) => ["expenses", userId];
 
-/**
- * Custom hook for expense operations with proper error handling
- */
-// Wrap the server action with client-side error handling
-const createExpenseWithErrorHandling = async (data: ExpenseFormSchemaType) => {
-  try {
-    const result = await createExpense({
-      ...data,
-      date: data.date.toDate(getLocalTimeZone()),
-    });
-    return { success: true, data: result };
-  } catch (error) {
-    // Convert the error to a plain object for serialization
-    let errorMessage = "Unknown error occurred";
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    } else if (typeof error === 'object' && error !== null) {
-      const errorObj = error as { message?: string };
-      if (errorObj.message) {
-        errorMessage = String(errorObj.message);
-      }
-    }
-    
-    // Return structured error
-    return { 
-      success: false, 
-      error: errorMessage 
-    };
-  }
-};
-
 const useExpense = (userId: string | undefined | null) => {
   return {
-    create: useMutation({
+    create: useMutation<CreatedExpense, Error, ExpenseFormSchemaType>({
       mutationFn: async (data: ExpenseFormSchemaType) => {
-        const result = await createExpenseWithErrorHandling(data);
-        
-        if (!result.success) {
+        const response = await createExpense({
+          ...data,
+          date: data.date.toDate(getLocalTimeZone()),
+        });
+
+        if (!response.success) {
           // Explicitly throw client-side error with message
-          throw new Error(result.error);
+          throw new Error(
+            response.error?.message || "Failed to create expense"
+          );
         }
-        
-        return result.data;
+
+        // Non-null assertion since we check success above
+        return response.data!;
       },
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onSuccess: () => {
-        addToast({
-          title: "Success",
-          description: "Expense created successfully",
-          color: "success",
-        });
         if (userId) {
           queryClient.invalidateQueries({
             queryKey: EXPENSE_QUERY_KEY(userId),
@@ -71,18 +45,33 @@ const useExpense = (userId: string | undefined | null) => {
         }
       },
     }),
-    fetchExpenses: useQuery({
+    fetchExpenses: useQuery<ExtendedExpense[]>({
       queryKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       queryFn: async () => {
-        if (!userId) return []; // Default to an empty array.
-        const expenses = await fetchExpensesByUserId(userId);
-        return expenses ?? [];
+        if (!userId) return [] as ExtendedExpense[]; // Default to an empty array
+        const response = await fetchExpensesByUserId(userId);
+        if (!response.success) {
+          throw new Error(
+            response.error?.message || "Failed to fetch expenses"
+          );
+        }
+        // Non-null assertion since we check success above
+        return response.data!;
       },
       enabled: !!userId,
       staleTime: 600000, // 10 minutes.
     }),
-    delete: useMutation({
-      mutationFn: (expenseId: string) => deleteExpense(expenseId),
+    delete: useMutation<Expense, Error, string>({
+      mutationFn: async (expenseId: string) => {
+        const response = await deleteExpense(expenseId);
+        if (!response.success) {
+          throw new Error(
+            response.error?.message || "Failed to delete expense"
+          );
+        }
+        // Non-null assertion since we check success above
+        return response.data!;
+      },
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onSuccess: () => {
         addToast({
@@ -97,18 +86,28 @@ const useExpense = (userId: string | undefined | null) => {
         }
       },
     }),
-    update: useMutation({
-      mutationFn: ({
+    update: useMutation<CreatedExpense, Error, {
+      expenseId: string;
+      data: ExpenseFormSchemaType;
+    }>({
+      mutationFn: async ({
         expenseId,
         data,
-      }: {
-        expenseId: string;
-        data: ExpenseFormSchemaType;
-      }) =>
-        updateExpense(expenseId, {
+      }) => {
+        const response = await updateExpense(expenseId, {
           ...data,
           date: data.date.toDate(getLocalTimeZone()),
-        }),
+        });
+
+        if (!response.success) {
+          throw new Error(
+            response.error?.message || "Failed to update expense"
+          );
+        }
+
+        // Non-null assertion since we check success above
+        return response.data!;
+      },
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onSuccess: () => {
         addToast({
