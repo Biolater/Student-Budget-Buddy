@@ -55,6 +55,8 @@ const createBudget = async (
     throw new Error("Start date must be before end date");
   }
 
+  throw new Error("Budget creation failed");
+
   // Create the budget and update existing expenses in a single transaction
   return prisma.$transaction(async (tx) => {
     // 1. Create the budget
@@ -283,18 +285,18 @@ const getBudgetInsights = async (budgetId: string) => {
     if (!budget) throw new Error("Budget not found");
 
     const insights = await apiRequest<BudgetInsights>({
-        endpoint: `/insights/budget/${budgetId}`,
-        method: "GET",
-        init: {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      endpoint: `/insights/budget/${budgetId}`,
+      method: "GET",
+      init: {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      });
+      },
+    });
 
-      if (!insights.success) throw new Error(insights.error?.message);
+    if (!insights.success) throw new Error(insights.error?.message);
 
-      return insights.data;
+    return insights.data;
   } catch (error) {
     throw error;
   }

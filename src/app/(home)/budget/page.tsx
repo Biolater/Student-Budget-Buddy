@@ -53,7 +53,6 @@ const Budget = () => {
     deleteBudget: {
       mutateAsync: deleteBudget,
       isPending: deleteBudgetLoading,
-      isError: deleteBudgetError,
     },
   } = budgetHook;
 
@@ -69,10 +68,7 @@ const Budget = () => {
     if (budgetsError || budgetStatsError || defaultCurrencyError) {
       toast.error("Failed to fetch budget data. Please try again later.");
     }
-    if (deleteBudgetError) {
-      toast.error("Failed to delete budget. Please try again later.");
-    }
-  }, [budgetsError, budgetStatsError, deleteBudgetError, defaultCurrencyError]);
+  }, [budgetsError, budgetStatsError, defaultCurrencyError]);
 
   useEffect(() => {
     const fetchAllBudgetStats = async () => {

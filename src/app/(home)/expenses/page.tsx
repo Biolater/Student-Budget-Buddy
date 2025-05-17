@@ -40,6 +40,11 @@ const ExpenseTracker = () => {
       isPending: currenciesLoading,
       error: currenciesError,
     },
+    fetchDefaultUserCurrency: {
+      data: defaultUserCurrency,
+      isPending: defaultUserCurrencyLoading,
+      error: defaultUserCurrencyError,
+    },
   } = useCurrency();
 
   const {
@@ -95,8 +100,19 @@ const ExpenseTracker = () => {
         description: "Failed to fetch expenses.",
         color: "danger",
       });
+    } else if (defaultUserCurrencyError) {
+      addToast({
+        title: "Error",
+        description: "Failed to fetch default user currency.",
+        color: "danger",
+      });
     }
-  }, [currenciesError, categoriesError, expensesError]);
+  }, [
+    currenciesError,
+    categoriesError,
+    expensesError,
+    defaultUserCurrencyError,
+  ]);
 
   return (
     <div className="container max-w-4xl mx-auto p-4 md:py-8">
@@ -113,8 +129,12 @@ const ExpenseTracker = () => {
           <ExpenseFormV2
             currencies={currencies ?? []}
             categories={categories ?? []}
-            categoriesLoading={categoriesLoading}
-            currenciesLoading={currenciesLoading}
+            loading={
+              categoriesLoading ||
+              currenciesLoading ||
+              defaultUserCurrencyLoading
+            }
+            defaultUserCurrency={defaultUserCurrency}
           />
         </CardBody>
         <CardFooter className="p-6 pt-0 flex flex-col gap-4">

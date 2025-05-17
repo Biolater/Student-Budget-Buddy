@@ -8,10 +8,6 @@ import {
 } from "../types/dashboard.types";
 import { ResponseHandler } from "../lib/ResponseHandler";
 
-/**
- * Alternative implementation using ResponseHandler.execute method
- * This approach reduces boilerplate with a cleaner OOP pattern
- */
 export async function fetchFinancialOverviewData(
   params: FetchFinancialOverviewDataParams
 ) {
