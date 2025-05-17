@@ -112,8 +112,8 @@ const createExpense = async (
   });
 };
 
-const deleteExpense = async (expenseId: string): Promise<ApiResponse<Expense>> => {
-  return ResponseHandler.execute<Expense>(async () => {
+const deleteExpense = async (expenseId: string): Promise<ApiResponse<null>> => {
+  return ResponseHandler.execute<null>(async () => {
     const user = await requireUser();
     if (!user) throw new Error("User not authenticated");
 
@@ -126,9 +126,13 @@ const deleteExpense = async (expenseId: string): Promise<ApiResponse<Expense>> =
     if (expense.userId !== user.userId)
       throw new Error("Not authorized to delete this expense");
 
-    return await prisma.expense.delete({
+    // Delete the expense but don't return it (contains non-serializable Decimal)
+    await prisma.expense.delete({
       where: { id: expenseId },
     });
+
+    // Return null instead to avoid Decimal serialization issues
+    return null;
   });
 };
 

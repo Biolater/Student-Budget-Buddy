@@ -27,18 +27,21 @@ const useExpense = (userId: string | undefined | null) => {
         });
 
         if (!response.success) {
-          // Explicitly throw client-side error with message
           throw new Error(
             response.error?.message || "Failed to create expense"
           );
         }
 
-        // Non-null assertion since we check success above
         return response.data!;
       },
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onSuccess: () => {
         if (userId) {
+          addToast({
+            title: "Success",
+            description: "Expense created successfully",
+            color: "success",
+          });
           queryClient.invalidateQueries({
             queryKey: EXPENSE_QUERY_KEY(userId),
           });
@@ -48,20 +51,19 @@ const useExpense = (userId: string | undefined | null) => {
     fetchExpenses: useQuery<ExtendedExpense[]>({
       queryKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       queryFn: async () => {
-        if (!userId) return [] as ExtendedExpense[]; // Default to an empty array
+        if (!userId) return [] as ExtendedExpense[];
         const response = await fetchExpensesByUserId(userId);
         if (!response.success) {
           throw new Error(
             response.error?.message || "Failed to fetch expenses"
           );
         }
-        // Non-null assertion since we check success above
         return response.data!;
       },
       enabled: !!userId,
       staleTime: 600000, // 10 minutes.
     }),
-    delete: useMutation<Expense, Error, string>({
+    delete: useMutation<null, Error, string>({
       mutationFn: async (expenseId: string) => {
         const response = await deleteExpense(expenseId);
         if (!response.success) {
@@ -69,8 +71,7 @@ const useExpense = (userId: string | undefined | null) => {
             response.error?.message || "Failed to delete expense"
           );
         }
-        // Non-null assertion since we check success above
-        return response.data!;
+        return null;
       },
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
       onSuccess: () => {
@@ -86,14 +87,15 @@ const useExpense = (userId: string | undefined | null) => {
         }
       },
     }),
-    update: useMutation<CreatedExpense, Error, {
-      expenseId: string;
-      data: ExpenseFormSchemaType;
-    }>({
-      mutationFn: async ({
-        expenseId,
-        data,
-      }) => {
+    update: useMutation<
+      CreatedExpense,
+      Error,
+      {
+        expenseId: string;
+        data: ExpenseFormSchemaType;
+      }
+    >({
+      mutationFn: async ({ expenseId, data }) => {
         const response = await updateExpense(expenseId, {
           ...data,
           date: data.date.toDate(getLocalTimeZone()),
@@ -105,7 +107,6 @@ const useExpense = (userId: string | undefined | null) => {
           );
         }
 
-        // Non-null assertion since we check success above
         return response.data!;
       },
       mutationKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
