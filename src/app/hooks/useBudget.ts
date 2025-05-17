@@ -16,9 +16,13 @@ import { assertUser } from "../utils/auth.utils";
 import { type BudgetErrorType } from "@/app/types/errors";
 import { getLocalTimeZone } from "@internationalized/date";
 import { BudgetInsights } from "../types/budget.types";
+import { addToast } from "@heroui/react";
 
 // Create a separate custom hook for budget insights
-export const useBudgetInsights = (budgetId: string, userId: string | undefined | null) => {
+export const useBudgetInsights = (
+  budgetId: string,
+  userId: string | undefined | null
+) => {
   return useQuery<BudgetInsights | undefined, Error>({
     queryKey: ["budgetInsights", budgetId],
     retry: false,
@@ -49,13 +53,25 @@ const useBudget = (userId: string | undefined | null) => {
       onError: (error) => {
         const budgetError = error as BudgetErrorType;
         if (budgetError.name === "BudgetValidationError") {
-          toast.error(budgetError.message);
+          addToast({
+            title: "Budget Validation Error",
+            description: budgetError.message,
+            color: "danger",
+          });
         } else {
-          toast.error("Failed to create budget. Please try again.");
+          addToast({
+            title: "Error",
+            description: "Failed to create budget. Please try again.",
+            color: "danger",
+          });
         }
       },
       onSuccess: () => {
-        toast.success("Budget created successfully");
+        addToast({
+          title: "Success",
+          description: "Budget created successfully",
+          color: "success",
+        });
         if (userId) {
           queryClient.invalidateQueries({
             queryKey: BUDGET_MUTATION_KEY(userId),
@@ -90,10 +106,18 @@ const useBudget = (userId: string | undefined | null) => {
         assertUser(userId);
       },
       onError: (error) => {
-        toast.error("Failed to delete budget. Please try again.");
+        addToast({
+          title: "Error",
+          description: "Failed to delete budget. Please try again.",
+          color: "danger",
+        });
       },
       onSuccess: () => {
-        toast.success("Budget deleted successfully");
+        addToast({
+          title: "Success",
+          description: "Budget deleted successfully",
+          color: "success",
+        });
         if (userId) {
           queryClient.invalidateQueries({
             queryKey: BUDGET_MUTATION_KEY(userId),
@@ -101,72 +125,7 @@ const useBudget = (userId: string | undefined | null) => {
         }
       },
     }),
-
   };
 };
 
 export default useBudget;
-
-// const useBudget = (userId: string | undefined | null) => {
-//     const keyUserId = userId ?? "no-user";
-
-//     const query = useQuery({
-//         queryKey: ["budgets", keyUserId],
-//         queryFn: async () => {
-//             if (!userId) return [];
-//             const budgets = await getBudgets();
-//             return budgets ?? [];
-//         },
-//         enabled: !!userId,
-//         staleTime: 600000,
-//     });
-
-//     const deleteMutation = useMutation({
-//         mutationFn: (budgetId: string) => deleteBudget(budgetId),
-//         mutationKey: ["deleteBudget", keyUserId],
-//         onMutate: async () => {
-//             if (!userId) throw new Error("You must be signed in to delete a budget");
-//         },
-//         onError: (error) => {
-//             toast.error(
-//                 error instanceof Error ? error.message : "Something went wrong"
-//             );
-//         },
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: ["budgets", keyUserId]});
-//             toast.success("Budget deleted successfully");
-//         },
-//     });
-
-//     const createMutation = useMutation({
-//         mutationFn: (data: NewBudgetSchema) => createBudget(data),
-//         mutationKey: ["createBudget", keyUserId],
-//         onMutate: async () => {
-//             if (!userId) throw new Error("You must be signed in to create a budget");
-//         },
-//         onSuccess: () => {
-//             queryClient.invalidateQueries({queryKey: ["budgets", keyUserId]});
-//             toast.success("Budget created successfully");
-//         },
-//     });
-
-//     const totalBudgetAmountQuery = useQuery({
-//         queryKey: ["totalBudgetAmount", keyUserId],
-//         queryFn: async () => {
-//             if (!userId) return 0;
-//             const total = await getTotalBudgetAmount();
-//             return total ?? 0;
-//         },
-//         enabled: !!userId,
-//         staleTime: 600000,
-//     });
-
-//     return {
-//         query,
-//         delete: deleteMutation,
-//         create: createMutation,
-//         totalBudgetAmount: totalBudgetAmountQuery,
-//     };
-// };
-
-// export default useBudget;

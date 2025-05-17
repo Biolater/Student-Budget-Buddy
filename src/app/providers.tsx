@@ -8,7 +8,6 @@ import { useEffect, useState } from "react";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
-
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -25,7 +24,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
         enableColorScheme
         storageKey="budget-buddy-theme" // Use a consistent key for persistence
       >
-        <ToastProvider />
+        <ToastProvider
+          toastProps={{
+            timeout: 2500,
+          }}
+        />
         <div style={!mounted ? { visibility: "hidden" } : undefined}>
           {children}
         </div>

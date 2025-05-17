@@ -47,6 +47,13 @@ const useExpense = (userId: string | undefined | null) => {
           });
         }
       },
+      onError: (error: Error) => {
+        addToast({
+          title: "Error",
+          description: error.message || "Failed to create expense",
+          color: "danger",
+        });
+      },
     }),
     fetchExpenses: useQuery<ExtendedExpense[]>({
       queryKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
@@ -86,6 +93,13 @@ const useExpense = (userId: string | undefined | null) => {
           });
         }
       },
+      onError: (error: Error) => {
+        addToast({
+          title: "Error",
+          description: error.message || "Failed to delete expense",
+          color: "danger",
+        });
+      },
     }),
     update: useMutation<
       CreatedExpense,
@@ -121,6 +135,13 @@ const useExpense = (userId: string | undefined | null) => {
             queryKey: EXPENSE_QUERY_KEY(userId),
           });
         }
+      },
+      onError: (error: Error) => {
+        addToast({
+          title: "Error",
+          description: error.message || "Failed to update expense",
+          color: "danger",
+        });
       },
     }),
   };

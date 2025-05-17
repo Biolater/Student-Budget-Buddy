@@ -60,21 +60,12 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
       mutateAsync: createExpense,
       isPending: createExpenseLoading,
       error: createExpenseError,
-      isSuccess: createExpenseSuccess,
     },
   } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
     // Attempt to create the expense
     await createExpense(data);
-
-    if (createExpenseSuccess) {
-      addToast({
-        title: "Success",
-        description: "Expense created successfully.",
-        color: "success",
-      });
-    }
 
     // Reset form on success
     reset({
@@ -85,18 +76,6 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
       description: "",
     });
   };
-
-  // Effect to handle errors
-  useEffect(() => {
-    if (createExpenseError) {
-      addToast({
-        title: "Error",
-        description: "Failed to create expense.",
-        color: "danger",
-      });
-    }
-  }, [createExpenseError]);
-
   // Effect to set default currency when it becomes available
   useEffect(() => {
     if (defaultUserCurrency?.id) {

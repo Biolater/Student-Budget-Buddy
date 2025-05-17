@@ -56,5 +56,4 @@ const DeleteExpenseModal: React.FC<DeleteExpenseModalProps> = ({
   );
 };
 
-
 export default DeleteExpenseModal;

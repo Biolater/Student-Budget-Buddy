@@ -64,10 +64,11 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
             <ModalHeader className="flex-col space-y-1.5">
               <p>Edit Expense</p>
               <p className="text-sm text-muted-foreground">
-                Make changes to your expense here. Click save when you&apos;re done.
+                Make changes to your expense here. Click save when you&apos;re
+                done.
               </p>
             </ModalHeader>
-            <ModalBody>
+            <ModalBody className="pb-4">
               <EditExpenseForm
                 expenseId={expense?.id ?? ""}
                 categoriesLoading={categoriesLoading}

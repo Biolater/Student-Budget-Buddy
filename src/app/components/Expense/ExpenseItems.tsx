@@ -111,9 +111,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
         await deleteExpense(id);
         onDeleteModalClose();
       } catch (error) {
-        toast.error(
-          error instanceof Error ? error.message : "Something went wrong"
-        );
+        console.error(error);
       }
     },
     [deleteExpense, onDeleteModalClose]
@@ -159,7 +157,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
           if (deleteExpenseId) {
             handleDeleteExpense(deleteExpenseId);
           } else {
-            toast.error("Something went wrong");
+            console.error("No expense ID provided");
           }
         }}
         isDeleting={isDeleting}
@@ -212,7 +210,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
                 key={expense.id}
                 className={`${
                   index !== items.length - 1 ? "border-b border-border" : ""
-                } hover:bg-primary-opacity transition-colors duration-200 ease-in-out`}
+                } hover:bg-primary/10 transition-colors duration-200 ease-in-out`}
               >
                 <TableCell className="whitespace-nowrap">
                   {format(expense.date, "MMM d, yyyy, h:mm a")}

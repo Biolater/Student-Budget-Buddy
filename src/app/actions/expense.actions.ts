@@ -126,12 +126,10 @@ const deleteExpense = async (expenseId: string): Promise<ApiResponse<null>> => {
     if (expense.userId !== user.userId)
       throw new Error("Not authorized to delete this expense");
 
-    // Delete the expense but don't return it (contains non-serializable Decimal)
     await prisma.expense.delete({
       where: { id: expenseId },
     });
 
-    // Return null instead to avoid Decimal serialization issues
     return null;
   });
 };
