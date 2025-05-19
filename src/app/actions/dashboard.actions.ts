@@ -4,7 +4,9 @@ import { requireUser } from "../utils/auth.utils";
 import { apiRequest } from "../lib/apiClient";
 import {
   FetchFinancialOverviewDataParams,
+  FetchSpendingTrendsDataParams,
   SummaryData,
+  SpendingTrendData,
 } from "../types/dashboard.types";
 import { ResponseHandler } from "../lib/ResponseHandler";
 
@@ -31,5 +33,33 @@ export async function fetchFinancialOverviewData(
     }
 
     return summary.data;
+  });
+}
+
+export async function fetchSpendingTrendsData(
+  params: FetchSpendingTrendsDataParams
+) {
+  return ResponseHandler.execute(async () => {
+    const user = await requireUser();
+    const token = await user.getToken();
+    const { timePeriod } = params;
+
+    const trends = await apiRequest<SpendingTrendData[]>({
+      method: "GET",
+      endpoint: `/dashboard/spending-trends?timePeriod=${timePeriod}`,
+      init: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+
+    console.log(trends);
+
+    if (!trends.success || trends.data === null) {
+      throw new Error(trends.error?.message || "Data not available");
+    }
+
+    return trends.data;
   });
 }
