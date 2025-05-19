@@ -7,7 +7,6 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
-  output          = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -16,6 +15,16 @@ datasource db {
 }
 
 enum BudgetPeriodType {
+  MONTHLY
+  QUARTERLY
+  SEMESTERLY
+  YEARLY
+  CUSTOM
+}
+
+enum FinancialEventFrequency {
+  DAILY
+  WEEKLY
   MONTHLY
   QUARTERLY
   SEMESTERLY
@@ -36,39 +45,42 @@ model ExpenseCategory {
 }
 
 model BudgetCategory {
-  id          String   @id
-  name        String   @unique
-  icon        String
-  budgets     Budget[]
-  description String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String           @id
+  name           String           @unique
+  icon           String
+  budgets        Budget[]
+  description    String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  FinancialEvent FinancialEvent[]
 
   @@map("budget_categories")
 }
 
 model User {
-  id             String    @id
-  email          String    @unique
-  username       String    @unique
+  id             String           @id
+  email          String           @unique
+  username       String           @unique
   expenses       Expense[]
   budgets        Budget[]
-  baseCurrency   Currency  @relation(fields: [baseCurrencyId], references: [id])
-  baseCurrencyId String    @default("usd-id")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  baseCurrency   Currency         @relation(fields: [baseCurrencyId], references: [id])
+  baseCurrencyId String           @default("usd-id")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  FinancialEvent FinancialEvent[]
 }
 
 model Currency {
-  id        String    @id
-  name      String
-  symbol    String
-  code      String    @unique
-  users     User[]
-  budgets   Budget[]
-  expenses  Expense[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             String           @id
+  name           String
+  symbol         String
+  code           String           @unique
+  users          User[]
+  budgets        Budget[]
+  expenses       Expense[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  FinancialEvent FinancialEvent[]
 
   @@map("currencies")
 }
@@ -113,4 +125,27 @@ model Budget {
   @@unique([userId, budgetCategoryId, startDate, endDate])
   @@index([userId])
   @@index([budgetCategoryId])
+}
+
+model FinancialEvent {
+  id               String                  @id @default(uuid())
+  userId           String
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  nextDueDate      DateTime
+  amount           Decimal
+  description      String?
+  currencyId       String
+  currency         Currency                @relation(fields: [currencyId], references: [id], onDelete: Restrict)
+  budgetCategoryId String?
+  budgetCategory   BudgetCategory?         @relation(fields: [budgetCategoryId], references: [id], onDelete: SetNull)
+  frequency        FinancialEventFrequency
+  isActive         Boolean                 @default(true)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+
+  @@index([userId])
+  @@index([currencyId])
+  @@index([budgetCategoryId])
+  @@map("financial_events")
 }
