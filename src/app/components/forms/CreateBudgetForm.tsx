@@ -23,9 +23,10 @@ import CreateBudgetFormSkeleton from "../Budget/CreateBudgetFormSkeleton";
 
 interface CreateBudgetFormProps {
   onSuccess?: () => void;
+  defaultCurrency: string;
 }
 
-const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
+const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps) => {
   const { userId } = useAuth();
 
   // Move all hooks before any conditional statements
@@ -53,6 +54,7 @@ const CreateBudgetForm = ({ onSuccess }: CreateBudgetFormProps) => {
     resolver: zodResolver(CreateBudgetFormSchema),
     defaultValues: {
       periodType: "MONTHLY",
+      currency: defaultCurrency,
     },
   });
 

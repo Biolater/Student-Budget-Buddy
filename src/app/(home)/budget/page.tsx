@@ -50,10 +50,7 @@ const Budget = () => {
       isPending: budgetStatsLoading,
       isError: budgetStatsError,
     },
-    deleteBudget: {
-      mutateAsync: deleteBudget,
-      isPending: deleteBudgetLoading,
-    },
+    deleteBudget: { mutateAsync: deleteBudget, isPending: deleteBudgetLoading },
   } = budgetHook;
 
   const {
@@ -117,7 +114,7 @@ const Budget = () => {
             Create and manage your spending limits
           </p>
         </div>
-        <CreateBudgetDrawer />
+        <CreateBudgetDrawer defaultCurrency={defaultCurrency?.id ?? "usd-id"} />
       </motion.div>
       <BudgetStatsOverview
         isLoading={

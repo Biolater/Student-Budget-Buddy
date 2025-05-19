@@ -38,9 +38,8 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
 }) => {
   const { userId } = useAuth();
   const {
-    watch,
     control,
-    formState: { errors, defaultValues },
+    formState: { errors },
     handleSubmit,
     reset,
   } = useForm<ExpenseFormSchemaType>({
@@ -69,8 +68,8 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
 
     // Reset form on success
     reset({
-      date: undefined,
-      currency: undefined,
+      date: now(getLocalTimeZone()),
+      currency: defaultUserCurrency?.id,
       category: undefined,
       amount: undefined,
       description: "",
@@ -192,12 +191,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   placeholder="Enter amount"
                   labelPlacement="outside"
                   errorMessage={errors.amount?.message}
-                  onChange={(e) => {
-                    const parsedValue = Number.parseFloat(e.target.value);
-                    field.onChange(
-                      isNaN(parsedValue) ? undefined : parsedValue
-                    );
-                  }}
+                  onChange={field.onChange}
                   isInvalid={!!errors.amount}
                   value={
                     field.value !== undefined && field.value !== null
