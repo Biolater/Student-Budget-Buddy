@@ -6,6 +6,7 @@ import { ChevronsUpDown, TrendingUp } from "lucide-react";
 import {
   Card,
   CardBody,
+  CardHeader,
   Select,
   SelectItem,
   Selection,
@@ -130,38 +131,38 @@ const FinancialOverview = () => {
   // Render component
   return (
     <Card>
-      <CardBody className="flex-col gap-4 p-4">
+      <CardHeader className="flex flex-col items-start gap-4 md:flex-row md:justify-between pb-0 px-4 pt-4">
         {/* Header section with title and period selector */}
-        <div className="flex flex-col gap-4 md:flex-row md:justify-between">
-          <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <TrendingUp className="size-6 text-primary" />
-            Financial Overview
-          </h2>
-          <Select
-            selectedKeys={selectedPeriod}
-            defaultSelectedKeys={getDefaultPeriod()}
-            disallowEmptySelection
-            onSelectionChange={handlePeriodChange}
-            classNames={{
-              base: "w-full md:w-60",
-            }}
-            aria-label="Select time period"
-            variant="faded"
-            selectorIcon={
-              <ChevronsUpDown className="size-4 text-muted-foreground" />
-            }
-          >
-            {financialOverviewPeriods.map((period) => (
-              <SelectItem key={period.value}>{period.label}</SelectItem>
-            ))}
-          </Select>
-        </div>
-
+        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+          <TrendingUp className="size-6 text-primary" />
+          Financial Overview
+        </h2>
+        <Select
+          selectedKeys={selectedPeriod}
+          defaultSelectedKeys={getDefaultPeriod()}
+          disallowEmptySelection
+          onSelectionChange={handlePeriodChange}
+          classNames={{
+            base: "w-full md:w-60",
+          }}
+          aria-label="Select time period"
+          variant="faded"
+          selectorIcon={
+            <ChevronsUpDown className="size-4 text-muted-foreground" />
+          }
+        >
+          {financialOverviewPeriods.map((period) => (
+            <SelectItem key={period.value}>{period.label}</SelectItem>
+          ))}
+        </Select>
+      </CardHeader>
+      <CardBody className="flex-col gap-4 p-4">
         {/* Cards grid */}
         <div className="grid gap-4 md:grid-cols-3">
           <AnimatePresence>
             {financialOverviewItems.map((item, index) => (
               <motion.div
+                className="rounded-xl"
                 key={item.title}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

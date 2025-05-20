@@ -1,24 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { LineChart, TrendingUp, TrendingDown } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@heroui/react";
-/* import { TrendPeriodSelector } from "./trend-period-selector";
-import { SpendingTrendsChart } from "./spending-trends-chart"; */
-import {
-  spendingTrendsData,
-  type SpendingTrendTimePeriod,
-  type SpendingTrend,
-} from "@/app/lib/mock-data/dashboard.mock-data";
 import { formatCurrency } from "@/app/utils/currency.utils";
 import { SpendingTrendsChart } from "./SpendingTrendsChart";
 import { useDashboard } from "@/app/hooks/useDashboard";
 import { useCurrency } from "@/app/hooks/useCurrency";
+import { SpendingTrendTimePeriod } from "@/app/types/dashboard.types";
+import TrendPeriodSelector from "./TrendPeriodSelector";
 
 export function SpendingTrends() {
   const [timePeriod, setTimePeriod] =
-    useState<SpendingTrendTimePeriod>("currentYear");
+    useState<SpendingTrendTimePeriod>("allTime");
 
   const { useSpendingTrendsData } = useDashboard();
 
@@ -26,6 +21,7 @@ export function SpendingTrends() {
     data: trends = [],
     isLoading,
     error,
+    refetch: refetchSpendingTrendsData,
   } = useSpendingTrendsData(timePeriod);
 
   const {
@@ -48,14 +44,13 @@ export function SpendingTrends() {
         : "down"
       : "neutral";
 
-
-    useEffect(() => {
-      console.log(trends)
-    }, [trends])
+  useEffect(() => {
+    refetchSpendingTrendsData();
+  }, [timePeriod, refetchSpendingTrendsData]);
 
   return (
     <Card className="relative overflow-hidden">
-      <CardHeader className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+      <CardHeader className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-0 px-4 pt-4">
         <div>
           <motion.div
             className="flex items-center gap-2"
@@ -97,10 +92,14 @@ export function SpendingTrends() {
             )}
           </div>
         </div>
-        {/*         <TrendPeriodSelector value={timePeriod} onChange={setTimePeriod} />
-         */}{" "}
+        <TrendPeriodSelector
+          value={[timePeriod]}
+          onPeriodChange={(period) => {
+            setTimePeriod(period as SpendingTrendTimePeriod);
+          }}
+        />
       </CardHeader>
-      <CardBody className="relative z-10 pt-0">
+      <CardBody className="relative z-10 pt-0 p-4">
         <div className="h-[350px] w-full">
           <SpendingTrendsChart
             data={trends}

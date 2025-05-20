@@ -11,3 +11,9 @@ export const financialOverviewItems = [
   { title: "Total Expenses", value: "totalExpenses", icon: <DollarSign /> },
   { title: "Remaining Funds", value: "remainingFunds", icon: <ChevronUp /> },
 ];
+
+export const spendingTrendPeriods = [
+  { label: "Last 6 Months", value: "last6Months" },
+  { label: "Current Year", value: "currentYear" },
+  { label: "All Time", value: "allTime" },
+];

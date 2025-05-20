@@ -55,7 +55,7 @@ export function SpendingTrendsChart({
     const date = new Date(Number.parseInt(year), Number.parseInt(month) - 1);
     return date.toLocaleDateString("en-US", {
       month: "short",
-      year: "2-digit",
+      year: "numeric",
     });
   };
 

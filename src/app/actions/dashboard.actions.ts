@@ -54,12 +54,9 @@ export async function fetchSpendingTrendsData(
       },
     });
 
-    console.log(trends);
-
     if (!trends.success || trends.data === null) {
       throw new Error(trends.error?.message || "Data not available");
     }
-
     return trends.data;
   });
 }
