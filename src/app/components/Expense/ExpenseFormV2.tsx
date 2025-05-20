@@ -38,10 +38,10 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
 }) => {
   const { userId } = useAuth();
   const {
-    watch,
     control,
-    formState: { errors, defaultValues },
+    formState: { errors },
     handleSubmit,
+    setValue,
     reset,
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
@@ -69,8 +69,8 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
 
     // Reset form on success
     reset({
-      date: undefined,
-      currency: undefined,
+      date: now(getLocalTimeZone()),
+      currency: defaultUserCurrency?.id,
       category: undefined,
       amount: undefined,
       description: "",
@@ -79,15 +79,9 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
   // Effect to set default currency when it becomes available
   useEffect(() => {
     if (defaultUserCurrency?.id) {
-      reset(
-        { currency: defaultUserCurrency.id, date: now(getLocalTimeZone()) },
-        {
-          keepDefaultValues: true, // Preserves other default values
-          keepDirty: false, // Marks the field as pristine (not user-modified)
-        }
-      );
+      setValue("currency", defaultUserCurrency.id);
     }
-  }, [defaultUserCurrency, reset]);
+  }, [defaultUserCurrency]);
 
   if (loading) {
     return <ExpenseFormSkeleton />;
@@ -192,12 +186,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   placeholder="Enter amount"
                   labelPlacement="outside"
                   errorMessage={errors.amount?.message}
-                  onChange={(e) => {
-                    const parsedValue = Number.parseFloat(e.target.value);
-                    field.onChange(
-                      isNaN(parsedValue) ? undefined : parsedValue
-                    );
-                  }}
+                  onChange={field.onChange}
                   isInvalid={!!errors.amount}
                   value={
                     field.value !== undefined && field.value !== null

@@ -11,7 +11,11 @@ import { Plus } from "lucide-react";
 import CreateBudgetForm from "../forms/CreateBudgetForm";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 
-export default function CreateBudgetDrawer() {
+interface CreateBudgetDrawerProps {
+  defaultCurrency: string;
+}
+
+export default function CreateBudgetDrawer({ defaultCurrency }: CreateBudgetDrawerProps) {
   const { isOpen, onOpen, onOpenChange } = useDisclosure();
 
   return (
@@ -41,7 +45,7 @@ export default function CreateBudgetDrawer() {
                 </p>
               </DrawerHeader>
               <DrawerBody className="py-4">
-                <CreateBudgetForm onSuccess={onClose} />
+                <CreateBudgetForm onSuccess={onClose} defaultCurrency={defaultCurrency} />
               </DrawerBody>
             </>
           )}
