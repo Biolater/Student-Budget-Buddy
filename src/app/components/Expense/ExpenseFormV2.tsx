@@ -41,6 +41,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
     control,
     formState: { errors },
     handleSubmit,
+    setValue,
     reset,
   } = useForm<ExpenseFormSchemaType>({
     resolver: zodResolver(ExpenseFormSchema),
@@ -78,15 +79,9 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
   // Effect to set default currency when it becomes available
   useEffect(() => {
     if (defaultUserCurrency?.id) {
-      reset(
-        { currency: defaultUserCurrency.id, date: now(getLocalTimeZone()) },
-        {
-          keepDefaultValues: true, // Preserves other default values
-          keepDirty: false, // Marks the field as pristine (not user-modified)
-        }
-      );
+      setValue("currency", defaultUserCurrency.id);
     }
-  }, [defaultUserCurrency, reset]);
+  }, [defaultUserCurrency]);
 
   if (loading) {
     return <ExpenseFormSkeleton />;
