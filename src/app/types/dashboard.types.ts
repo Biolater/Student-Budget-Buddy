@@ -9,6 +9,10 @@ export interface FetchSpendingTrendsDataParams {
   timePeriod: SpendingTrendTimePeriod;
 }
 
+export interface FetchSpendingByCategoryDataParams {
+  timePeriod: TimePeriod;
+}
+
 export interface SummaryData {
   totalBudget: number;
   totalExpenses: number;
@@ -19,4 +23,9 @@ export interface SummaryData {
 export interface SpendingTrendData {
   month: string;
   totalSpending: number;
+}
+
+export interface CategorySpending {
+  category: string;
+  amount: number;
 }

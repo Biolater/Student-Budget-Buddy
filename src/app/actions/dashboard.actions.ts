@@ -7,6 +7,8 @@ import {
   FetchSpendingTrendsDataParams,
   SummaryData,
   SpendingTrendData,
+  FetchSpendingByCategoryDataParams,
+  CategorySpending,
 } from "../types/dashboard.types";
 import { ResponseHandler } from "../lib/ResponseHandler";
 
@@ -47,6 +49,31 @@ export async function fetchSpendingTrendsData(
     const trends = await apiRequest<SpendingTrendData[]>({
       method: "GET",
       endpoint: `/dashboard/spending-trends?timePeriod=${timePeriod}`,
+      init: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    });
+
+    if (!trends.success || trends.data === null) {
+      throw new Error(trends.error?.message || "Data not available");
+    }
+    return trends.data;
+  });
+}
+
+export async function fetchSpendingByCategoryData(
+  params: FetchSpendingByCategoryDataParams
+) {
+  return ResponseHandler.execute(async () => {
+    const user = await requireUser();
+    const token = await user.getToken();
+    const { timePeriod } = params;
+
+    const trends = await apiRequest<CategorySpending[]>({
+      method: "GET",
+      endpoint: `/dashboard/spending-by-category?timePeriod=${timePeriod}`,
       init: {
         headers: {
           Authorization: `Bearer ${token}`,

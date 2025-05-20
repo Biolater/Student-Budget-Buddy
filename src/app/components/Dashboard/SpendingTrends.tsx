@@ -11,7 +11,12 @@ import { useCurrency } from "@/app/hooks/useCurrency";
 import { SpendingTrendTimePeriod } from "@/app/types/dashboard.types";
 import TrendPeriodSelector from "./TrendPeriodSelector";
 
-export function SpendingTrends() {
+interface SpendingTrendsProps {
+  defaultCurrencySymbol: string
+  currencyLoading: boolean
+}
+
+export function SpendingTrends({ defaultCurrencySymbol, currencyLoading }: SpendingTrendsProps) {
   const [timePeriod, setTimePeriod] =
     useState<SpendingTrendTimePeriod>("allTime");
 
@@ -23,10 +28,6 @@ export function SpendingTrends() {
     error,
     refetch: refetchSpendingTrendsData,
   } = useSpendingTrendsData(timePeriod);
-
-  const {
-    fetchDefaultUserCurrency: { data: defaultUserCurrency },
-  } = useCurrency();
 
   // Calculate average spending
   const averageSpending =
@@ -86,7 +87,7 @@ export function SpendingTrends() {
                 • Average:{" "}
                 {formatCurrency(
                   averageSpending,
-                  defaultUserCurrency?.code || "USD"
+                  defaultCurrencySymbol || "USD"
                 )}
               </span>
             )}
@@ -103,7 +104,7 @@ export function SpendingTrends() {
         <div className="h-[350px] w-full">
           <SpendingTrendsChart
             data={trends}
-            currency={defaultUserCurrency?.code || "USD"}
+            currency={defaultCurrencySymbol || "USD"}
             isLoading={isLoading}
           />
         </div>
