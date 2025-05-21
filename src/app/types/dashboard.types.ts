@@ -27,5 +27,5 @@ export interface SpendingTrendData {
 
 export interface CategorySpending {
   category: string;
-  amount: number;
+  totalSpending: number;
 }

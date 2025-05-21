@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { PieChart } from "lucide-react";
-import { Card, CardBody, CardHeader } from "@heroui/react";
+import { Card, CardBody, CardHeader, Skeleton } from "@heroui/react";
 import CategoryPeriodSelector from "./CategoryPeriodSelector";
 import { SpendingByCategoryChart } from "./SpendingByCategoryChart";
 
@@ -29,18 +29,17 @@ export function SpendingByCategory({
   const {
     data = [],
     isLoading,
-    error,
     refetch: refetchSpendingTrendsData,
   } = useSpendingByCategoryData(timePeriod);
 
   // Calculate total spending
-  const totalSpending = data.reduce((sum, item) => sum + item.amount, 0);
+  const totalSpending = data.reduce((sum, item) => sum + item.totalSpending, 0);
 
   // Find the largest category
   const largestCategory =
     data.length > 0
       ? data.reduce((prev, current) =>
-          prev.amount > current.amount ? prev : current
+          prev.totalSpending > current.totalSpending ? prev : current
         )
       : null;
 
@@ -50,7 +49,7 @@ export function SpendingByCategory({
 
   return (
     <Card className="relative overflow-hidden">
-      <CardHeader className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+      <CardHeader className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-0 px-4 pt-4">
         <div>
           <motion.div
             className="flex items-center gap-2"
@@ -59,18 +58,42 @@ export function SpendingByCategory({
             transition={{ duration: 0.5 }}
           >
             <PieChart className="h-5 w-5 text-primary" />
-            <h2>Spending by Category</h2>
+            <h2 className="text-2xl font-bold tracking-tight">
+              Spending by Category
+            </h2>
           </motion.div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-            <span>
-              Total: {formatCurrency(totalSpending, defaultCurrencyCode)}
-            </span>
-            {!isLoading && largestCategory && (
+            <Skeleton
+              className="rounded-md"
+              isLoaded={!isLoading && !currencyLoading}
+            >
+              <span>
+                Total: {formatCurrency(totalSpending, defaultCurrencyCode)}
+              </span>
+            </Skeleton>
+            {/*             {!isLoading && largestCategory && (
               <span className="ml-2">
                 • Highest: {largestCategory.category} (
-                {formatCurrency(largestCategory.amount, defaultCurrencyCode)})
+                {formatCurrency(
+                  largestCategory.totalSpending,
+                  defaultCurrencyCode
+                )}
+                )
               </span>
-            )}
+            )} */}
+            <Skeleton
+              className="rounded-md"
+              isLoaded={!isLoading && !!largestCategory && !currencyLoading}
+            >
+              <span className="ml-2">
+                • Highest: {largestCategory?.category} (
+                {formatCurrency(
+                  largestCategory?.totalSpending,
+                  defaultCurrencyCode
+                )}
+                )
+              </span>
+            </Skeleton>
           </div>
         </div>
         <CategoryPeriodSelector
@@ -78,7 +101,7 @@ export function SpendingByCategory({
           onPeriodChange={(period) => setTimePeriod(period as TimePeriod)}
         />
       </CardHeader>
-      <CardBody className="relative z-10 pt-0">
+      <CardBody className="relative z-10 pt-0 p-4">
         <div className="h-[350px] w-full">
           <SpendingByCategoryChart
             data={data}

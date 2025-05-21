@@ -68,11 +68,11 @@ export function SpendingByCategoryChart({
     if (data.length === 0) return;
 
     // Calculate total spending for percentages
-    const totalSpending = data.reduce((sum, item) => sum + item.amount, 0);
+    const totalSpending = data.reduce((sum, item) => sum + item.totalSpending, 0);
 
     // Prepare data for the chart
     const labels = data.map((item) => item.category);
-    const spendingValues = data.map((item) => item.amount);
+    const spendingValues = data.map((item) => item.totalSpending);
     const backgroundColors = generateColors(data.length);
 
     // Set chart data

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { LineChart, TrendingUp, TrendingDown } from "lucide-react";
-import { Card, CardBody, CardHeader } from "@heroui/react";
+import { Card, CardBody, CardHeader, Skeleton } from "@heroui/react";
 import { formatCurrency } from "@/app/utils/currency.utils";
 import { SpendingTrendsChart } from "./SpendingTrendsChart";
 import { useDashboard } from "@/app/hooks/useDashboard";
@@ -12,11 +12,14 @@ import { SpendingTrendTimePeriod } from "@/app/types/dashboard.types";
 import TrendPeriodSelector from "./TrendPeriodSelector";
 
 interface SpendingTrendsProps {
-  defaultCurrencySymbol: string
-  currencyLoading: boolean
+  defaultCurrencySymbol: string;
+  currencyLoading: boolean;
 }
 
-export function SpendingTrends({ defaultCurrencySymbol, currencyLoading }: SpendingTrendsProps) {
+export function SpendingTrends({
+  defaultCurrencySymbol,
+  currencyLoading,
+}: SpendingTrendsProps) {
   const [timePeriod, setTimePeriod] =
     useState<SpendingTrendTimePeriod>("allTime");
 
@@ -25,7 +28,6 @@ export function SpendingTrends({ defaultCurrencySymbol, currencyLoading }: Spend
   const {
     data: trends = [],
     isLoading,
-    error,
     refetch: refetchSpendingTrendsData,
   } = useSpendingTrendsData(timePeriod);
 
@@ -51,7 +53,7 @@ export function SpendingTrends({ defaultCurrencySymbol, currencyLoading }: Spend
 
   return (
     <Card className="relative overflow-hidden">
-      <CardHeader className="relative z-10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-0 px-4 pt-4">
+      <CardHeader className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-0 px-4 pt-4">
         <div>
           <motion.div
             className="flex items-center gap-2"
@@ -65,24 +67,28 @@ export function SpendingTrends({ defaultCurrencySymbol, currencyLoading }: Spend
             </h2>
           </motion.div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-            {trendDirection === "up" ? (
-              <>
-                <TrendingUp className="h-4 w-4 text-red-500 dark:text-red-400" />
-                <span className="text-red-500 dark:text-red-400">
-                  Trending upward
-                </span>
-              </>
-            ) : trendDirection === "down" ? (
-              <>
-                <TrendingDown className="h-4 w-4 text-green-500 dark:text-green-400" />
-                <span className="text-green-500 dark:text-green-400">
-                  Trending downward
-                </span>
-              </>
-            ) : (
-              <span>No significant trend</span>
-            )}
-            {!isLoading && trends.length > 0 && (
+            <Skeleton
+              className="rounded-md"
+              isLoaded={!isLoading && trends.length > 0 && !currencyLoading}
+            >
+              {trendDirection === "up" ? (
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-danger" />
+                  <span className="text-danger">Trending upward</span>
+                </div>
+              ) : trendDirection === "down" ? (
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-success" />
+                  <span className="text-success">Trending downward</span>
+                </div>
+              ) : (
+                <span>No significant trend</span>
+              )}
+            </Skeleton>
+            <Skeleton
+              className="rounded-md"
+              isLoaded={!isLoading && trends.length > 0 && !currencyLoading}
+            >
               <span className="ml-2">
                 • Average:{" "}
                 {formatCurrency(
@@ -90,7 +96,7 @@ export function SpendingTrends({ defaultCurrencySymbol, currencyLoading }: Spend
                   defaultCurrencySymbol || "USD"
                 )}
               </span>
-            )}
+            </Skeleton>
           </div>
         </div>
         <TrendPeriodSelector
