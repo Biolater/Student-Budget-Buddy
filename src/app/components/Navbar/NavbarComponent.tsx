@@ -38,6 +38,7 @@ export const NavbarComponent = () => {
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/expenses", label: "Expenses" },
+    { href: "/recurring-transactions", label: "Recurring Transactions" },
     { href: "/budget", label: "Budget" },
     { href: "/goals", label: "Goals" },
     { href: "/analysis", label: "Analysis" },
@@ -70,7 +71,7 @@ export const NavbarComponent = () => {
       <NavbarContent as="div">
         <NavbarMenuToggle
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          className="md:hidden"
+          className="lg:hidden"
         />
         <NavbarBrand
           as={Link}
@@ -84,7 +85,7 @@ export const NavbarComponent = () => {
 
       {/* Navigation links for signed in users */}
       {isLoaded && isSignedIn && (
-        <NavbarContent className="hidden md:flex gap-4 grow" justify="center">
+        <NavbarContent className="hidden lg:flex gap-4 grow" justify="center">
           <LayoutGroup id="navbar-items">
             {navLinks.map((link) => (
               <li className="relative py-1.5" key={link.href}>
@@ -121,7 +122,7 @@ export const NavbarComponent = () => {
       <NavbarContent as="div" justify="end">
         <ThemeSwitcher />
         {isLoaded && !isSignedIn && (
-          <div className="hidden md:flex gap-4">
+          <div className="hidden lg:flex gap-4">
             <Button
               variant="bordered"
               color="primary"
@@ -226,4 +227,3 @@ export const NavbarComponent = () => {
     </Navbar>
   );
 };
-  

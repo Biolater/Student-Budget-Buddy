@@ -17,3 +17,9 @@ export const spendingTrendPeriods = [
   { label: "Current Year", value: "currentYear" },
   { label: "All Time", value: "allTime" },
 ];
+
+export const categoryPeriods = [
+  { label: "Current Month", value: "currentMonth" },
+  { label: "Previous Month", value: "previousMonth" },
+  { label: "All Time", value: "allTime" },
+];

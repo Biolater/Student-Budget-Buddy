@@ -50,24 +50,23 @@ const getSelectedPeriodFromKeys = (keys: SharedSelection): Selection => {
   return new Set([selectedKey]);
 };
 
+interface FinancialOverviewProps {
+  defaultCurrencySymbol: string;
+  currencyLoading: boolean;
+}
+
 /**
  * Financial Overview component that displays summary cards with financial metrics
  */
-const FinancialOverview = () => {
+const FinancialOverview = ({
+  defaultCurrencySymbol,
+  currencyLoading,
+}: FinancialOverviewProps) => {
   // State management
   const [selectedPeriod, setSelectedPeriod] = useState<Selection>(
     getDefaultPeriod()
   );
   const selectedPeriodValue = Array.from(selectedPeriod)[0] as TimePeriod;
-
-  // Currency hook for getting user's preferred currency
-  const {
-    fetchDefaultUserCurrency: {
-      data: defaultUserCurrency,
-      isLoading: defaultUserCurrencyLoading,
-      error: defaultUserCurrencyError,
-    },
-  } = useCurrency();
 
   // Dashboard data hook for financial metrics
   const { useFinancialOverviewData } = useDashboard();
@@ -81,9 +80,7 @@ const FinancialOverview = () => {
 
   // Derived state
   const isLoading =
-    financialOverviewLoading ||
-    financialOverviewFetching ||
-    defaultUserCurrencyLoading;
+    financialOverviewLoading || financialOverviewFetching || currencyLoading;
 
   // Event handlers
   const handlePeriodChange = (keys: SharedSelection) => {
@@ -97,12 +94,6 @@ const FinancialOverview = () => {
       // Extract error details using our type-safe utility function
       const { code, isApiError } = getApiErrorDetails(financialOverviewError);
 
-      console.error("Financial Overview Error:", {
-        message: financialOverviewError.message,
-        code,
-        isApiError,
-      });
-
       // Display toast with error information
       addToast({
         // Use a more friendly title with error code for debugging
@@ -113,15 +104,7 @@ const FinancialOverview = () => {
         color: "danger",
       });
     }
-
-    if (defaultUserCurrencyError) {
-      addToast({
-        title: "Error fetching currency settings",
-        description: defaultUserCurrencyError.message,
-        color: "danger",
-      });
-    }
-  }, [financialOverviewError, defaultUserCurrencyError]);
+  }, [financialOverviewError]);
 
   // Refetch data when selected period changes
   useEffect(() => {
@@ -180,7 +163,7 @@ const FinancialOverview = () => {
               >
                 <SummaryCard
                   title={item.title}
-                  currencySymbol={defaultUserCurrency?.symbol || "$"}
+                  currencySymbol={defaultCurrencySymbol}
                   amount={
                     financialOverviewData?.[item.value as keyof SummaryData] ||
                     0
