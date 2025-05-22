@@ -77,11 +77,11 @@ export function BudgetEmptyState({ onCreateBudget }: BudgetEmptyStateProps) {
         </div>
 
         <h3 className="text-xl font-semibold mb-3">
-          No Budgets Yet! Let's Get Started
+          No Budgets Yet! Let&apos;s Get Started
         </h3>
         <p className="text-muted-foreground mb-6 max-w-md">
           Create a budget to track your spending, set limits on categories, and
-          achieve your financial goals. It's the first step to smart money
+          achieve your financial goals. It&apos;s the first step to smart money
           management!
         </p>
 

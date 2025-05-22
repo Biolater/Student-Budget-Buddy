@@ -81,7 +81,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
     if (defaultUserCurrency?.id) {
       setValue("currency", defaultUserCurrency.id);
     }
-  }, [defaultUserCurrency]);
+  }, [defaultUserCurrency, setValue]);
 
   if (loading) {
     return <ExpenseFormSkeleton />;
