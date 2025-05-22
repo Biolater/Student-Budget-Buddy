@@ -58,7 +58,7 @@ export function SpendingByCategory({
             transition={{ duration: 0.5 }}
           >
             <PieChart className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               Spending by Category
             </h2>
           </motion.div>
@@ -71,16 +71,6 @@ export function SpendingByCategory({
                 Total: {formatCurrency(totalSpending, defaultCurrencyCode)}
               </span>
             </Skeleton>
-            {/*             {!isLoading && largestCategory && (
-              <span className="ml-2">
-                • Highest: {largestCategory.category} (
-                {formatCurrency(
-                  largestCategory.totalSpending,
-                  defaultCurrencyCode
-                )}
-                )
-              </span>
-            )} */}
             <Skeleton
               className="rounded-md"
               isLoaded={!isLoading && !!largestCategory && !currencyLoading}

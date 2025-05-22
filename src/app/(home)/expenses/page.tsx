@@ -19,6 +19,7 @@ import {
 import type { ZonedDateTime } from "@internationalized/date";
 import { useCategory } from "@/app/hooks/useCategory";
 import { addToast } from "@heroui/react";
+import SectionHeader from "@/app/components/ui/SectionHeader";
 
 const ExpenseTracker = () => {
   const { userId } = useAuth();
@@ -115,17 +116,13 @@ const ExpenseTracker = () => {
   ]);
 
   return (
-    <main className="container max-w-4xl mx-auto p-4 md:py-8">
+    <main className="container max-w-4xl mx-auto p-4 md:py-8 flex flex-col gap-4">
+      <SectionHeader
+        title="Expense Tracker"
+        description="Keep track of your expenses easily."
+      />
       <Card className="expense-tracker bg-card">
-        <CardHeader className="flex-col items-start p-6">
-          <h3 className="font-semibold tracking-tight text-2xl sm:text-3xl">
-            Expense Tracker
-          </h3>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Keep track of your expenses easily.
-          </p>
-        </CardHeader>
-        <CardBody className="p-6 pt-0">
+        <CardBody className="p-6">
           <ExpenseFormV2
             currencies={currencies ?? []}
             categories={categories ?? []}

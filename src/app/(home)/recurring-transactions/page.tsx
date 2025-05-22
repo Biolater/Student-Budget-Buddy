@@ -1,7 +1,12 @@
+import SectionHeader from "@/app/components/ui/SectionHeader";
+
 const RecurringTransactions = () => {
   return (
     <main className="container container-padding flex flex-col gap-4">
-      <h1 className="text-3xl font-bold">Recurring Transactions</h1>
+      <SectionHeader
+        title="Recurring Transactions"
+        description="Manage your recurring transactions easily."
+      />
     </main>
   );
 };

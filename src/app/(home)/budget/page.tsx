@@ -24,12 +24,15 @@ import { GlobalLoading } from "@/app/components/GlobalLoading";
 import { useCurrency } from "@/app/hooks/useCurrency";
 import { useQueries } from "@tanstack/react-query";
 import { fetchBudgetStats } from "@/app/utils/budget.utils";
+import SectionHeader from "@/app/components/ui/SectionHeader";
+import { BudgetEmptyState } from "@/app/components/Budget/BudgetEmptyState";
 
 const Budget = () => {
   const { userId, isLoaded } = useAuth();
   const [selectedBudget, setSelectedBudget] = useState<ExtendedBudget | null>(
     null
   );
+  const [createBudgetDrawerOpen, setCreateBudgetDrawerOpen] = useState(false);
   const [budgetsWithStats, setBudgetsWithStats] = useState<
     BudgetWithStats[] | null
   >(null);
@@ -100,73 +103,79 @@ const Budget = () => {
     return <GlobalLoading isLoading={true} message="Loading budget data..." />;
   }
 
+  const isLoading =
+    budgetsLoading || budgetStatsLoading || defaultCurrencyLoading;
+
+  const isEmpty = !isLoading && !budgets?.length;
+
+  const totalBudget =
+    budgetStatsData && !Array.isArray(budgetStatsData)
+      ? budgetStatsData.overallBudgetAmount ?? 0
+      : 0;
+
+  const totalSpent =
+    budgetStatsData && !Array.isArray(budgetStatsData)
+      ? budgetStatsData.overallSpentAmount ?? 0
+      : 0;
+
+  const totalRemaining =
+    budgetStatsData && !Array.isArray(budgetStatsData)
+      ? budgetStatsData.overallRemainingAmount ?? 0
+      : 0;
+
   return (
-    <main className="container container-padding">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="flex items-center justify-between flex-wrap gap-4 mb-8"
-      >
-        <div>
-          <h1 className="text-3xl font-bold">Budget Management</h1>
-          <p className="text-muted-foreground">
-            Create and manage your spending limits
-          </p>
+    <main className="container container-padding flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <SectionHeader
+            title="Budget Management"
+            description="Create and manage your spending limits"
+          />
+          <CreateBudgetDrawer
+            isOpen={createBudgetDrawerOpen}
+            onOpenChange={setCreateBudgetDrawerOpen}
+            defaultCurrency={defaultCurrency?.id ?? "usd-id"}
+          />
         </div>
-        <CreateBudgetDrawer defaultCurrency={defaultCurrency?.id ?? "usd-id"} />
-      </motion.div>
-      <BudgetStatsOverview
-        isLoading={
-          budgetStatsLoading ||
-          defaultCurrencyLoading ||
-          budgetsWithStatsLoading
-        }
-        defaultCurrencySymbol={defaultCurrency?.symbol ?? "$"}
-        totalBudget={
-          budgetStatsData && !Array.isArray(budgetStatsData)
-            ? budgetStatsData.overallBudgetAmount ?? 0
-            : 0
-        }
-        totalRemaining={
-          budgetStatsData && !Array.isArray(budgetStatsData)
-            ? budgetStatsData.overallRemainingAmount ?? 0
-            : 0
-        }
-        totalSpent={
-          budgetStatsData && !Array.isArray(budgetStatsData)
-            ? budgetStatsData.overallSpentAmount ?? 0
-            : 0
-        }
-      />
-      <h1 className="text-3xl font-bold my-4">Budgets</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgetsLoading || budgetsWithStatsLoading ? (
-          Array.from({ length: 3 }).map((_, index) => (
-            <BudgetCardSkeleton key={index} />
-          ))
-        ) : budgets && budgets.length > 0 ? (
-          budgetsWithStats?.map((budget, index) => (
-            <motion.div
-              key={budget.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              onClick={() => {
-                setSelectedBudget(budget);
-                setDrawerOpen(true);
-              }}
-              style={{ cursor: "pointer" }}
-            >
-              <BudgetCard budget={budget} stats={budget.stats} />
-            </motion.div>
-          ))
+        <BudgetStatsOverview
+          isLoading={isLoading}
+          defaultCurrencySymbol={defaultCurrency?.symbol ?? "$"}
+          totalBudget={totalBudget}
+          totalRemaining={totalRemaining}
+          totalSpent={totalSpent}
+        />
+      </div>
+      <div className="flex flex-col gap-4">
+        {isEmpty ? (
+          <BudgetEmptyState
+            onCreateBudget={() => setCreateBudgetDrawerOpen(true)}
+          />
+        ) : budgetsLoading || budgetsWithStatsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 8 }).map((_, index) => (
+              <BudgetCardSkeleton key={index} />
+            ))}
+          </div>
         ) : (
-          <p className="text-muted-foreground">
-            No budgets found. Create one to get started!
-          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {budgetsWithStats?.map((budget, index) => (
+              <motion.div
+                key={budget.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, delay: index * 0.05 + 0.3 }}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                onClick={() => {
+                  setSelectedBudget(budget);
+                  setDrawerOpen(true);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <BudgetCard budget={budget} stats={budget.stats} />
+              </motion.div>
+            ))}
+          </div>
         )}
       </div>
       <ViewBudgetDetailsDrawer

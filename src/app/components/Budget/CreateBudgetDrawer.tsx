@@ -3,9 +3,7 @@ import {
   DrawerContent,
   DrawerHeader,
   DrawerBody,
-  DrawerFooter,
   Button,
-  useDisclosure,
 } from "@heroui/react";
 import { Plus } from "lucide-react";
 import CreateBudgetForm from "../forms/CreateBudgetForm";
@@ -13,18 +11,22 @@ import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 
 interface CreateBudgetDrawerProps {
   defaultCurrency: string;
+  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
 }
 
-export default function CreateBudgetDrawer({ defaultCurrency }: CreateBudgetDrawerProps) {
-  const { isOpen, onOpen, onOpenChange } = useDisclosure();
-
+export default function CreateBudgetDrawer({
+  defaultCurrency,
+  onOpenChange,
+  isOpen,
+}: CreateBudgetDrawerProps) {
   return (
     <>
       <Button
         aria-label="Create Budget"
         startContent={<Plus />}
         color="primary"
-        onPress={onOpen}
+        onPress={() => onOpenChange(true)}
       >
         New Budget
       </Button>
@@ -45,7 +47,10 @@ export default function CreateBudgetDrawer({ defaultCurrency }: CreateBudgetDraw
                 </p>
               </DrawerHeader>
               <DrawerBody className="py-4">
-                <CreateBudgetForm onSuccess={onClose} defaultCurrency={defaultCurrency} />
+                <CreateBudgetForm
+                  onSuccess={onClose}
+                  defaultCurrency={defaultCurrency}
+                />
               </DrawerBody>
             </>
           )}

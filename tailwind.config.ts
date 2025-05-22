@@ -19,7 +19,6 @@ const config: Config = {
           sm: "1.5rem",
           lg: "2rem",
         },
-        
       },
       borderColor: {
         DEFAULT: "hsl(var(--border))",
