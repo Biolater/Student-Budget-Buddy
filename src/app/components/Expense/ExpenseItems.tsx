@@ -190,7 +190,10 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
               />
             </div>
           }
-          classNames={{ base: "w-full overflow-x-auto overflow-y-hidden" }}
+          classNames={{
+            base: "w-full overflow-x-auto overflow-y-hidden",
+            table: "min-h-[300px]", // Set your desired min height here
+          }}
           aria-label="Expense table"
         >
           <TableHeader columns={TABLE_HEADERS}>
@@ -274,28 +277,6 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
             ))}
           </TableBody>
         </Table>
-
-        {/*         {expenses.length > ITEMS_PER_PAGE && (
-          <div className="flex justify-center mt-4">
-            {hasMore ? (
-              <Button
-                variant="light"
-                onPress={handleShowMoreClick}
-                className="w-full max-w-[12.5rem]"
-              >
-                Show More
-              </Button>
-            ) : (
-              <Button
-                variant="light"
-                onPress={handleShowLessClick}
-                className="w-full max-w-[12.5rem]"
-              >
-                Show Less
-              </Button>
-            )}
-          </div>
-        )} */}
       </div>
     </>
   );

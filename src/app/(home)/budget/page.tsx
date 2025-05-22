@@ -152,7 +152,7 @@ const Budget = () => {
           />
         ) : budgetsLoading || budgetsWithStatsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 8 }).map((_, index) => (
+            {Array.from({ length: 5 }).map((_, index) => (
               <BudgetCardSkeleton key={index} />
             ))}
           </div>
