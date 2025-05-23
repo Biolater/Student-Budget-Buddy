@@ -26,7 +26,10 @@ interface CreateBudgetFormProps {
   defaultCurrency: string;
 }
 
-const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps) => {
+const CreateBudgetForm = ({
+  onSuccess,
+  defaultCurrency,
+}: CreateBudgetFormProps) => {
   const { userId } = useAuth();
 
   // Move all hooks before any conditional statements
@@ -204,6 +207,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
               isInvalid={!!errors.budgetCategory}
               selectedKeys={field.value ? [field.value] : []}
               isRequired
+              variant="faded"
             >
               {categories!.map((option) => (
                 <SelectItem
@@ -232,6 +236,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
               isInvalid={!!errors.currency}
               selectedKeys={field.value ? [field.value] : []}
               isRequired
+              variant="faded"
             >
               {currencies!.map((option) => (
                 <SelectItem
@@ -256,6 +261,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
               errorMessage={errors.amount?.message}
               isInvalid={!!errors.amount}
               isRequired
+              variant="faded"
               onChange={(e) => {
                 const parsedValue = Number.parseFloat(e.target.value);
                 field.onChange(isNaN(parsedValue) ? undefined : parsedValue);
@@ -279,6 +285,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
               isInvalid={!!errors.periodType}
               selectedKeys={field.value ? [field.value] : []}
               isRequired
+              variant="faded"
             >
               {BudgetPeriodTypeEnum.options.map((option) => (
                 <SelectItem key={option}>{option}</SelectItem>
@@ -302,6 +309,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
                   errorMessage={errors.startDate?.message}
                   isInvalid={!!errors.startDate}
                   isRequired
+                  variant="faded"
                 />
               )}
             />
@@ -319,6 +327,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
                   errorMessage={errors.endDate?.message}
                   isInvalid={!!errors.endDate}
                   isRequired
+                  variant="faded"
                 />
               )}
             />
@@ -334,6 +343,7 @@ const CreateBudgetForm = ({ onSuccess, defaultCurrency }: CreateBudgetFormProps)
               placeholder="Enter description"
               errorMessage={errors.description?.message}
               isInvalid={!!errors.description}
+              variant="faded"
               {...field}
             />
           )}
