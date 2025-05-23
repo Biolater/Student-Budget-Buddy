@@ -6,29 +6,29 @@ import {
   Button,
 } from "@heroui/react";
 import { Plus } from "lucide-react";
-import CreateBudgetForm from "../forms/CreateBudgetForm";
+import CreateRecurringTransactionForm from "../forms/CreateRecurringTransactionForm";
 import { MOTION_PROPS } from "@/app/constants/drawer.constants";
 
-interface CreateBudgetDrawerProps {
+interface CreateRecurringTransactionsDrawerProps {
   defaultCurrency: string;
   onOpenChange: (open: boolean) => void;
   isOpen: boolean;
 }
 
-export default function CreateBudgetDrawer({
+export default function CreateRecurringTransactionsDrawer({
   defaultCurrency,
   onOpenChange,
   isOpen,
-}: CreateBudgetDrawerProps) {
+}: CreateRecurringTransactionsDrawerProps) {
   return (
     <>
       <Button
-        aria-label="Create Budget"
+        aria-label="Create Recurring Transaction"
         startContent={<Plus />}
         color="primary"
         onPress={() => onOpenChange(true)}
       >
-        New Budget
+        New Recurring Transaction
       </Button>
       <Drawer
         backdrop="blur"
@@ -41,13 +41,14 @@ export default function CreateBudgetDrawer({
           {(onClose) => (
             <>
               <DrawerHeader className="flex flex-col gap-1">
-                <h1 className="text-lg">Create New Budget</h1>
+                <h1 className="text-lg">Create Recurring Transaction</h1>
                 <p className="text-muted-foreground text-sm">
-                  Create a new budget to manage your spending
+                  Create a new recurring transaction to track regular payments
+                  or income
                 </p>
               </DrawerHeader>
               <DrawerBody className="py-4">
-                <CreateBudgetForm
+                <CreateRecurringTransactionForm
                   onSuccess={onClose}
                   defaultCurrency={defaultCurrency}
                 />

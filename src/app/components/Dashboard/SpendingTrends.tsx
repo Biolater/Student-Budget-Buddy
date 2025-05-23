@@ -62,7 +62,7 @@ export function SpendingTrends({
             transition={{ duration: 0.5 }}
           >
             <LineChart className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               Spending Trends
             </h2>
           </motion.div>

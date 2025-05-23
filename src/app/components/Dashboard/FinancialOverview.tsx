@@ -114,9 +114,9 @@ const FinancialOverview = ({
   // Render component
   return (
     <Card>
-      <CardHeader className="flex flex-col items-start gap-4 md:flex-row md:justify-between pb-0 px-4 pt-4">
+      <CardHeader className="flex flex-col items-start gap-4 md:flex-row md:justify-between md:items-center pb-0 px-4 pt-4">
         {/* Header section with title and period selector */}
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+        <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
           <TrendingUp className="size-6 text-primary" />
           Financial Overview
         </h2>
