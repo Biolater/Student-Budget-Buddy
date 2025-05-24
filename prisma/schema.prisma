@@ -32,6 +32,11 @@ enum FinancialEventFrequency {
   CUSTOM
 }
 
+enum FinancialEventType {
+  INCOME
+  EXPENSE
+}
+
 model ExpenseCategory {
   id          String    @id
   name        String    @unique
@@ -134,6 +139,7 @@ model FinancialEvent {
   name             String
   nextDueDate      DateTime
   amount           Decimal
+  type             FinancialEventType
   description      String?
   currencyId       String
   currency         Currency                @relation(fields: [currencyId], references: [id], onDelete: Restrict)
