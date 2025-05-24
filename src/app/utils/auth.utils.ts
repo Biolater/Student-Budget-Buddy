@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 
 export const requireUser = async () => {
     const user = await auth();
+
+    console.log("user", user);
     if (!user) {
         throw new Error("User not authenticated");
     }
