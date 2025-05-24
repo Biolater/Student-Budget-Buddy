@@ -8,7 +8,7 @@ export const requireUser = async () => {
         throw new Error("User not authenticated");
     }
     return user;
-}
+}   
 
 export const assertUser = async (userId: string | undefined | null) => {
     if (!userId) {

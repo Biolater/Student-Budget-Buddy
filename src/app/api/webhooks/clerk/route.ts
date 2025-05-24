@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         },
       });
     }
-  } else if (eventType === "user.deleted") {
+  } /* else if (eventType === "user.deleted") {
     const data = evt.data;
     const { id } = data;
     if (id)
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
           id,
         },
       });
-  }
+  } */
 
   return new Response("Webhook received", { status: 200 });
 }

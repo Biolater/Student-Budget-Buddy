@@ -30,6 +30,8 @@ export async function fetchFinancialOverviewData(
       },
     });
 
+    console.log("summary", summary);
+
     if (!summary.success || summary.data === null) {
       throw new Error(summary.error?.message || "Data not available");
     }
@@ -56,6 +58,8 @@ export async function fetchSpendingTrendsData(
       },
     });
 
+    console.log("trends", trends);
+
     if (!trends.success || trends.data === null) {
       throw new Error(trends.error?.message || "Data not available");
     }
@@ -80,6 +84,8 @@ export async function fetchSpendingByCategoryData(
         },
       },
     });
+
+    console.log("trends2", trends);
 
     if (!trends.success || trends.data === null) {
       throw new Error(trends.error?.message || "Data not available");
