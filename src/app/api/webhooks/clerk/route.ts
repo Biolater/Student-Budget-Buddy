@@ -60,6 +60,7 @@ export async function POST(req: Request) {
           id,
           username,
           email,
+          baseCurrencyId: "usd-id",
         },
       });
     }
