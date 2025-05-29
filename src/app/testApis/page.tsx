@@ -20,7 +20,7 @@ const APIS = () => {
   const testApi = async () => {
     if (!token) return;
     const response = await fetch(
-      "http://localhost:3001/api/v1/dashboard/financial-events/upcoming?limit=-1",
+      "http://localhost:3001/api/v1/dashboard/financial-events/upcoming?limit=10&isActive=true&daysAhead=12",
       {
         headers: {
           Authorization: `Bearer ${token}`,
