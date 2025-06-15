@@ -10,6 +10,7 @@ import { ResponseHandler } from "../lib/ResponseHandler";
 import ApiResponse from "../types/api-response.types";
 import { Expense, ExpenseCategory, Currency } from "@prisma/client";
 import { ExtendedExpense } from "../types/expense.types";
+import { fetchExpensesByUserId as fetchExpenses } from "../data/expenses";
 
 // Define a type for expense data returned from the create operation
 type CreatedExpense = Omit<Expense, "amount"> & { amount: number };
@@ -22,28 +23,7 @@ export type { CreatedExpense };
 const fetchExpensesByUserId = async (
   userId: string
 ): Promise<ApiResponse<ExtendedExpense[]>> => {
-  return ResponseHandler.execute<ExtendedExpense[]>(async () => {
-    const user = await requireUser();
-    if (!user || !user.userId) throw new Error("User not authenticated");
-    // Optionally, ensure the requested userId matches the authenticated user.
-    if (user.userId !== userId) {
-      throw new Error("Unauthorized access");
-    }
-
-    const expenses = await prisma.expense.findMany({
-      where: { userId },
-      orderBy: { date: "desc" },
-      include: {
-        category: true,
-        currency: true,
-      },
-    });
-
-    return expenses.map((expense) => ({
-      ...expense,
-      amount: expense.amount.toNumber(),
-    }));
-  });
+  return fetchExpenses(userId);
 };
 
 const createExpense = async (
