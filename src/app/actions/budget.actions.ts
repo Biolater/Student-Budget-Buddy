@@ -14,8 +14,6 @@ import {
   fetchBudgetInsights,
 } from "../data/budget";
 
-import { auth } from "@clerk/nextjs/server";
-
 type ServerBudgetData = Omit<
   CreateBudgetFormSchemaType,
   "startDate" | "endDate"
