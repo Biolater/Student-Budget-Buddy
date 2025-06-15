@@ -6,6 +6,7 @@ import {
   CreateRecurringTransactionSchemaType,
 } from "@/app/schema/recurring-transactions.schema";
 import { requireUser } from "@/app/utils/auth.utils";
+import { fetchRecurringTransactions } from "../data/recurringTransactions";
 
 type ServerRecurringTransactionData = Omit<
   CreateRecurringTransactionSchemaType,
@@ -168,28 +169,7 @@ const deleteRecurringTransaction = async (id: string) => {
 };
 
 const getRecurringTransactions = async () => {
-  const user = await requireUser();
-  const userId = user.userId!;
-
-  try {
-    const recurringTransactions = await prisma.financialEvent.findMany({
-      where: { userId },
-      include: {
-        budgetCategory: true,
-        currency: true,
-      },
-      orderBy: {
-        nextDueDate: 'asc',
-      },
-    });
-
-    return recurringTransactions.map((transaction) => ({
-      ...transaction,
-      amount: transaction.amount.toNumber(),
-    }));
-  } catch (error) {
-    throw new Error("Failed to fetch recurring transactions. Please try again.");
-  }
+  return fetchRecurringTransactions();
 };
 
 export {

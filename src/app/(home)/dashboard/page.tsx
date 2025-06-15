@@ -1,19 +1,20 @@
-"use client";
-
-import FinancialOverview from "@/app/components/Dashboard/FinancialOverview";
-import { SpendingByCategory } from "@/app/components/Dashboard/SpendingByCategory";
-import { SpendingTrends } from "@/app/components/Dashboard/SpendingTrends";
+import { Suspense } from "react";
+import { fetchDefaultUserCurrency } from "@/app/data/currency";
 import SectionHeader from "@/app/components/ui/SectionHeader";
-import { useCurrency } from "@/app/hooks/useCurrency";
-import { motion } from "framer-motion";
+import FinancialOverviewServer from "./components/FinancialOverviewServer";
+import SpendingTrendsServer from "./components/SpendingTrendsServer";
+import SpendingByCategoryServer from "./components/SpendingByCategoryServer";
+import { FinancialOverviewSkeleton, SpendingTrendsSkeleton, SpendingCategorySkeleton } from "./components/DashboardSkeletons";
 
-const DashboardComponent = () => {
-  const {
-    fetchDefaultUserCurrency: {
-      data: defaultUserCurrency,
-      isLoading: defaultUserCurrencyLoading,
-    },
-  } = useCurrency();
+interface DashboardPageProps {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+  // Fetch currency once on server-side
+  const defaultUserCurrency = await fetchDefaultUserCurrency();
+  const currencySymbol = defaultUserCurrency?.symbol || "$";
+  const currencyCode = defaultUserCurrency?.code || "USD";
 
   return (
     <main className="container container-padding flex flex-col gap-4">
@@ -21,21 +22,29 @@ const DashboardComponent = () => {
         title="Dashboard"
         description="Overview of your financial health"
       />
-      <FinancialOverview
-        defaultCurrencySymbol={defaultUserCurrency?.symbol || "$"}
-        currencyLoading={defaultUserCurrencyLoading}
-      />
-      <SpendingTrends
-        defaultCurrencySymbol={defaultUserCurrency?.symbol || "$"}
-        currencyLoading={defaultUserCurrencyLoading}
-      />
-      <SpendingByCategory
-        defaultCurrencySymbol={defaultUserCurrency?.symbol || "$"}
-        currencyLoading={defaultUserCurrencyLoading}
-        defaultCurrencyCode={defaultUserCurrency?.code || "USD"}
-      />
+      
+      {/* Each section loads independently with Suspense */}
+      <Suspense fallback={<FinancialOverviewSkeleton />}>
+        <FinancialOverviewServer 
+          currencySymbol={currencySymbol}
+          searchParams={searchParams}
+        />
+      </Suspense>
+      
+      <Suspense fallback={<SpendingTrendsSkeleton />}>
+        <SpendingTrendsServer 
+          currencySymbol={currencySymbol}
+          searchParams={searchParams}
+        />
+      </Suspense>
+      
+      <Suspense fallback={<SpendingCategorySkeleton />}>
+        <SpendingByCategoryServer 
+          currencySymbol={currencySymbol} 
+          currencyCode={currencyCode}
+          searchParams={searchParams}
+        />
+      </Suspense>
     </main>
   );
-};
-
-export default DashboardComponent;
+}

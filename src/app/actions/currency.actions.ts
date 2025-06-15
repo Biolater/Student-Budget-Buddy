@@ -1,48 +1,24 @@
 "use server";
 
-import { prisma } from "@/app/lib/client";
-import { ConversionRateResponse } from "../types/currency.types";
-import { requireUser } from "../utils/auth.utils";
+import {
+  fetchCurrencies,
+  fetchDefaultUserCurrency as fetchDefault,
+  getConversionRate as fetchRate,
+} from "../data/currency";
 
 export async function fetchCurrenciesForSelect() {
   try {
-    return await prisma.currency.findMany({
-      cacheStrategy: {
-        ttl: 60 * 60 * 1000, // 1 
-        swr: 60 * 60 * 1000, // 1 
-      },
-      select: {
-        id: true,
-        code: true,
-        name: true,
-        symbol: true,
-      },
-    });
+    return await fetchCurrencies();
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
 export async function fetchDefaultUserCurrency() {
   try {
-    const currentUser = await requireUser();
-    const user = await prisma.user.findUnique({
-      where: { id: currentUser.userId! },
-      select: {
-        baseCurrency: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            symbol: true,
-          },
-        },
-      },
-    });
-
-    return user?.baseCurrency || null;
+    return await fetchDefault();
   } catch (error) {
-    throw error
+    throw error;
   }
 }
 
@@ -51,23 +27,8 @@ export async function getConversionRate(
   targetCurrency: string
 ) {
   try {
-    const response = await fetch(
-      `https://v6.exchangerate-api.com/v6/${process.env.EXCHANGE_RATES_API_KEY}/latest/${baseCurrency}`,
-      {
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch exchange rates from API: ${response.statusText}`
-      );
-    }
-
-    const data: ConversionRateResponse = await response.json();
-
-    return data.conversion_rates[targetCurrency];
+    return await fetchRate(baseCurrency, targetCurrency);
   } catch (error) {
-    throw error
+    throw error;
   }
 }

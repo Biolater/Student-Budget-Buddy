@@ -4,11 +4,12 @@ import {
   SummaryData,
   SpendingTrendTimePeriod,
 } from "../types/dashboard.types";
-import {
-  fetchFinancialOverviewData,
-  fetchSpendingByCategoryData,
-  fetchSpendingTrendsData,
-} from "../actions/dashboard.actions";
+// Import data layer directly for all GET requests (best practice)
+import { 
+  fetchFinancialOverview,
+  fetchSpendingTrends,
+  fetchSpendingByCategory
+} from "../data/dashboard";
 import ApiResponse from "../types/api-response.types";
 import { ApiErrorDetails } from "../types/error.types";
 
@@ -18,17 +19,14 @@ import { ApiErrorDetails } from "../types/error.types";
 export const useDashboard = () => {
   /**
    * Get financial overview data for a specific time period
-   */
-  /**
-   * Get financial overview data for a specific time period
-   * Handles the ApiResponse object and provides proper error handling
+   * Calls data layer directly (best practice for GET requests)
    */
   const useFinancialOverviewData = (timePeriod: TimePeriod) => {
     return useQuery({
       queryKey: ["getFinancialOverviewData", timePeriod],
       queryFn: async () => {
-        // Fetch data using server action that returns ApiResponse
-        const response = await fetchFinancialOverviewData({ timePeriod });
+        // Call data layer directly instead of going through actions
+        const response = await fetchFinancialOverview({ timePeriod });
 
         // Check if the response was successful
         if (response.success && response.data) {
@@ -55,14 +53,14 @@ export const useDashboard = () => {
 
   /**
    * Get spending trends data for a specific time period
-   * Handles the ApiResponse object and provides proper error handling
+   * Calls data layer directly (best practice for GET requests)
    */
   const useSpendingTrendsData = (timePeriod: SpendingTrendTimePeriod) => {
     return useQuery({
       queryKey: ["getSpendingTrendsData", timePeriod],
       queryFn: async () => {
-        // Fetch data using server action that returns ApiResponse
-        const response = await fetchSpendingTrendsData({ timePeriod });
+        // Call data layer directly instead of going through actions
+        const response = await fetchSpendingTrends({ timePeriod });
 
         // Check if the response was successful
         if (response.success && response.data) {
@@ -87,12 +85,16 @@ export const useDashboard = () => {
     });
   };
 
+  /**
+   * Get spending by category data for a specific time period
+   * Calls data layer directly (best practice for GET requests)
+   */
   const useSpendingByCategoryData = (timePeriod: TimePeriod) => {
     return useQuery({
       queryKey: ["getSpendingByCategoryData", timePeriod],
       queryFn: async () => {
-        // Fetch data using server action that returns ApiResponse
-        const response = await fetchSpendingByCategoryData({ timePeriod });
+        // Call data layer directly instead of going through actions
+        const response = await fetchSpendingByCategory({ timePeriod });
 
         // Check if the response was successful
         if (response.success && response.data) {

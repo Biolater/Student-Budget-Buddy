@@ -4,7 +4,9 @@ import {
 } from "@/app/actions/currency.actions";
 import { useQuery } from "@tanstack/react-query";
 
-export const useCurrency = () => {
+export const useCurrency = (
+  defaultUserCurrency?: { code: string; symbol: string } | undefined
+) => {
   return {
     query: useQuery({
       queryKey: ["currencies"],
@@ -18,9 +20,8 @@ export const useCurrency = () => {
     }),
     fetchDefaultUserCurrency: useQuery({
       queryKey: ["defaultUserCurrency"],
-      queryFn: () => {
-        return fetchDefaultUserCurrency();
-      },
+      queryFn: () => fetchDefaultUserCurrency(),
+      initialData: defaultUserCurrency,
       refetchOnWindowFocus: false,
       refetchOnMount: false,
       refetchInterval: false,
