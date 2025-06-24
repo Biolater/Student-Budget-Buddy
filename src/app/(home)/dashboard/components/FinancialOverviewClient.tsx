@@ -13,8 +13,7 @@ import {
   Selection,
   SharedSelection,
 } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchFinancialOverview } from "@/app/data/dashboard";
+
 import { SummaryData, TimePeriod } from "@/app/types/dashboard.types";
 import {
   financialOverviewPeriods,
@@ -39,30 +38,15 @@ export default function FinancialOverviewClient({
   const [selectedPeriod, setSelectedPeriod] = useState<Selection>(
     new Set([initialPeriod])
   );
-  const selectedPeriodValue = Array.from(selectedPeriod)[0] as TimePeriod;
-
-  // Only fetch when period changes (not on initial load)
-  const { data: financialData, isLoading } = useQuery({
-    queryKey: ["financialOverview", selectedPeriodValue],
-    queryFn: async () => {
-      const response = await fetchFinancialOverview({ 
-        timePeriod: selectedPeriodValue 
-      });
-      return response.success ? response.data : null;
-    },
-    initialData: selectedPeriodValue === initialPeriod ? initialData : undefined,
-    enabled: true,
-    staleTime: 5 * 60 * 1000,
-  });
 
   const handlePeriodChange = (keys: SharedSelection) => {
     const selectedKey = Array.from(keys as Set<string>)[0];
     setSelectedPeriod(new Set([selectedKey]));
-    
+
     // Update URL with new period
     startTransition(() => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set('financialPeriod', selectedKey);
+      params.set("financialPeriod", selectedKey);
       router.push(`?${params.toString()}`, { scroll: false });
     });
   };
@@ -80,7 +64,9 @@ export default function FinancialOverviewClient({
           classNames={{ base: "w-full md:w-60" }}
           aria-label="Select time period"
           variant="faded"
-          selectorIcon={<ChevronsUpDown className="size-4 text-muted-foreground" />}
+          selectorIcon={
+            <ChevronsUpDown className="size-4 text-muted-foreground" />
+          }
         >
           {financialOverviewPeriods.map((period) => (
             <SelectItem key={period.value}>{period.label}</SelectItem>
@@ -108,8 +94,8 @@ export default function FinancialOverviewClient({
                 <SummaryCard
                   title={item.title}
                   currencySymbol={currencySymbol}
-                  amount={financialData?.[item.value as keyof SummaryData] || 0}
-                  isLoading={isLoading || isPending}
+                  amount={initialData?.[item.value as keyof SummaryData] || 0}
+                  isLoading={isPending}
                   icon={item.icon}
                 />
               </motion.div>
@@ -119,4 +105,4 @@ export default function FinancialOverviewClient({
       </CardBody>
     </Card>
   );
-} 
+}

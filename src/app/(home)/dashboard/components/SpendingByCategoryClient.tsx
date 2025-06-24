@@ -29,7 +29,10 @@ export default function SpendingByCategoryClient({
   const [timePeriod, setTimePeriod] = useState<TimePeriod>(initialPeriod);
 
   // Calculate total spending
-  const totalSpending = initialData.reduce((sum, item) => sum + item.totalSpending, 0);
+  const totalSpending = initialData.reduce(
+    (sum, item) => sum + item.totalSpending,
+    0
+  );
 
   // Find the largest category
   const largestCategory =
@@ -41,11 +44,11 @@ export default function SpendingByCategoryClient({
 
   const handlePeriodChange = (period: TimePeriod) => {
     setTimePeriod(period);
-    
+
     // Update URL with new period
     startTransition(() => {
       const params = new URLSearchParams(searchParams.toString());
-      params.set('categoryPeriod', period);
+      params.set("categoryPeriod", period);
       router.push(`?${params.toString()}`, { scroll: false });
     });
   };
@@ -67,15 +70,12 @@ export default function SpendingByCategoryClient({
           </motion.div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
             <Skeleton className="rounded-md" isLoaded={!isPending}>
-              <span>
-                Total: {formatCurrency(totalSpending, currencyCode)}
-              </span>
+              <span>Total: {formatCurrency(totalSpending, currencyCode)}</span>
             </Skeleton>
-            <Skeleton className="rounded-md" isLoaded={!isPending && !!largestCategory}>
+            <Skeleton className="rounded-md" isLoaded={!isPending}>
               <span className="ml-2">
                 • Highest: {largestCategory?.category} (
-                {formatCurrency(largestCategory?.totalSpending, currencyCode)}
-                )
+                {formatCurrency(largestCategory?.totalSpending, currencyCode)})
               </span>
             </Skeleton>
           </div>
@@ -96,4 +96,4 @@ export default function SpendingByCategoryClient({
       </CardBody>
     </Card>
   );
-} 
+}
