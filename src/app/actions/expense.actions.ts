@@ -10,7 +10,6 @@ import { ResponseHandler } from "../lib/ResponseHandler";
 import ApiResponse from "../types/api-response.types";
 import { Expense, ExpenseCategory, Currency } from "@prisma/client";
 import { ExtendedExpense } from "../types/expense.types";
-import { fetchExpensesByUserId as fetchExpenses } from "../data/expenses";
 
 // Define a type for expense data returned from the create operation
 type CreatedExpense = Omit<Expense, "amount"> & { amount: number };
@@ -18,13 +17,6 @@ type CreatedExpense = Omit<Expense, "amount"> & { amount: number };
 // Export the type for reuse in other files
 export type { CreatedExpense };
 
-// Helper function to ensure the user is authenticated.
-
-const fetchExpensesByUserId = async (
-  userId: string
-): Promise<ApiResponse<ExtendedExpense[]>> => {
-  return fetchExpenses(userId);
-};
 
 const createExpense = async (
   data: ServerExpenseData
@@ -149,4 +141,4 @@ const updateExpense = async (
   });
 };
 
-export { createExpense, fetchExpensesByUserId, deleteExpense, updateExpense };
+export { createExpense, deleteExpense, updateExpense };

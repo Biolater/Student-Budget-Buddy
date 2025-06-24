@@ -1,18 +1,14 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { queryClient } from "@/app/components/TanstackProvider";
 import {
   createExpense,
   deleteExpense,
-  fetchExpensesByUserId,
   updateExpense,
   CreatedExpense,
 } from "@/app/actions/expense.actions";
 import { ExpenseFormSchemaType } from "@/app/schema/expense.schema";
 import { addToast } from "@heroui/react";
 import { getLocalTimeZone } from "@internationalized/date";
-import ApiResponse from "@/app/types/api-response.types";
-import { ExtendedExpense } from "../types/expense.types";
-import { Expense } from "@prisma/client";
 
 // Generate a dynamic query key based on userId.
 const EXPENSE_QUERY_KEY = (userId: string) => ["expenses", userId];
@@ -54,21 +50,6 @@ const useExpense = (userId: string | undefined | null) => {
           color: "danger",
         });
       },
-    }),
-    fetchExpenses: useQuery<ExtendedExpense[]>({
-      queryKey: userId ? EXPENSE_QUERY_KEY(userId) : ["expenses", "guest"],
-      queryFn: async () => {
-        if (!userId) return [] as ExtendedExpense[];
-        const response = await fetchExpensesByUserId(userId);
-        if (!response.success) {
-          throw new Error(
-            response.error?.message || "Failed to fetch expenses"
-          );
-        }
-        return response.data!;
-      },
-      enabled: !!userId,
-      staleTime: 600000, // 10 minutes.
     }),
     delete: useMutation<null, Error, string>({
       mutationFn: async (expenseId: string) => {
