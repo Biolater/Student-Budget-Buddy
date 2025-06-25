@@ -101,7 +101,7 @@ export default function ExpensePageClient({
         title="Expense Tracker"
         description="Keep track of your expenses easily."
       />
-      <Card className="expense-tracker bg-card">
+      <Card className="expense-tracker">
         <CardBody className="p-6">
           <ExpenseFormV2
             currencies={currencies}

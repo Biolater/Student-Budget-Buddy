@@ -106,6 +106,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   onChange={field.onChange}
                   isInvalid={!!errors.date}
                   value={field.value}
+                  variant="faded"
                   maxValue={today(getLocalTimeZone())}
                   isRequired
                 />
@@ -130,6 +131,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   isInvalid={!!errors.currency}
                   selectedKeys={field.value ? [field.value] : []}
                   isRequired
+                  variant="faded"
                 >
                   {currencies!.map((option) => (
                     <SelectItem
@@ -161,6 +163,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   selectedKeys={field.value ? [field.value] : []}
                   isInvalid={!!errors.category}
                   isRequired
+                  variant="faded"
                 >
                   {categories!.map((category) => (
                     <SelectItem
@@ -194,6 +197,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                       : ""
                   }
                   isRequired
+                  variant="faded"
                 />
               )}
             />
@@ -213,6 +217,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   onChange={field.onChange}
                   isInvalid={!!errors.description}
                   value={field.value}
+                  variant="faded"
                 />
               )}
             />

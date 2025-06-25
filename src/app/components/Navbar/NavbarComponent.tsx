@@ -31,7 +31,6 @@ export const NavbarComponent = () => {
   const [isClient, setIsClient] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
-  const router = useRouter();
   const pathname = usePathname();
 
   // Define your navigation links
