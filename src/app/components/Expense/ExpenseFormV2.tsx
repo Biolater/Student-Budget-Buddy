@@ -59,7 +59,6 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
     create: {
       mutateAsync: createExpense,
       isPending: createExpenseLoading,
-      error: createExpenseError,
     },
   } = useExpense(userId);
 

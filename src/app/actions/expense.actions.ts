@@ -10,6 +10,7 @@ import { ResponseHandler } from "../lib/ResponseHandler";
 import ApiResponse from "../types/api-response.types";
 import { Expense, ExpenseCategory, Currency } from "@prisma/client";
 import { ExtendedExpense } from "../types/expense.types";
+import { revalidateTag } from "next/cache";
 
 // Define a type for expense data returned from the create operation
 type CreatedExpense = Omit<Expense, "amount"> & { amount: number };
@@ -79,6 +80,8 @@ const createExpense = async (
         },
       });
 
+      revalidateTag("expenses")
+      revalidateTag("dashboard")
       return { ...expense, amount: expense.amount.toNumber() };
     });
   });
@@ -101,6 +104,9 @@ const deleteExpense = async (expenseId: string): Promise<ApiResponse<null>> => {
     await prisma.expense.delete({
       where: { id: expenseId },
     });
+
+    revalidateTag("expenses")
+    revalidateTag("dashboard")
 
     return null;
   });
@@ -136,6 +142,9 @@ const updateExpense = async (
         currencyId: currency,
       },
     });
+
+    revalidateTag("expenses")
+    revalidateTag("dashboard")
 
     return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
   });

@@ -39,7 +39,7 @@ export default function ExpensePageClient({
   searchQuery,
 }: ExpensePageClientProps) {
   const pathname = usePathname();
-  const { replace } = useRouter();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   
@@ -57,18 +57,18 @@ export default function ExpensePageClient({
       } else {
         params.delete('query');
       }
-      replace(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     });
-  }, 300);
+  }, 500);
 
   // Handle pagination with loading state
   const handlePageChange = useCallback((page: number) => {
     startTransition(() => {
       const params = new URLSearchParams(searchParams);
       params.set('page', page.toString());
-      replace(`${pathname}?${params.toString()}`);
+      router.push(`${pathname}?${params.toString()}`, { scroll: false });
     });
-  }, [pathname, replace, searchParams]);
+  }, [pathname, router, searchParams]);
 
   // Filter expenses based on selected filters (client-side filtering for category/date)
   const filteredExpenses = useMemo(() => {

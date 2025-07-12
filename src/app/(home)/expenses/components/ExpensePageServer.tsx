@@ -23,6 +23,7 @@ export default async function ExpensePageServer({ searchParams }: ExpensePageSer
     fetchDefaultUserCurrency(),
     fetchExpensesPaginated(page, 10, searchQuery) // 10 items per page
   ]);
+  
 
   // Handle response with proper fallbacks
   const paginatedData = expensesResponse?.success && expensesResponse.data ? expensesResponse.data : {
