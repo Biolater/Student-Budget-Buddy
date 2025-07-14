@@ -16,13 +16,19 @@ export const FinancialEventFrequency = z.enum([
   "SEMESTERLY",
   "YEARLY",
   "CUSTOM",
-]);
+])
+
+const FinancialEvenTypeEnum = z.enum([
+  "INCOME",
+  "EXPENSE",
+]).default("EXPENSE");
 
 export const CreateRecurringTransactionSchema = z.object({
   name: z.string().min(1, "Name is required"),
   amount: z.coerce.number().positive("Amount must be positive"),
   currencyId: z.string().min(1, "Currency is required"),
   frequency: FinancialEventFrequency,
+  type: FinancialEvenTypeEnum,
   nextDueDate: z.custom<DateValue>(
     isValidDateValue,
     "Next due date is required"

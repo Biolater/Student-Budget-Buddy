@@ -46,6 +46,7 @@ const createRecurringTransaction = async (
     budgetCategoryId,
     description,
     isActive,
+    type,
   } = data;
 
   // Create the recurring transaction in a transaction
@@ -76,6 +77,7 @@ const createRecurringTransaction = async (
         budgetCategoryId: budgetCategoryId || null,
         description,
         isActive,
+        type,
       },
       include: {
         budgetCategory: true,

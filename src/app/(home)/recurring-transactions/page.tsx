@@ -1,17 +1,9 @@
-"use client";
-
 import SectionHeader from "@/app/components/ui/SectionHeader";
-import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
-import { useCurrency } from "@/app/hooks/useCurrency";
-import CreateRecurringTransactionsDrawer from "@/app/components/RecurringTransactions/CreateRecurringTransactionsDrawer";
+import RecurringTransactionsClient from "@/app/components/RecurringTransactions/RecurringTransactionsClient";
+import { fetchDefaultUserCurrency } from "@/app/data/currency";
 
-const RecurringTransactions = () => {
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const { userId } = useAuth();
-  const { fetchDefaultUserCurrency } = useCurrency();
-  const defaultCurrency = fetchDefaultUserCurrency.data?.id || "";
-
+const RecurringTransactions = async () => {
+  const defaultCurrency = await fetchDefaultUserCurrency();
   return (
     <main className="container container-padding flex flex-col gap-4">
       <div className="flex justify-between flex-wrap gap-4">
@@ -19,10 +11,8 @@ const RecurringTransactions = () => {
           title="Recurring Transactions"
           description="Manage your recurring transactions easily."
         />
-        <CreateRecurringTransactionsDrawer
-          isOpen={isDrawerOpen}
-          onOpenChange={setIsDrawerOpen}
-          defaultCurrency={defaultCurrency}
+        <RecurringTransactionsClient
+          defaultCurrency={defaultCurrency?.id || "usd-id"}
         />
       </div>
     </main>

@@ -79,8 +79,8 @@ const EditExpenseModal: React.FC<EditExpenseModalProps> = ({
                 initialData={{
                   date: getInitialDateValue(),
                   amount: expense?.amount ?? 0,
-                  currency: expense?.currency?.code ?? "",
-                  category: expense?.category?.name ?? "",
+                  currency: expense?.currency?.id ?? "",
+                  category: expense?.category?.id ?? "",
                   description: expense?.description ?? "",
                 }}
               />

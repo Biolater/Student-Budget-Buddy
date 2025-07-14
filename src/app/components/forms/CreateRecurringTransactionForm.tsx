@@ -7,7 +7,6 @@ import {
 } from "@/app/schema/recurring-transactions.schema";
 import { useCategory } from "@/app/hooks/useCategory";
 import { useCurrency } from "@/app/hooks/useCurrency";
-import { useAuth } from "@clerk/nextjs";
 import {
   Input,
   Select,
@@ -18,14 +17,9 @@ import {
   Switch,
 } from "@heroui/react";
 import { useEffect } from "react";
-import {
-  getLocalTimeZone,
-  parseDate,
-  parseDateTime,
-  today,
-} from "@internationalized/date";
-/* import useRecurringTransaction from "@/app/hooks/useRecurringTransaction";
- */
+import { getLocalTimeZone, today } from "@internationalized/date";
+import useRecurringTransaction from "@/app/hooks/useRecurringTransaction";
+import { useAuth } from "@/app/contexts/AuthContext";
 interface CreateRecurringTransactionFormProps {
   onSuccess?: () => void;
   defaultCurrency: string;
@@ -36,27 +30,22 @@ const CreateRecurringTransactionForm = ({
   defaultCurrency,
 }: CreateRecurringTransactionFormProps) => {
   const { userId } = useAuth();
-
-  // Move all hooks before any conditional statements
   const {
-    budgetCategoriesQuery: {
-      data: categories,
-      isPending: categoriesLoading,
-      error: categoriesError,
-    },
+    budgetCategoriesQuery: { data: categories, isPending: categoriesLoading },
   } = useCategory();
 
   const {
-    query: {
-      data: currencies,
-      isPending: currenciesLoading,
-      error: currenciesError,
-    },
+    query: { data: currencies, isPending: currenciesLoading },
   } = useCurrency();
 
-  /*   const {
-    create: { mutateAsync: createRecurringTransaction, isPending: createRecurringTransactionLoading },
-  } = useRecurringTransaction(userId); */
+  console.log({ categories, currencies } )
+
+  const {
+    create: {
+      mutateAsync: createRecurringTransaction,
+      isPending: createRecurringTransactionLoading,
+    },
+  } = useRecurringTransaction(userId);
 
   const form = useForm<CreateRecurringTransactionSchemaType>({
     resolver: zodResolver(CreateRecurringTransactionSchema),
@@ -64,26 +53,24 @@ const CreateRecurringTransactionForm = ({
       frequency: "MONTHLY",
       currencyId: defaultCurrency,
       isActive: true,
+      type: "EXPENSE",
     },
   });
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = form;
 
   const onSubmit = async (data: CreateRecurringTransactionSchemaType) => {
-    /*     await createRecurringTransaction(data);
-     */ onSuccess?.();
+    console.log(data);
+    await createRecurringTransaction(data);
+    onSuccess?.();
   };
 
   if (categoriesLoading || currenciesLoading) {
     return <div>Loading...</div>;
-  }
-
-  if (categoriesError || currenciesError) {
-    return <div>Error loading data</div>;
   }
 
   return (
@@ -103,6 +90,29 @@ const CreateRecurringTransactionForm = ({
               isRequired
               {...field}
             />
+          )}
+        />
+        <Controller
+          control={control}
+          name="type"
+          render={({ field }) => (
+            <Select
+              variant="faded"
+              label="Transaction Type"
+              labelPlacement="outside"
+              placeholder="Select type"
+              errorMessage={errors.type?.message}
+              onSelectionChange={(keys) => {
+                const selectedKey = Array.from(keys)[0]?.toString();
+                field.onChange(selectedKey);
+              }}
+              isInvalid={!!errors.type}
+              selectedKeys={field.value ? [field.value] : []}
+              isRequired
+            >
+              <SelectItem key="INCOME">Income</SelectItem>
+              <SelectItem key="EXPENSE">Expense</SelectItem>
+            </Select>
           )}
         />
         <Controller
@@ -263,8 +273,6 @@ const CreateRecurringTransactionForm = ({
       <Button
         className="mt-8 w-full md:w-auto md:self-end"
         type="submit"
-        /*         isLoading={isSubmitting || createRecurringTransactionLoading}
-        disabled={isSubmitting || createRecurringTransactionLoading} */
         color="primary"
       >
         Create Recurring Transaction

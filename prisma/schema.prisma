@@ -32,6 +32,11 @@ enum FinancialEventFrequency {
   CUSTOM
 }
 
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
 enum FinancialEventType {
   INCOME
   EXPENSE
@@ -54,6 +59,7 @@ model BudgetCategory {
   name           String           @unique
   icon           String
   budgets        Budget[]
+  type           CategoryType     @default(EXPENSE)
   description    String?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -151,6 +157,7 @@ model FinancialEvent {
   budgetCategoryId String?
   budgetCategory   BudgetCategory?         @relation(fields: [budgetCategoryId], references: [id], onDelete: SetNull)
   frequency        FinancialEventFrequency
+  type             FinancialEventType
   isActive         Boolean                 @default(true)
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
