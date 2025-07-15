@@ -12,8 +12,8 @@ export const useCategory = () => {
     budgetCategoriesQuery: useQuery({
       queryKey: ["budgetCategories"],
       queryFn: fetchBudgetCategoriesForSelect,
-/*       staleTime: 10 * 60 * 1000, // 10 minutes
-      gcTime: 60 * 60 * 1000, // 1 hour */
+      staleTime: 10 * 60 * 1000, // 10 minutes
+      gcTime: 60 * 60 * 1000, // 1 hour
     })
   };
 };

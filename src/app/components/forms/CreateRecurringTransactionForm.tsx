@@ -15,11 +15,15 @@ import {
   Textarea,
   Button,
   Switch,
+  DateValue,
 } from "@heroui/react";
-import { useEffect } from "react";
-import { getLocalTimeZone, today } from "@internationalized/date";
+import { useMemo } from "react";
+import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
 import useRecurringTransaction from "@/app/hooks/useRecurringTransaction";
 import { useAuth } from "@/app/contexts/AuthContext";
+import CreateBudgetFormSkeleton from "../Budget/CreateBudgetFormSkeleton";
+import { computeMinEndDate, toCalendarDate } from "@/app/utils/recurrence";
+
 interface CreateRecurringTransactionFormProps {
   onSuccess?: () => void;
   defaultCurrency: string;
@@ -37,8 +41,6 @@ const CreateRecurringTransactionForm = ({
   const {
     query: { data: currencies, isPending: currenciesLoading },
   } = useCurrency();
-
-  console.log({ categories, currencies } )
 
   const {
     create: {
@@ -63,6 +65,28 @@ const CreateRecurringTransactionForm = ({
     formState: { errors },
   } = form;
 
+  const activeTransactionType = form.watch("type");
+  const frequencyValue = form.watch("frequency");
+  const interval = form.watch("interval");
+  const intervalUnit = form.watch("intervalUnit");
+  const nextDueDate = form.watch("nextDueDate");
+
+  const minEndDate = computeMinEndDate(
+    frequencyValue,
+    nextDueDate,
+    interval,
+    intervalUnit
+  );
+
+  const minEndDateCalendarDate = minEndDate
+    ? toCalendarDate(minEndDate)
+    : undefined;
+
+  const budgetCategories = useMemo(
+    () => categories?.filter((c) => c.type === activeTransactionType) ?? [],
+    [categories, activeTransactionType]
+  );
+
   const onSubmit = async (data: CreateRecurringTransactionSchemaType) => {
     console.log(data);
     await createRecurringTransaction(data);
@@ -70,7 +94,7 @@ const CreateRecurringTransactionForm = ({
   };
 
   if (categoriesLoading || currenciesLoading) {
-    return <div>Loading...</div>;
+    return <CreateBudgetFormSkeleton />;
   }
 
   return (
@@ -132,7 +156,7 @@ const CreateRecurringTransactionForm = ({
               isInvalid={!!errors.budgetCategoryId}
               selectedKeys={field.value ? [field.value] : []}
             >
-              {categories!.map((category) => (
+              {budgetCategories!.map((category) => (
                 <SelectItem
                   key={category.id}
                   textValue={`${category.icon} ${category.name}`}
@@ -216,25 +240,120 @@ const CreateRecurringTransactionForm = ({
             </Select>
           )}
         />
+        {/* Custom interval UI */}
+        {frequencyValue === FinancialEventFrequency.Enum.CUSTOM && (
+          <div className="grid grid-cols-2 gap-4">
+            {/* Interval count */}
+            <Controller
+              name="interval"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Input
+                  label="Repeat every"
+                  type="number"
+                  variant="faded"
+                  size="sm"
+                  isRequired
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.valueAsNumber;
+                    field.onChange(isNaN(v) ? undefined : v);
+                  }}
+                  min={1}
+                />
+              )}
+            />
+
+            {/* Interval unit */}
+            <Controller
+              name="intervalUnit"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Select
+                  label="Unit"
+                  variant="faded"
+                  size="sm"
+                  isRequired
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  selectedKeys={field.value ? [field.value] : []}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0];
+                    if (selected) {
+                      field.onChange(
+                        selected as "DAY" | "WEEK" | "MONTH" | "YEAR"
+                      );
+                    }
+                  }}
+                >
+                  {["DAY", "WEEK", "MONTH", "YEAR"].map((unit) => (
+                    <SelectItem key={unit}>{unit.toLowerCase()}</SelectItem>
+                  ))}
+                </Select>
+              )}
+            />
+          </div>
+        )}
         <Controller
           control={control}
           name="nextDueDate"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <DatePicker
               variant="faded"
               label="Next Due Date"
               labelPlacement="outside"
               description="The date this transaction will occur next."
               showMonthAndYearPickers
-              value={field.value}
-              onChange={field.onChange}
-              errorMessage={errors.nextDueDate?.message}
+              value={
+                field.value ? toCalendarDate(field.value as Date) : undefined
+              }
+              onChange={(value: CalendarDate | null) => {
+                if (value === null) {
+                  field.onChange(undefined);
+                } else {
+                  field.onChange(
+                    new Date(value.year, value.month - 1, value.day)
+                  );
+                }
+              }}
               minValue={today(getLocalTimeZone())}
-              isInvalid={!!errors.nextDueDate}
+              errorMessage={fieldState.error?.message}
+              isInvalid={!!fieldState.error}
               isRequired
             />
           )}
         />
+        <Controller
+          control={control}
+          name="endDate"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              variant="faded"
+              label="End On"
+              labelPlacement="outside"
+              description="Leave empty to repeat forever, or set a date to stop."
+              showMonthAndYearPickers
+              value={
+                field.value ? toCalendarDate(field.value as Date) : undefined
+              }
+              onChange={(value: CalendarDate | null) => {
+                if (value === null) {
+                  field.onChange(undefined);
+                } else {
+                  field.onChange(
+                    new Date(value.year, value.month - 1, value.day)
+                  );
+                }
+              }}
+              minValue={minEndDateCalendarDate}
+              errorMessage={fieldState.error?.message}
+              isInvalid={!!fieldState.error}
+            />
+          )}
+        />
+
         <Controller
           control={control}
           name="description"

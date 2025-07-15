@@ -32,6 +32,13 @@ enum FinancialEventFrequency {
   CUSTOM
 }
 
+enum IntervalUnit {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
 enum CategoryType {
   INCOME
   EXPENSE
@@ -153,6 +160,8 @@ model FinancialEvent {
   amount           Decimal
   description      String?
   currencyId       String
+  interval         Int?
+  intervalUnit     IntervalUnit?
   currency         Currency                @relation(fields: [currencyId], references: [id], onDelete: Restrict)
   budgetCategoryId String?
   budgetCategory   BudgetCategory?         @relation(fields: [budgetCategoryId], references: [id], onDelete: SetNull)
