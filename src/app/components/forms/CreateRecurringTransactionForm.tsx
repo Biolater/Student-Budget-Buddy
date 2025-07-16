@@ -306,17 +306,9 @@ const CreateRecurringTransactionForm = ({
               labelPlacement="outside"
               description="The date this transaction will occur next."
               showMonthAndYearPickers
-              value={
-                field.value ? toCalendarDate(field.value as Date) : undefined
-              }
+              value={field.value}
               onChange={(value: CalendarDate | null) => {
-                if (value === null) {
-                  field.onChange(undefined);
-                } else {
-                  field.onChange(
-                    new Date(value.year, value.month - 1, value.day)
-                  );
-                }
+                field.onChange(value ?? undefined); // ✅ Keep CalendarDate, no conversion
               }}
               minValue={today(getLocalTimeZone())}
               errorMessage={fieldState.error?.message}
@@ -335,17 +327,9 @@ const CreateRecurringTransactionForm = ({
               labelPlacement="outside"
               description="Leave empty to repeat forever, or set a date to stop."
               showMonthAndYearPickers
-              value={
-                field.value ? toCalendarDate(field.value as Date) : undefined
-              }
+              value={field.value}
               onChange={(value: CalendarDate | null) => {
-                if (value === null) {
-                  field.onChange(undefined);
-                } else {
-                  field.onChange(
-                    new Date(value.year, value.month - 1, value.day)
-                  );
-                }
+                field.onChange(value ?? undefined); // ✅ Keep CalendarDate, no conversion
               }}
               minValue={minEndDateCalendarDate}
               errorMessage={fieldState.error?.message}

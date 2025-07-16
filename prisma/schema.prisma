@@ -157,6 +157,7 @@ model FinancialEvent {
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   name             String
   nextDueDate      DateTime
+  endDate          DateTime?
   amount           Decimal
   description      String?
   currencyId       String

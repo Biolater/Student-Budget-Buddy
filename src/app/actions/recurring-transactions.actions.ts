@@ -10,9 +10,10 @@ import { fetchRecurringTransactions } from "../data/recurringTransactions";
 
 type ServerRecurringTransactionData = Omit<
   CreateRecurringTransactionSchemaType,
-  "nextDueDate"
+  "nextDueDate" | "endDate"
 > & {
   nextDueDate: Date;
+  endDate?: Date;
 };
 
 interface CreateRecurringTransactionResponse {
@@ -21,6 +22,7 @@ interface CreateRecurringTransactionResponse {
   amount: number;
   frequency: string;
   nextDueDate: Date;
+  endDate: Date;
   budgetCategory?: {
     name: string;
     icon: string;
@@ -37,17 +39,7 @@ const createRecurringTransaction = async (
   data: ServerRecurringTransactionData
 ) => {
   const user = await requireUser();
-  const {
-    name,
-    amount,
-    currencyId,
-    frequency,
-    nextDueDate,
-    budgetCategoryId,
-    description,
-    isActive,
-    type,
-  } = data;
+  const { currencyId, budgetCategoryId } = data;
 
   // Create the recurring transaction in a transaction
   return prisma.$transaction(async (tx) => {
@@ -69,15 +61,7 @@ const createRecurringTransaction = async (
     const recurringTransaction = await tx.financialEvent.create({
       data: {
         userId: user.userId!,
-        name,
-        amount,
-        currencyId,
-        frequency,
-        nextDueDate,
-        budgetCategoryId: budgetCategoryId || null,
-        description,
-        isActive,
-        type,
+        ...data,
       },
       include: {
         budgetCategory: true,
