@@ -56,6 +56,8 @@ const CreateRecurringTransactionForm = ({
       currencyId: defaultCurrency,
       isActive: true,
       type: "EXPENSE",
+      amount: 0,
+      nextDueDate: today(getLocalTimeZone()),
     },
   });
 
@@ -210,8 +212,8 @@ const CreateRecurringTransactionForm = ({
               isInvalid={!!errors.amount}
               isRequired
               onChange={(e) => {
-                const parsedValue = Number.parseFloat(e.target.value);
-                field.onChange(isNaN(parsedValue) ? undefined : parsedValue);
+                field.onChange(Number(e.target.value));
+                console.log("val", e.target.value);
               }}
             />
           )}
@@ -258,7 +260,7 @@ const CreateRecurringTransactionForm = ({
                   errorMessage={fieldState.error?.message}
                   value={field.value?.toString() ?? ""}
                   onChange={(e) => {
-                    const v = e.target.valueAsNumber;
+                    const v = Number(e.target.valueAsNumber);
                     field.onChange(isNaN(v) ? undefined : v);
                   }}
                   min={1}
@@ -376,6 +378,7 @@ const CreateRecurringTransactionForm = ({
       <Button
         className="mt-8 w-full md:w-auto md:self-end"
         type="submit"
+        isLoading={createRecurringTransactionLoading}
         color="primary"
       >
         Create Recurring Transaction

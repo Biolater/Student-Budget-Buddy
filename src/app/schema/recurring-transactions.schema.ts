@@ -26,7 +26,7 @@ const calendarDateSchema = z.custom<CalendarDate>(
 export const CreateRecurringTransactionSchema = z
   .object({
     name: z.string().min(1, "Name is required"),
-    amount: z.coerce.number().positive("Amount must be positive"),
+    amount: z.number().positive("Amount must be positive"),
     currencyId: z.string().min(1, "Currency is required"),
 
     frequency: FinancialEventFrequency,

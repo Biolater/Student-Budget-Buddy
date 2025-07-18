@@ -1,6 +1,9 @@
 import SectionHeader from "@/app/components/ui/SectionHeader";
 import RecurringTransactionsClient from "@/app/components/RecurringTransactions/RecurringTransactionsClient";
 import { fetchDefaultUserCurrency } from "@/app/data/currency";
+import RecurringTransactionItems from "@/app/components/RecurringTransactions/RecurringTransactionItems";
+import { Suspense } from "react";
+import RecurringTransactionItemsSkeleton from "@/app/components/RecurringTransactions/RecurringTransactionItemsSkeleton";
 
 const RecurringTransactions = async () => {
   const defaultCurrency = await fetchDefaultUserCurrency();
@@ -15,6 +18,9 @@ const RecurringTransactions = async () => {
           defaultCurrency={defaultCurrency?.id || "usd-id"}
         />
       </div>
+      <Suspense fallback={<RecurringTransactionItemsSkeleton />}>
+        <RecurringTransactionItems />
+      </Suspense>
     </main>
   );
 };

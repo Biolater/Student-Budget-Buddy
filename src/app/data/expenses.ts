@@ -21,7 +21,7 @@ const _fetchExpensesPaginatedCached = unstable_cache(
   async (userId: string, page: number, limit: number, searchQuery?: string) => {
     return ResponseHandler.execute<PaginatedExpensesResponse>(async () => {
       const offset = (page - 1) * limit;
-      
+
       // Build where clause for search
       const whereClause: Prisma.ExpenseWhereInput = { userId };
       if (searchQuery && searchQuery.trim()) {
@@ -89,7 +89,7 @@ export const fetchExpensesPaginated = async (
 ) => {
   const user = await requireUser();
   if (!user || !user.userId) throw new Error("User not authenticated");
-  
+
   return await _fetchExpensesPaginatedCached(user.userId, page, limit, searchQuery);
 };
 
@@ -97,7 +97,7 @@ export const fetchExpensesPaginated = async (
 export const fetchExpenses = async () => {
   const user = await requireUser();
   if (!user || !user.userId) throw new Error("User not authenticated");
-  
+
   // Fetch only first 50 expenses to avoid cache limit
   const result = await _fetchExpensesPaginatedCached(user.userId, 1, 50);
   return { data: result.data?.expenses || [], success: result.success, error: result.error };

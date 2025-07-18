@@ -7,6 +7,7 @@ import {
 } from "@/app/schema/recurring-transactions.schema";
 import { requireUser } from "@/app/utils/auth.utils";
 import { fetchRecurringTransactions } from "../data/recurringTransactions";
+import { revalidateTag } from "next/cache";
 
 type ServerRecurringTransactionData = Omit<
   CreateRecurringTransactionSchemaType,
@@ -69,6 +70,8 @@ const createRecurringTransaction = async (
       },
     });
 
+    revalidateTag("recurring-transactions")
+
     // Return the created recurring transaction
     return {
       ...recurringTransaction,
@@ -89,7 +92,7 @@ const updateRecurringTransaction = async (
     const recurringTransaction = await prisma.financialEvent.findUnique({
       where: { id, userId },
     });
-    
+
     if (!recurringTransaction) {
       throw new Error("Recurring transaction not found");
     }
@@ -138,7 +141,7 @@ const deleteRecurringTransaction = async (id: string) => {
     const recurringTransaction = await prisma.financialEvent.findUnique({
       where: { id, userId },
     });
-    
+
     if (!recurringTransaction) {
       throw new Error("Recurring transaction not found");
     }
