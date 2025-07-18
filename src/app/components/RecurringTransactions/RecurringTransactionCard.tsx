@@ -1,7 +1,7 @@
 // src/app/components/RecurringTransactions/TransactionCard.tsx
 'use client'
 
-import React from 'react'
+import React, { useState } from 'react'
 import {
   Card,
   CardHeader,
@@ -19,6 +19,7 @@ import {
   Trash,
 } from 'lucide-react'
 import { FinancialEventClient } from '@/app/types/recurring-transactions.types'
+import DeleteRecurringTransactionModal from './DeleteRecurringTransactionModal'
 
 interface TransactionCardProps {
   transaction: FinancialEventClient
@@ -40,6 +41,8 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
     description,
     isActive,
   } = transaction
+
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   // Re-hydrate the ISO string into a real Date object
   const dateObj =
@@ -72,6 +75,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
   ]
 
   return (
+    <>
     <Card isHoverable>
       <CardHeader className="flex items-center justify-between">
         <h3 className="text-lg font-semibold truncate">{name}</h3>
@@ -111,10 +115,17 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
           variant="flat"
           color="danger"
           startContent={<Trash size={14} />}
+          onPress={() => setDeleteOpen(true)}
         >
           Delete
         </Button>
       </CardFooter>
     </Card>
+    <DeleteRecurringTransactionModal
+      isOpen={deleteOpen}
+      onOpenChange={setDeleteOpen}
+      transactionId={id}
+    />
+    </>
   )
 }

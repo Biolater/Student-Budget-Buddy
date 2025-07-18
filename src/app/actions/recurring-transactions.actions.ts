@@ -151,6 +151,8 @@ const deleteRecurringTransaction = async (id: string) => {
       where: { id, userId },
     });
 
+    revalidateTag("recurring-transactions");
+
     return { success: true };
   } catch (error) {
     throw error;
