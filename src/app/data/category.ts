@@ -24,6 +24,7 @@ export async function fetchBudgetCategories() {
       id: true,
       name: true,
       icon: true,
+      type: true,
     },
   });
 }

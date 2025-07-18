@@ -8,9 +8,25 @@ import {
 import { requireUser } from "../utils/auth.utils";
 import { ResponseHandler } from "../lib/ResponseHandler";
 import ApiResponse from "../types/api-response.types";
-import { Expense, ExpenseCategory, Currency } from "@prisma/client";
-import { ExtendedExpense } from "../types/expense.types";
+import { Expense } from "@prisma/client";
 import { revalidateTag } from "next/cache";
+
+const expenseToBudgetCategoryMap: Record<string, string> = {
+  "food-id": "food-id",
+  "transport-id": "transport-id",
+  "utilities-id": "utilities-id",
+  "subscriptions-id": "subscriptions-id",
+  "education-id": "education-id",
+  "health-id": "health-id",
+  "shopping-id": "shopping-id",
+  "entertainment-id": "entertainment-id",
+  "gifts-id": "gifts-id",
+  "travel-id": "travel-id",
+  "personal-care-id": "personal-care-id",
+  "fitness-id": "health-id",
+  "home-id": "utilities-id",
+  "phone-id": "utilities-id",
+};
 
 // Define a type for expense data returned from the create operation
 type CreatedExpense = Omit<Expense, "amount"> & { amount: number };
@@ -24,42 +40,23 @@ const createExpense = async (
 ): Promise<ApiResponse<CreatedExpense>> => {
   return ResponseHandler.execute<CreatedExpense>(async () => {
     const user = await requireUser();
-    if (!user || !user.userId) throw new Error("User not authenticated");
+    if (!user?.userId) throw new Error("User not authenticated");
+
     const validatedData = ServerExpenseSchema.parse(data);
     const { date, amount, currency, category, description } = validatedData;
 
     if (amount <= 0) throw Error("Amount must be positive");
-    if (date > new Date())
-      throw Error("Cannot create expenses for future dates");
+    if (date > new Date()) throw Error("Cannot create expenses for future dates");
 
-    const budgetCategory = await prisma.budgetCategory.findUnique({
-      where: { id: category },
-    });
-    if (!budgetCategory) throw Error("Invalid budget category");
-
-    const budgetCurrency = await prisma.currency.findUnique({
-      where: { id: currency },
-    });
+    const budgetCurrency = await prisma.currency.findUnique({ where: { id: currency } });
     if (!budgetCurrency) throw Error("Invalid currency");
 
-    // Use transaction for consistency
     return await prisma.$transaction(async (tx) => {
-      // Find matching budget
-      const matchingBudget = await tx.budget.findFirst({
-        where: {
-          budgetCategoryId: category,
-          userId: user.userId,
-          startDate: { lte: date },
-          endDate: { gte: date },
-        },
-      });
-
-      // Check for duplicate
       const potentialDuplicate = await tx.expense.findFirst({
         where: {
           userId: user.userId,
-          date: { equals: date },
-          amount: { equals: amount },
+          date,
+          amount,
           expenseCategoryId: category,
           createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
         },
@@ -67,7 +64,21 @@ const createExpense = async (
 
       if (potentialDuplicate) throw Error("Similar expense recently created");
 
-      // Create expense
+      // Find matching budget
+      const fallbackBudgetCategoryId = expenseToBudgetCategoryMap[category];
+      let matchingBudget = null;
+
+      if (fallbackBudgetCategoryId) {
+        matchingBudget = await tx.budget.findFirst({
+          where: {
+            budgetCategoryId: fallbackBudgetCategoryId,
+            userId: user.userId,
+            startDate: { lte: date },
+            endDate: { gte: date },
+          },
+        });
+      }
+
       const expense = await tx.expense.create({
         data: {
           date,
@@ -80,8 +91,9 @@ const createExpense = async (
         },
       });
 
-      revalidateTag("expenses")
-      revalidateTag("dashboard")
+      revalidateTag("expenses");
+      revalidateTag("dashboard");
+
       return { ...expense, amount: expense.amount.toNumber() };
     });
   });
@@ -121,15 +133,24 @@ const updateExpense = async (
     const validatedData = ServerExpenseSchema.parse(data);
     const { date, amount, currency, category, description } = validatedData;
 
-    // Verify that the expense exists and belongs to the user.
     const expense = await prisma.expense.findUnique({
       where: { id: expenseId },
     });
-    if (!expense) {
-      throw Error("Expense not found");
-    }
-    if (expense.userId !== user.userId) {
-      throw Error("You are not authorized to update this expense");
+    if (!expense) throw Error("Expense not found");
+    if (expense.userId !== user.userId) throw Error("You are not authorized");
+
+    const fallbackBudgetCategoryId = expenseToBudgetCategoryMap[category];
+
+    let matchingBudget = null;
+    if (fallbackBudgetCategoryId) {
+      matchingBudget = await prisma.budget.findFirst({
+        where: {
+          budgetCategoryId: fallbackBudgetCategoryId,
+          userId: user.userId,
+          startDate: { lte: date },
+          endDate: { gte: date },
+        },
+      });
     }
 
     const updatedExpense = await prisma.expense.update({
@@ -140,11 +161,12 @@ const updateExpense = async (
         expenseCategoryId: category,
         description,
         currencyId: currency,
+        budgetId: matchingBudget?.id ?? null,
       },
     });
 
-    revalidateTag("expenses")
-    revalidateTag("dashboard")
+    revalidateTag("expenses");
+    revalidateTag("dashboard");
 
     return { ...updatedExpense, amount: updatedExpense.amount.toNumber() };
   });

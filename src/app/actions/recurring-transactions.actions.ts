@@ -7,12 +7,14 @@ import {
 } from "@/app/schema/recurring-transactions.schema";
 import { requireUser } from "@/app/utils/auth.utils";
 import { fetchRecurringTransactions } from "../data/recurringTransactions";
+import { revalidateTag } from "next/cache";
 
 type ServerRecurringTransactionData = Omit<
   CreateRecurringTransactionSchemaType,
-  "nextDueDate"
+  "nextDueDate" | "endDate"
 > & {
   nextDueDate: Date;
+  endDate?: Date;
 };
 
 interface CreateRecurringTransactionResponse {
@@ -21,6 +23,7 @@ interface CreateRecurringTransactionResponse {
   amount: number;
   frequency: string;
   nextDueDate: Date;
+  endDate: Date;
   budgetCategory?: {
     name: string;
     icon: string;
@@ -37,16 +40,7 @@ const createRecurringTransaction = async (
   data: ServerRecurringTransactionData
 ) => {
   const user = await requireUser();
-  const {
-    name,
-    amount,
-    currencyId,
-    frequency,
-    nextDueDate,
-    budgetCategoryId,
-    description,
-    isActive,
-  } = data;
+  const { currencyId, budgetCategoryId } = data;
 
   // Create the recurring transaction in a transaction
   return prisma.$transaction(async (tx) => {
@@ -68,20 +62,15 @@ const createRecurringTransaction = async (
     const recurringTransaction = await tx.financialEvent.create({
       data: {
         userId: user.userId!,
-        name,
-        amount,
-        currencyId,
-        frequency,
-        nextDueDate,
-        budgetCategoryId: budgetCategoryId || null,
-        description,
-        isActive,
+        ...data,
       },
       include: {
         budgetCategory: true,
         currency: true,
       },
     });
+
+    revalidateTag("recurring-transactions")
 
     // Return the created recurring transaction
     return {
@@ -103,7 +92,7 @@ const updateRecurringTransaction = async (
     const recurringTransaction = await prisma.financialEvent.findUnique({
       where: { id, userId },
     });
-    
+
     if (!recurringTransaction) {
       throw new Error("Recurring transaction not found");
     }
@@ -152,7 +141,7 @@ const deleteRecurringTransaction = async (id: string) => {
     const recurringTransaction = await prisma.financialEvent.findUnique({
       where: { id, userId },
     });
-    
+
     if (!recurringTransaction) {
       throw new Error("Recurring transaction not found");
     }

@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { prisma } from "@/app/lib/client";
 import { ConversionRateResponse } from "../types/currency.types";
 import { requireUser } from "../utils/auth.utils";
+import { ResponseHandler } from "../lib/ResponseHandler";
 
 export async function fetchCurrencies() {
   return prisma.currency.findMany({
@@ -21,21 +22,25 @@ export async function fetchCurrencies() {
 // Internal cached function for user default currency
 const _fetchDefaultUserCurrencyCached = unstable_cache(
   async (userId: string) => {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        baseCurrency: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            symbol: true,
+    const response = await ResponseHandler.execute(async () => {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          baseCurrency: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              symbol: true,
+            },
           },
         },
-      },
+      });
+
+      return user?.baseCurrency || null;
     });
 
-    return user?.baseCurrency || null;
+    return response.data;
   },
   ["defaultUserCurrency"],
   {

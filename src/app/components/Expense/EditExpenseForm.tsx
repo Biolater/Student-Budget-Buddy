@@ -62,8 +62,8 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
     try {
       const formattedData = {
         ...data,
-        currency: `${data.currency.toLowerCase()}-id`,
-        category: `${data.category.toLowerCase()}-id`,
+        currency: data.currency,
+        category: data.category,
       };
       await updateExpense({ expenseId, data: formattedData });
     } catch (error) {
@@ -133,7 +133,7 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
               >
                 {currencies.map((option) => (
                   <SelectItem
-                    key={option.code}
+                    key={option.id}
                     textValue={`${option.symbol} ${option.code}`}
                   >
                     {option.symbol} {option.code}
@@ -167,7 +167,7 @@ const EditExpenseForm: FC<EditExpenseFormProps> = ({
                 {categories.map((category) => (
                   <SelectItem
                     textValue={`${category.icon} ${category.name}`}
-                    key={category.name}
+                    key={category.id}
                   >
                     {category.icon} {category.name}
                   </SelectItem>

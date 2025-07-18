@@ -9,6 +9,7 @@ import { ChangeEvent, useState } from "react";
 import {
   getLocalTimeZone,
   now,
+  today,
   type ZonedDateTime,
 } from "@internationalized/date";
 import { format, parseISO } from "date-fns";
@@ -80,6 +81,7 @@ const ExpenseFilterOptions: React.FC<{
             start: now(getLocalTimeZone()),
             end: now(getLocalTimeZone()),
           }}
+          maxValue={today(getLocalTimeZone())}
           value={dateRangePickerValue}
           className="expenses-date-range opacity-0 inset-0"
         />

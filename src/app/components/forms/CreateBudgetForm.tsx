@@ -20,6 +20,7 @@ import { useEffect } from "react";
 import { parseDate, parseDateTime } from "@internationalized/date";
 import useBudget from "@/app/hooks/useBudget";
 import CreateBudgetFormSkeleton from "../Budget/CreateBudgetFormSkeleton";
+import { CategoryType } from "@prisma/client";
 
 interface CreateBudgetFormProps {
   onSuccess?: () => void;
@@ -40,6 +41,10 @@ const CreateBudgetForm = ({
       error: categoriesError,
     },
   } = useCategory();
+
+  const budgetCategories = categories?.filter(
+    (category) => category.type === CategoryType.EXPENSE
+  );
 
   const {
     query: {
@@ -209,7 +214,7 @@ const CreateBudgetForm = ({
               isRequired
               variant="faded"
             >
-              {categories!.map((option) => (
+              {budgetCategories!.map((option) => (
                 <SelectItem
                   textValue={`${option.icon} ${option.name}`}
                   key={option.id}
