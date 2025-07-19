@@ -24,11 +24,13 @@ import toast from "react-hot-toast";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import Link from "next/link";
+import UserSettingsModal from "../Settings/UserSettingsModal";
 
 export const NavbarComponent = () => {
   // State to track if the component is mounted in the client
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const pathname = usePathname();
@@ -155,8 +157,12 @@ export const NavbarComponent = () => {
                   {user.emailAddresses[0].emailAddress}
                 </p>
               </DropdownItem>
-              <DropdownItem key="settings">My Settings</DropdownItem>
-              <DropdownItem key="help">Help &amp; Support</DropdownItem>
+              <DropdownItem 
+                key="settings" 
+                onPress={() => setIsSettingsOpen(true)}
+              >
+                My Settings
+              </DropdownItem>
               <DropdownItem
                 key="logout"
                 color="danger"
@@ -223,6 +229,14 @@ export const NavbarComponent = () => {
           </>
         )}
       </NavbarMenu>
+      
+      {/* Settings Modal */}
+      {isClient && isLoaded && isSignedIn && (
+        <UserSettingsModal 
+          isOpen={isSettingsOpen} 
+          onOpenChange={setIsSettingsOpen} 
+        />
+      )}
     </Navbar>
   );
 };
