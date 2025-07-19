@@ -123,6 +123,8 @@ const updateRecurringTransaction = async (
       },
     });
 
+    revalidateTag("recurring-transactions");
+
     return {
       ...updatedTransaction,
       amount: updatedTransaction.amount.toNumber(),

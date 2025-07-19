@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Modal,
@@ -6,10 +6,10 @@ import {
   ModalHeader,
   ModalBody,
   ModalFooter,
-} from '@heroui/modal';
-import { Button } from '@heroui/react';
-import { useAuth } from '@/app/contexts/AuthContext';
-import useRecurringTransaction from '@/app/hooks/useRecurringTransaction';
+} from "@heroui/modal";
+import { Button } from "@heroui/react";
+import { useAuth } from "@/app/contexts/AuthContext";
+import useRecurringTransaction from "@/app/hooks/useRecurringTransaction";
 
 interface DeleteRecurringTransactionModalProps {
   isOpen: boolean;
@@ -34,7 +34,7 @@ const DeleteRecurringTransactionModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
+    <Modal backdrop="blur" isOpen={isOpen} onOpenChange={onOpenChange}>
       <ModalContent>
         <ModalHeader>Confirm Deletion</ModalHeader>
         <ModalBody>
