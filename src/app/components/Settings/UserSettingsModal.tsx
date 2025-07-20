@@ -18,8 +18,6 @@ import {
   CardBody,
   addToast,
 } from "@heroui/react";
-import { useAuth } from "@/app/contexts/AuthContext";
-import { useUser } from "@clerk/nextjs";
 // Import useCurrency hook which now includes the mutation
 import { useCurrency } from "@/app/hooks/useCurrency";
 
@@ -32,10 +30,6 @@ export default function UserSettingsModal({
   isOpen,
   onOpenChange,
 }: UserSettingsModalProps) {
-  const { user } = useUser();
-  const { userId } = useAuth();
-  const [deleteConfirmText, setDeleteConfirmText] = useState<string>("");
-  const [isDeleting, setIsDeleting] = useState(false);
 
   // Use Tanstack Query hooks for data fetching
   const { 
@@ -82,38 +76,7 @@ export default function UserSettingsModal({
     }
   };
 
-  // Handle account deletion
-  const handleDeleteAccount = async () => {
-    if (deleteConfirmText !== user?.username) {
-      addToast({
-        title: "Error",
-        description: "Please enter your username correctly to confirm deletion",
-        color: "danger"
-      });
-      return;
-    }
 
-    setIsDeleting(true);
-    try {
-      // Call Clerk's deleteUser method
-      await user?.delete();
-      // Note: The webhook should handle the database deletion
-      addToast({
-        title: "Success",
-        description: "Your account has been deleted",
-        color: "success"
-      });
-      // The clerk hook will handle the redirect
-    } catch (error) {
-      console.error("Failed to delete account:", error);
-      addToast({
-        title: "Error",
-        description: "Failed to delete your account",
-        color: "danger"
-      });
-      setIsDeleting(false);
-    }
-  };
 
   return (
     <Modal 
@@ -196,28 +159,11 @@ export default function UserSettingsModal({
                 <CardBody>
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-lg font-medium text-danger">Danger Zone</h3>
-                      <div className="bg-danger-100 p-4 rounded-lg mt-4">
-                        <h4 className="font-medium mb-2">Delete Your Account</h4>
-                        <p className="text-sm mb-4">
-                          This action is irreversible. All your data will be permanently deleted.
+                      <h3 className="text-lg font-medium">Account Settings</h3>
+                      <div className="mt-4 p-4 border rounded-lg">
+                        <p className="text-sm text-muted-foreground">
+                          Manage your account settings here.
                         </p>
-                        <div className="space-y-4">
-                          <Input 
-                            label={`Type "${user?.username}" to confirm`}
-                            placeholder="Enter your username"
-                            value={deleteConfirmText}
-                            onChange={(e) => setDeleteConfirmText(e.target.value)}
-                          />
-                          <Button
-                            color="danger"
-                            onPress={handleDeleteAccount}
-                            isLoading={isDeleting}
-                            isDisabled={isDeleting || deleteConfirmText !== user?.username}
-                          >
-                            Delete Account
-                          </Button>
-                        </div>
                       </div>
                     </div>
                   </div>

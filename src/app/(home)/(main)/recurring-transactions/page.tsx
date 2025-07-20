@@ -5,7 +5,7 @@ import RecurringTransactionItems from "@/app/components/RecurringTransactions/Re
 import { Suspense } from "react";
 import RecurringTransactionItemsSkeleton from "@/app/components/RecurringTransactions/RecurringTransactionItemsSkeleton";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
-import RecurringTransactionsError from "../../components/RecurringTransactions/RecurringTransactionsError";
+import RecurringTransactionsError from "../../../components/RecurringTransactions/RecurringTransactionsError";
 
 const RecurringTransactions = async () => {
   const defaultCurrency = await fetchDefaultUserCurrency();
