@@ -1,11 +1,11 @@
 import { prisma } from "@/app/lib/client";
 import { CategoryType } from "@prisma/client";
 
-async function seedBudgetCategories() {
-  console.log("🌱 Seeding Budget Categories...");
+async function seed() {
+  console.log("🌱 Seeding...");
 
+  // Budget Categories
   const budgetCategories = [
-    // EXPENSE CATEGORIES
     { id: "rent-id", name: "Rent", icon: "🏠", description: "Monthly housing cost", type: CategoryType.EXPENSE },
     { id: "food-id", name: "Food & Groceries", icon: "🍔", description: "Groceries, meals, snacks", type: CategoryType.EXPENSE },
     { id: "transport-id", name: "Transport", icon: "🚌", description: "Bus, gas, taxi, and travel", type: CategoryType.EXPENSE },
@@ -18,8 +18,6 @@ async function seedBudgetCategories() {
     { id: "personal-care-id", name: "Personal Care", icon: "🧴", description: "Haircuts, skincare", type: CategoryType.EXPENSE },
     { id: "gifts-id", name: "Gifts & Donations", icon: "🎁", description: "Gifts, charity", type: CategoryType.EXPENSE },
     { id: "savings-id", name: "Savings", icon: "💾", description: "Emergency or goal savings", type: CategoryType.EXPENSE },
-
-    // INCOME CATEGORIES
     { id: "salary-id", name: "Salary", icon: "💼", description: "Full-time or part-time job income", type: CategoryType.INCOME },
     { id: "freelance-id", name: "Freelance", icon: "🧑‍💻", description: "Gig and freelance income", type: CategoryType.INCOME },
     { id: "scholarship-id", name: "Scholarship", icon: "🎓", description: "Financial aid or grants", type: CategoryType.INCOME },
@@ -37,12 +35,51 @@ async function seedBudgetCategories() {
     });
   }
 
-  console.log("✅ Budget Categories seeded.");
+  // Expense Categories
+  const expenseCategories = [
+    { id: "rent-id", name: "Rent", icon: "🏠" },
+    { id: "groceries-id", name: "Groceries", icon: "🛒" },
+    { id: "transport-id", name: "Transport", icon: "🚗" },
+    { id: "subscriptions-id", name: "Subscriptions", icon: "📺" },
+    { id: "health-id", name: "Health", icon: "🏥" },
+    { id: "shopping-id", name: "Shopping", icon: "🛍️" },
+    { id: "education-id", name: "Education", icon: "📚" },
+    { id: "entertainment-id", name: "Entertainment", icon: "🎮" },
+    { id: "utilities-id", name: "Utilities", icon: "💡" },
+    { id: "other-id", name: "Other", icon: "🔧" },
+  ];
+
+  for (const category of expenseCategories) {
+    await prisma.expenseCategory.upsert({
+      where: { id: category.id },
+      update: {},
+      create: category,
+    });
+  }
+
+  // Currencies
+  const currencies = [
+    { id: "usd-id", code: "USD", name: "US Dollar", symbol: "$" },
+    { id: "eur-id", code: "EUR", name: "Euro", symbol: "€" },
+    { id: "gbp-id", code: "GBP", name: "British Pound", symbol: "£" },
+    { id: "try-id", code: "TRY", name: "Turkish Lira", symbol: "₺" },
+    { id: "azn-id", code: "AZN", name: "Azerbaijani Manat", symbol: "₼" },
+  ];
+
+  for (const currency of currencies) {
+    await prisma.currency.upsert({
+      where: { id: currency.id },
+      update: {},
+      create: currency,
+    });
+  }
+
+  console.log("✅ Seeding complete.");
 }
 
-seedBudgetCategories()
+seed()
   .catch((e) => {
-    console.error("❌ Error seeding budget categories:", e);
+    console.error("❌ Seeding error:", e);
     process.exit(1);
   })
   .finally(async () => {

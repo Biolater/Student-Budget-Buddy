@@ -63,7 +63,6 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
   } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
-    console.log(data);
     // Attempt to create the expense
     await createExpense(data);
     // Reset form on success

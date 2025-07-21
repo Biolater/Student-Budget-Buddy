@@ -93,7 +93,7 @@ export default function EditRecurringTransactionModal({
       if (field === "budgetCategoryId" && value === "") {
         payload.budgetCategoryId = undefined;
       } else {
-        // @ts-ignore
+        // @ts-expect-error expected error
         payload[field] = value;
       }
     });
