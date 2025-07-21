@@ -45,7 +45,7 @@ const _fetchDefaultUserCurrencyCached = unstable_cache(
   ["defaultUserCurrency"],
   {
     revalidate: 300, // Cache for 5 minutes
-    tags: ["user-data", "currency"],
+    tags: ["defaultUserCurrency"],
   }
 );
 

@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { FinancialEventClient } from '@/app/types/recurring-transactions.types'
 import DeleteRecurringTransactionModal from './DeleteRecurringTransactionModal'
+import EditRecurringTransactionModal from './EditRecurringTransactionModal'
 
 interface TransactionCardProps {
   transaction: FinancialEventClient
@@ -43,6 +44,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
   } = transaction
 
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
 
   // Re-hydrate the ISO string into a real Date object
   const dateObj =
@@ -107,7 +109,7 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
       </CardBody>
 
       <CardFooter className="flex justify-end space-x-2">
-        <Button size="sm" variant="flat" startContent={<Edit size={14} />}>
+        <Button onPress={() => setEditOpen(true)} size="sm" variant="flat" startContent={<Edit size={14} />}>
           Edit
         </Button>
         <Button
@@ -125,6 +127,11 @@ export const TransactionCard: React.FC<TransactionCardProps> = ({
       isOpen={deleteOpen}
       onOpenChange={setDeleteOpen}
       transactionId={id}
+    />
+    <EditRecurringTransactionModal
+      isOpen={editOpen}
+      onOpenChange={setEditOpen}
+      transactionItem={transaction}
     />
     </>
   )

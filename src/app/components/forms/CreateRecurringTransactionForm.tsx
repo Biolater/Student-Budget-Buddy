@@ -90,7 +90,6 @@ const CreateRecurringTransactionForm = ({
   );
 
   const onSubmit = async (data: CreateRecurringTransactionSchemaType) => {
-    console.log(data);
     await createRecurringTransaction(data);
     onSuccess?.();
   };
@@ -213,7 +212,6 @@ const CreateRecurringTransactionForm = ({
               isRequired
               onChange={(e) => {
                 field.onChange(Number(e.target.value));
-                console.log("val", e.target.value);
               }}
             />
           )}

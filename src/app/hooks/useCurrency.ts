@@ -2,10 +2,11 @@ import {
   fetchCurrenciesForSelect,
   fetchDefaultUserCurrency,
 } from "@/app/actions/currency.actions";
-import { useQuery } from "@tanstack/react-query";
+import { updateUserBaseCurrency } from "@/app/actions/user-settings.actions";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-export const useCurrency = (
-  ) => {
+export const useCurrency = () => {
+  const queryClient = useQueryClient();
   return {
     query: useQuery({
       queryKey: ["currencies"],
@@ -26,6 +27,16 @@ export const useCurrency = (
       retry: 1,
       staleTime: 10 * 60 * 1000,
       gcTime: 60 * 60 * 1000,
+    }),
+    updateBaseCurrency: useMutation({
+      mutationFn: (currencyId: string) => updateUserBaseCurrency(currencyId),
+      onSuccess: () => {
+        // Invalidate and refetch queries that might be affected
+        return Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["currencies"] }),
+          queryClient.invalidateQueries({ queryKey: ["defaultUserCurrency"] })
+        ]);
+      },
     }),
   };
 };

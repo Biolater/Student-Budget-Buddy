@@ -24,11 +24,12 @@ import toast from "react-hot-toast";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import Link from "next/link";
+import UserSettingsModal from "../Settings/UserSettingsModal";
 
 export const NavbarComponent = () => {
   // State to track if the component is mounted in the client
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const pathname = usePathname();
@@ -39,19 +40,9 @@ export const NavbarComponent = () => {
     { href: "/expenses", label: "Expenses" },
     { href: "/recurring-transactions", label: "Recurring Transactions" },
     { href: "/budget", label: "Budget" },
-    { href: "/goals", label: "Goals" },
-    { href: "/analysis", label: "Analysis" },
   ];
 
-  // Set isClient true once the component has mounted
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   // Prevent server-side rendering issues
-  if (!isClient) {
-    return null;
-  }
 
   return (
     <Navbar
@@ -155,8 +146,12 @@ export const NavbarComponent = () => {
                   {user.emailAddresses[0].emailAddress}
                 </p>
               </DropdownItem>
-              <DropdownItem key="settings">My Settings</DropdownItem>
-              <DropdownItem key="help">Help &amp; Support</DropdownItem>
+              <DropdownItem 
+                key="settings" 
+                onPress={() => setIsSettingsOpen(true)}
+              >
+                My Settings
+              </DropdownItem>
               <DropdownItem
                 key="logout"
                 color="danger"
@@ -223,6 +218,14 @@ export const NavbarComponent = () => {
           </>
         )}
       </NavbarMenu>
+      
+      {/* Settings Modal */}
+      {isSignedIn && (
+        <UserSettingsModal 
+          isOpen={isSettingsOpen} 
+          onOpenChange={setIsSettingsOpen} 
+        />
+      )}
     </Navbar>
   );
 };
