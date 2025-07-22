@@ -14,7 +14,7 @@ const isAuthRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
-  const { userId, redirectToSignIn } = await auth();
+  const { userId } = await auth();
 
   // If user is logged in
   if (userId) {
@@ -22,12 +22,12 @@ export default clerkMiddleware(async (auth, request) => {
     if (request.nextUrl.pathname === "/") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    
+
     // Redirect from sign-in/sign-up to dashboard (logged-in users shouldn't access auth pages)
     if (isAuthRoute(request)) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    
+
     // Allow access to all other routes when logged in
     return NextResponse.next();
   }
@@ -39,9 +39,7 @@ export default clerkMiddleware(async (auth, request) => {
   }
 
   // Redirect to sign-in for protected routes when not logged in
-  return redirectToSignIn({
-    returnBackUrl: request.url,
-  });
+  return NextResponse.redirect(new URL("/sign-in", request.url));
 });
 
 export const config = {

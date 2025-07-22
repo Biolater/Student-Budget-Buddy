@@ -36,17 +36,22 @@ async function seed() {
   }
 
   // Expense Categories
-  const expenseCategories = [
-    { id: "rent-id", name: "Rent", icon: "🏠" },
-    { id: "groceries-id", name: "Groceries", icon: "🛒" },
-    { id: "transport-id", name: "Transport", icon: "🚗" },
-    { id: "subscriptions-id", name: "Subscriptions", icon: "📺" },
-    { id: "health-id", name: "Health", icon: "🏥" },
-    { id: "shopping-id", name: "Shopping", icon: "🛍️" },
-    { id: "education-id", name: "Education", icon: "📚" },
-    { id: "entertainment-id", name: "Entertainment", icon: "🎮" },
+const expenseCategories = [
+    { id: "food-id", name: "Food & Groceries", icon: "🍔" },
+    { id: "transport-id", name: "Transport", icon: "🚌" },
     { id: "utilities-id", name: "Utilities", icon: "💡" },
-    { id: "other-id", name: "Other", icon: "🔧" },
+    { id: "subscriptions-id", name: "Subscriptions", icon: "📺" },
+    { id: "education-id", name: "Education", icon: "📚" },
+    { id: "health-id", name: "Health", icon: "⚕️" },
+    { id: "shopping-id", name: "Shopping", icon: "🛍️" },
+    { id: "entertainment-id", name: "Entertainment", icon: "🎮" },
+    { id: "gifts-id", name: "Gifts & Donations", icon: "🎁" },
+    { id: "travel-id", name: "Travel", icon: "✈️" },
+    { id: "personal-care-id", name: "Personal Care", icon: "🧴" },
+    { id: "fitness-id", name: "Fitness", icon: "🏋️" },
+    { id: "home-id", name: "Home Supplies", icon: "🧻" },
+    { id: "phone-id", name: "Phone & Data", icon: "📱" },
+    { id: "other-id", name: "Other", icon: "🌀" },
   ];
 
   for (const category of expenseCategories) {

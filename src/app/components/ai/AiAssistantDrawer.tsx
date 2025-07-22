@@ -1,130 +1,323 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerBody,
-  DrawerFooter,
   Button,
-  Tooltip
-} from '@heroui/react';
-import { ChatBubbleLeftRightIcon, XMarkIcon, SparklesIcon } from '@heroicons/react/24/outline';
+  Tooltip,
+  Avatar,
+  Chip,
+} from "@heroui/react";
+import {
+  ChatBubbleLeftRightIcon,
+  XMarkIcon,
+  SparklesIcon,
+  PaperAirplaneIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import Markdown from "markdown-to-jsx";
+import { sendAiMessage } from "@/app/actions/ai.actions";
 
-/**
- * AIAssistantDrawer
- * Floating chat button that opens a HeroUI Drawer for AI assistant interactions.
- * Features blur backdrop, animations, and responsive design.
- */
+interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp?: Date;
+}
+
 export function AIAssistantDrawer() {
   const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Custom motion props for smooth animations
-  const motionProps = {
-    variants: {
-      enter: {
-        x: 0,
-        opacity: 1,
-        transition: {
-          duration: 0.3,
-          ease: [0.36, 0.66, 0.4, 1],
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(
+        textareaRef.current.scrollHeight,
+        120
+      )}px`;
+    }
+  }, [input]);
+
+  const sendMessage = async () => {
+    const question = input.trim();
+    if (!question || loading) return;
+
+    const userMessage: ChatMessage = {
+      role: "user",
+      content: question,
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+    try {
+      const res = await sendAiMessage(question);
+      const answer = res.data ?? "Sorry, I couldn't process your request.";
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: answer, timestamp: new Date() },
+      ]);
+    } catch {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: "I'm having trouble connecting right now. Please try again.",
+          timestamp: new Date(),
         },
-      },
-      exit: {
-        x: 100,
-        opacity: 0,
-        transition: {
-          duration: 0.2,
-          ease: [0.36, 0.66, 0.4, 1],
-        },
-      },
-    },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleQuickPrompt = (prompt: string) => {
+    setInput(prompt);
+    textareaRef.current?.focus();
+  };
+
+  const clearChat = () => setMessages([]);
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const quickPrompts = [
+    "How much did I spend this month?",
+    "Show my budget summary",
+    "What bills are due soon?",
+    "Help me create a savings plan",
+  ];
 
   return (
     <>
-      {/* Floating Chat Button with Tooltip */}
-      <Tooltip content="Ask your AI assistant" placement="left">
-        <button
-          aria-label="Open AI Assistant"
-          className="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-primary-foreground rounded-full p-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-focus z-50 transition-transform hover:scale-105 active:scale-95"
-          onClick={() => setIsOpen(true)}
+      <Tooltip content="Chat with AI Assistant" placement="left" delay={500}>
+        <Button
+          isIconOnly
+          className="fixed bottom-6 right-6 z-50 shadow-2xl shadow-primary/25 bg-gradient-to-r from-primary to-secondary hover:shadow-xl hover:shadow-primary/30 transition-all duration-300 hover:scale-105 active:scale-95"
+          size="lg"
+          radius="full"
+          variant="solid"
+          color="primary"
+          onPress={() => setIsOpen(true)}
         >
           <ChatBubbleLeftRightIcon className="h-6 w-6" />
-          <span className="absolute top-0 right-0 h-3 w-3 rounded-full bg-success animate-pulse"></span>
-        </button>
+        </Button>
       </Tooltip>
 
-      {/* HeroUI Drawer with blur backdrop and animations */}
-      <Drawer 
-      hideCloseButton
-        placement="right" 
-        isOpen={isOpen} 
+      <Drawer
+        size="md"
+        placement="right"
+        isOpen={isOpen}
         onOpenChange={setIsOpen}
-        size="sm"
+        hideCloseButton
         backdrop="blur"
-        motionProps={motionProps}
         classNames={{
-          base: "rounded-l-xl",
-          header: "border-b border-divider",
-          body: "px-4",
-          backdrop: "bg-background/80"
+          base: "max-w-md",
+          backdrop: "bg-background/60 backdrop-blur-md",
+        }}
+        motionProps={{
+          variants: {
+            enter: {
+              x: 0,
+              opacity: 1,
+              transition: { duration: 0.4, ease: [0.04, 0.62, 0.23, 0.98] },
+            },
+            exit: {
+              x: "100%",
+              opacity: 0,
+              transition: { duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] },
+            },
+          },
         }}
       >
-        <DrawerContent>
-          <DrawerHeader >
-            <div className="flex grow items-center justify-between">
-              <div className="flex items-center gap-2">
-                <SparklesIcon className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-semibold">AI Assistant</h2>
+        <DrawerContent className="bg-background/95 backdrop-blur-xl border-l border-divider/50">
+          <DrawerHeader className="border-b border-divider/50 bg-gradient-to-r from-primary/5 to-secondary/5">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Avatar
+                    size="sm"
+                    className="bg-gradient-to-r from-primary to-secondary"
+                    icon={<SparklesIcon className="h-4 w-4 text-white" />}
+                  />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-background" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground">
+                    AI Assistant
+                  </h2>
+                  <p className="text-xs text-foreground-500">
+                    {loading ? "Thinking..." : "Online"}
+                  </p>
+                </div>
               </div>
-              <Button 
-                isIconOnly 
-                variant="light" 
-                radius="full" 
-                aria-label="Close AI Assistant"
-                onPress={() => setIsOpen(false)}
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </Button>
+              <div className="flex items-center gap-1">
+                {messages.length > 0 && (
+                  <Button
+                    size="sm"
+                    variant="light"
+                    onPress={clearChat}
+                    className="text-foreground-500 hover:text-foreground"
+                  >
+                    Clear
+                  </Button>
+                )}
+                <Button
+                  isIconOnly
+                  size="sm"
+                  variant="light"
+                  radius="full"
+                  onPress={() => setIsOpen(false)}
+                  className="text-foreground-500 hover:text-foreground"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
           </DrawerHeader>
 
-          <DrawerBody>
-            {/* TODO: Replace this placeholder with your AI chat component */}
-            <div className="h-full flex flex-col justify-center items-center text-muted-foreground space-y-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <SparklesIcon className="h-6 w-6 text-primary" />
+          <DrawerBody className="p-0 flex flex-col h-[calc(100vh-140px)]">
+            <div
+              ref={scrollRef}
+              className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth"
+            >
+              {messages.length === 0 ? (
+                <div className="h-full flex flex-col justify-center items-center text-center space-y-6">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-gradient-to-r from-primary to-secondary rounded-2xl flex items-center justify-center">
+                      <SparklesIcon className="h-8 w-8 text-white" />
+                    </div>
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-success rounded-full animate-pulse border-2 border-background" />
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xl font-semibold text-foreground">
+                      Hello! I'm your AI assistant
+                    </h3>
+                    <p className="text-foreground-500 max-w-xs">
+                      I can help you with budgeting, expenses, financial
+                      insights, and more.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center max-w-xs">
+                    {quickPrompts.slice(0, 3).map((prompt, idx) => (
+                      <Chip
+                        key={idx}
+                        size="sm"
+                        variant="flat"
+                        color="primary"
+                        className="cursor-pointer hover:bg-primary/20 transition-colors"
+                        onClick={() => handleQuickPrompt(prompt)}
+                      >
+                        {prompt}
+                      </Chip>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                messages.map((message, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex gap-3 ${
+                      message.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {message.role === "assistant" && (
+                      <Avatar
+                        size="sm"
+                        className="bg-gradient-to-r from-primary to-secondary shrink-0 mt-1"
+                        icon={<SparklesIcon className="h-3 w-3 text-white" />}
+                      />
+                    )}
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-default-100 text-foreground rounded-bl-md"
+                      }`}
+                    >
+                      <Markdown className="prose whitespace-pre-wrap break-words">
+                        {message.content}
+                      </Markdown>
+                    </div>
+                    {message.role === "user" && (
+                      <Avatar
+                        size="sm"
+                        className="bg-default-300 shrink-0 mt-1"
+                        icon={<UserIcon className="h-3 w-3 text-default-600" />}
+                      />
+                    )}
+                  </div>
+                ))
+              )}
+
+              {loading && (
+                <div className="flex gap-3 justify-start">
+                  <Avatar
+                    size="sm"
+                    className="bg-gradient-to-r from-primary to-secondary shrink-0 mt-1"
+                    icon={<SparklesIcon className="h-3 w-3 text-white" />}
+                  />
+                  <div className="bg-default-100 rounded-2xl rounded-bl-md px-4 py-3">
+                    <div className="flex space-x-1">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="w-2 h-2 bg-default-400 rounded-full animate-bounce"
+                          style={{ animationDelay: `${i * 0.15}s` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-divider/50 bg-background/50 backdrop-blur-sm p-4 space-y-3">
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={textareaRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type your message..."
+                    className="w-full resize-none rounded-2xl bg-default-100 border-2 border-transparent focus:border-primary/50 focus:bg-background px-4 py-3 pr-12 text-sm placeholder:text-foreground-400 focus:outline-none transition-colors max-h-[120px] min-h-[48px]"
+                    rows={1}
+                  />
+                </div>
+                <Button
+                  isIconOnly
+                  size="lg"
+                  radius="full"
+                  color="primary"
+                  variant="solid"
+                  isDisabled={!input.trim() || loading}
+                  isLoading={loading}
+                  onPress={sendMessage}
+                  className="shrink-0"
+                >
+                  <PaperAirplaneIcon className="h-5 w-5" />
+                </Button>
               </div>
-              <p className="text-center">Your AI assistant is ready to help.<br/>What would you like to know?</p>
             </div>
           </DrawerBody>
-
-          <DrawerFooter>
-            {/* Quick prompts or actions */}
-            <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Try asking:</p>
-              <div className="grid grid-cols-1 gap-2">
-                <Button 
-                  color="primary" 
-                  variant="flat" 
-                  className="justify-start text-left" 
-                  startContent={<SparklesIcon className="h-4 w-4" />}
-                >
-                  How much did I spend this month?
-                </Button>
-                <Button 
-                  color="primary" 
-                  variant="flat" 
-                  className="justify-start text-left" 
-                  startContent={<SparklesIcon className="h-4 w-4" />}
-                >
-                  Show my budget summary
-                </Button>
-              </div>
-            </div>
-          </DrawerFooter>
         </DrawerContent>
       </Drawer>
     </>
