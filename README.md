@@ -1,79 +1,69 @@
+
 <h1 align="center">🧠 Student Budget Buddy</h1>
+<p align="center"><i>Track smarter. Save better. A student-focused budgeting app powered by modern tech and AI.</i></p>
+
 <p align="center">
-    <i>Track smarter. Save better. Empowering students to take control of their financial journey.</i>
+  <img src="./banner.png" alt="Student Budget Buddy Banner" />
 </p>
 
 <p align="center">
-    <img src="./banner.png" alt="Student Budget Buddy Banner" />
-</p>
-
-<p align="center">
-    <img src="https://img.shields.io/badge/Next.js-15-blue?style=flat-square&logo=next.js" />
-    <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" />
-    <img src="https://img.shields.io/badge/PostgreSQL-Database-blue?style=flat-square&logo=postgresql" />
-    <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma&logoColor=white" />
-    <img src="https://img.shields.io/badge/Clerk-Auth-orange?style=flat-square&logo=clerk" />
-    <img src="https://img.shields.io/badge/Status-In%20Progress-yellow?style=flat-square" />
+  <img src="https://img.shields.io/badge/Next.js-15-blue?style=flat-square&logo=next.js" />
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-blue?style=flat-square&logo=postgresql" />
+  <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma&logoColor=white" />
+  <img src="https://img.shields.io/badge/Clerk-Auth-orange?style=flat-square&logo=clerk" />
+  <img src="https://img.shields.io/badge/Status-In%20Progress-yellow?style=flat-square" />
 </p>
 
 ---
 
-## 🚀 Features
+## 🎯 Overview
 
--   **Multi-Currency Expense Tracking:** Effortlessly track expenses in multiple currencies, allowing for accurate financial management regardless of location.
--   **Category-Based Budgeting:** Create and manage budgets across various categories (e.g., food, rent, entertainment) to gain a clear understanding of spending habits.
--   **Interactive Insights and Monthly Summaries:** Visualize spending patterns with interactive charts and receive comprehensive monthly summaries to identify areas for potential savings.
--   **AI-Powered Savings Suggestions (Coming Soon):** Receive intelligent, AI-driven recommendations to optimize spending and achieve savings goals (e.g., personalized tips to reduce unnecessary expenses).
--   **Clean, Mobile-First, Student-Focused Design:** Enjoy a user-friendly and intuitive experience with a responsive design optimized for mobile devices.
+**Student Budget Buddy** is a full-stack budgeting app built to help students take control of their finances. From expense tracking to budgeting and AI-powered insights, it offers a smooth and responsive experience — optimized for real-life student needs.
 
 ---
 
-## 🛠️ Tech Stack
+## 🔑 Core Features
 
-| Frontend          | Backend             | ORM     | Database    | Auth    | Deployment |
-|-------------------|---------------------|---------|-------------|---------|------------|
-| Next.js 15 (App Router) | Node.js, Express.js | Prisma  | PostgreSQL  | Clerk   | Vercel     |
-
----
-
-## 📌 Project Status
-
-🚧 Student Budget Buddy is currently under **active development**.
-
-We're focused on refining the core budgeting experience and building out exciting AI-powered features to provide students with intelligent and personalized financial management tools.
+- 📌 **Multi-Currency Support** — Track expenses in different currencies, auto-converted to your base.
+- 📊 **Category-Based Budgeting** — Allocate budgets per category and visualize progress with smart feedback.
+- 🔁 **Recurring Transactions** — Schedule daily, weekly, or monthly incomes/expenses (backend cron-powered).
+- 📅 **Dashboard Insights** — Interactive pie and bar charts for monthly summaries and trends.
+- 🤖 **AI Assistant** — Ask budget-related questions and get contextual, markdown-rendered responses.
+- 🌓 **Modern UI/UX** — Clean, mobile-friendly design with Framer Motion animations and dark mode.
 
 ---
 
-## 🔮 Planned Features
+## ⚙️ Tech Stack
 
-What’s coming next:
-
--   🤖 **AI-Powered Budget Insights:** Receive smart, personalized feedback on spending habits, enabling data-driven decisions to optimize budget allocation.
--   💡 **Smart Saving Tips:** Leverage AI to identify and suggest opportunities to reduce wasteful spending and maximize savings potential.
--   🔁 **Recurring Expense Detection:** Automatically detect recurring expenses to provide a clear overview of fixed costs and facilitate proactive budget adjustments.
--   🧾 **Receipt Scanning:** Utilize OCR technology to scan receipts and automatically categorize expenses, simplifying expense tracking and reducing manual input.
--   📲 **PWA Support:** Enable a seamless, installable, and offline-capable mobile experience for convenient access to budgeting tools on the go.
--   👯 **Shared Budgets:** Facilitate collaborative budgeting and financial management with roommates, partners, or friends.
+| Frontend          | Backend           | Auth   | ORM     | DB         | Deployment        |
+|------------------|-------------------|--------|---------|------------|-------------------|
+| Next.js 15       | Node.js + Express | Clerk  | Prisma  | PostgreSQL | Vercel / Railway  |
 
 ---
 
-## ⚙️ Getting Started
+## 🧪 Getting Started
 
 ```bash
 # 1. Clone the repo
-git clone [https://github.com/muradyusubov/student-budget-buddy.git](https://github.com/muradyusubov/student-budget-buddy.git)
-
-# 2. Move into the folder
+git clone https://github.com/muradyusubov/student-budget-buddy.git
 cd student-budget-buddy
 
-# 3. Install dependencies
+# 2. Install dependencies
 npm install
 
-# 4. Setup environment variables
+# 3. Configure environment
 cp .env.example .env
 
-# 5. Push the Prisma schema to your database
+# 4. Sync schema with DB
 npx prisma db push
 
-# 6. Run development server
+# 5. Start dev server
 npm run dev
+```
+
+---
+
+## 📬 Contact
+
+Built by [Murad Yusubov](https://github.com/biolater) — focused on building intelligent web apps and solving real-world problems with AI.
