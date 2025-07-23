@@ -38,7 +38,7 @@
 
 | Frontend          | Backend           | Auth   | ORM     | DB         | Deployment        |
 |------------------|-------------------|--------|---------|------------|-------------------|
-| Next.js 15       | Node.js + Express | Clerk  | Prisma  | PostgreSQL | Vercel / Railway  |
+| Next.js 15       | Node.js + Express | Clerk  | Prisma  | PostgreSQL | Vercel / Render  |
 
 ---
 
