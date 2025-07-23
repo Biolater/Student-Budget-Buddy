@@ -34,7 +34,7 @@ export const NavbarComponent = () => {
   const { signOut } = useClerk();
   const pathname = usePathname();
 
-  // Define your navigation links
+  // Define your navigation links for authenticated users
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/expenses", label: "Expenses" },
@@ -42,7 +42,24 @@ export const NavbarComponent = () => {
     { href: "/budget", label: "Budget" },
   ];
 
-  // Prevent server-side rendering issues
+  // Define landing page navigation links for non-authenticated users
+  const landingNavLinks = [
+    { href: "#about", label: "About" },
+    { href: "#features", label: "Features" },
+    { href: "#benefits", label: "Benefits" },
+  ];
+
+  // Smooth scroll function
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    setIsMenuOpen(false); // Close mobile menu after clicking
+  };
 
   return (
     <Navbar
@@ -108,6 +125,22 @@ export const NavbarComponent = () => {
         </NavbarContent>
       )}
 
+      {/* Navigation links for non-signed in users (landing page) */}
+      {isLoaded && !isSignedIn && (
+        <NavbarContent className="hidden lg:flex gap-4 grow" justify="center">
+          {landingNavLinks.map((link) => (
+            <NavbarItem key={link.href}>
+              <button
+                onClick={() => scrollToSection(link.href)}
+                className="relative transition-colors hover:text-foreground px-3 text-muted-foreground hover:text-foreground rounded-md text-sm cursor-pointer"
+              >
+                {link.label}
+              </button>
+            </NavbarItem>
+          ))}
+        </NavbarContent>
+      )}
+
       {/* Right side: Theme switcher, auth buttons or user dropdown */}
       <NavbarContent as="div" justify="end">
         <ThemeSwitcher />
@@ -169,30 +202,31 @@ export const NavbarComponent = () => {
 
       {/* Mobile Menu */}
       <NavbarMenu>
-        {isLoaded &&
-          isSignedIn &&
-          navLinks.map((item, index) => (
-            <NavbarMenuItem
-              onClick={() => setIsMenuOpen(false)}
-              key={`${item.href}-${index}`}
-              isActive={pathname === item.href}
-            >
-              <Link className="w-full" color="foreground" href={item.href}>
-                {item.label}
-              </Link>
-            </NavbarMenuItem>
-          ))}
-        {!isSignedIn && (
+        {isLoaded && isSignedIn && (
           <>
-            {["About", "Features", "Benefits"].map((item) => (
-              <NavbarMenuItem onClick={() => setIsMenuOpen(false)} key={item}>
-                <Link
-                  color="foreground"
-                  className="w-full"
-                  href={`/${item.toLowerCase()}`}
-                >
-                  {item}
+            {navLinks.map((item, index) => (
+              <NavbarMenuItem
+                onClick={() => setIsMenuOpen(false)}
+                key={`${item.href}-${index}`}
+                isActive={pathname === item.href}
+              >
+                <Link className="w-full" color="foreground" href={item.href}>
+                  {item.label}
                 </Link>
+              </NavbarMenuItem>
+            ))}
+          </>
+        )}
+        {isLoaded && !isSignedIn && (
+          <>
+            {landingNavLinks.map((item) => (
+              <NavbarMenuItem key={item.href}>
+                <button
+                  onClick={() => scrollToSection(item.href)}
+                  className="w-full text-left text-foreground"
+                >
+                  {item.label}
+                </button>
               </NavbarMenuItem>
             ))}
             <Divider className="my-2" />
