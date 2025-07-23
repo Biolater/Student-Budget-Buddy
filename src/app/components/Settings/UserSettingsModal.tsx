@@ -154,22 +154,6 @@ export default function UserSettingsModal({
               </Card>
             </Tab>
             
-            <Tab key="account" title="Account">
-              <Card>
-                <CardBody>
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-medium">Account Settings</h3>
-                      <div className="mt-4 p-4 border rounded-lg">
-                        <p className="text-sm text-muted-foreground">
-                          Manage your account settings here.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </CardBody>
-              </Card>
-            </Tab>
           </Tabs>
         </ModalBody>
         <ModalFooter>
