@@ -3,7 +3,7 @@
 <p align="center"><i>Track smarter. Save better. A student-focused budgeting app powered by modern tech and AI.</i></p>
 
 <p align="center">
-  <img src="./banner.png" alt="Student Budget Buddy Banner" />
+  <img width="1415" height="483" alt="SBB-Banner-1-copy" src="https://github.com/user-attachments/assets/d6114db6-2c9b-47b8-b9fd-d5033a0b340e" />
 </p>
 
 <p align="center">
