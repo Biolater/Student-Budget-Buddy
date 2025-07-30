@@ -19,12 +19,13 @@ import {
   UserIcon,
 } from "@heroicons/react/24/outline";
 import Markdown from "markdown-to-jsx";
-import { sendAiMessage } from "@/app/actions/ai.actions";
+import { sendAiMessage, sendAiMessageStream } from "@/app/actions/ai.actions";
 
 interface ChatMessage {
   role: "user" | "assistant";
   content: string;
   timestamp?: Date;
+  isStreaming?: boolean;
 }
 
 export function AIAssistantDrawer() {
@@ -32,8 +33,11 @@ export function AIAssistantDrawer() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamingMessageIndex, setStreamingMessageIndex] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -53,7 +57,7 @@ export function AIAssistantDrawer() {
 
   const sendMessage = async () => {
     const question = input.trim();
-    if (!question || loading) return;
+    if (!question || loading || isStreaming) return;
 
     const userMessage: ChatMessage = {
       role: "user",
@@ -63,24 +67,95 @@ export function AIAssistantDrawer() {
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setLoading(true);
+    setIsStreaming(true);
+
+    // Add empty assistant message for streaming
+    const assistantMessageIndex = messages.length + 1;
+    setStreamingMessageIndex(assistantMessageIndex);
+    setMessages((prev) => [
+      ...prev,
+      {
+        role: "assistant",
+        content: "",
+        timestamp: new Date(),
+        isStreaming: true,
+      },
+    ]);
+
     try {
-      const res = await sendAiMessage(question);
-      const answer = res.data ?? "Sorry, I couldn't process your request.";
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", content: answer, timestamp: new Date() },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: "I'm having trouble connecting right now. Please try again.",
-          timestamp: new Date(),
-        },
-      ]);
+      // Create abort controller for this request
+      abortControllerRef.current = new AbortController();
+      
+      const response = await sendAiMessageStream(question);
+      
+      if (!response.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulatedResponse = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        
+        if (done) break;
+        
+        const chunk = decoder.decode(value, { stream: true });
+        accumulatedResponse += chunk;
+        
+        // Update the streaming message
+        setMessages((prev) => 
+          prev.map((msg, idx) => 
+            idx === assistantMessageIndex
+              ? { ...msg, content: accumulatedResponse }
+              : msg
+          )
+        );
+      }
+
+      // Mark streaming as complete
+      setMessages((prev) => 
+        prev.map((msg, idx) => 
+          idx === assistantMessageIndex
+            ? { ...msg, isStreaming: false }
+            : msg
+        )
+      );
+
+    } catch (error) {
+      console.error("Streaming error:", error);
+      
+      // Fallback to regular API if streaming fails
+      try {
+        const res = await sendAiMessage(question);
+        const answer = res.data ?? "Sorry, I couldn't process your request.";
+        
+        setMessages((prev) => 
+          prev.map((msg, idx) => 
+            idx === assistantMessageIndex
+              ? { ...msg, content: answer, isStreaming: false }
+              : msg
+          )
+        );
+      } catch (fallbackError) {
+        setMessages((prev) => 
+          prev.map((msg, idx) => 
+            idx === assistantMessageIndex
+              ? { 
+                  ...msg, 
+                  content: "I'm having trouble connecting right now. Please try again.", 
+                  isStreaming: false 
+                }
+              : msg
+          )
+        );
+      }
     } finally {
       setLoading(false);
+      setIsStreaming(false);
+      setStreamingMessageIndex(null);
+      abortControllerRef.current = null;
     }
   };
 
@@ -89,7 +164,15 @@ export function AIAssistantDrawer() {
     textareaRef.current?.focus();
   };
 
-  const clearChat = () => setMessages([]);
+  const clearChat = () => {
+    // Abort any ongoing streaming
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    setMessages([]);
+    setIsStreaming(false);
+    setStreamingMessageIndex(null);
+  };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -157,14 +240,16 @@ export function AIAssistantDrawer() {
                     className="bg-gradient-to-r from-primary to-secondary"
                     icon={<SparklesIcon className="h-4 w-4 text-white" />}
                   />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-success rounded-full border-2 border-background" />
+                  <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${
+                    isStreaming ? 'bg-warning animate-pulse' : 'bg-success'
+                  }`} />
                 </div>
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
                     AI Assistant
                   </h2>
                   <p className="text-xs text-foreground-500">
-                    {loading ? "Thinking..." : "Online"}
+                    {isStreaming ? "Typing..." : loading ? "Thinking..." : "Online"}
                   </p>
                 </div>
               </div>
@@ -175,6 +260,7 @@ export function AIAssistantDrawer() {
                     variant="light"
                     onPress={clearChat}
                     className="text-foreground-500 hover:text-foreground"
+                    isDisabled={isStreaming}
                   >
                     Clear
                   </Button>
@@ -246,7 +332,7 @@ export function AIAssistantDrawer() {
                       />
                     )}
                     <div
-                      className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      className={`max-w-[80%] rounded-2xl px-4 py-3 relative ${
                         message.role === "user"
                           ? "bg-primary text-primary-foreground rounded-br-md"
                           : "bg-default-100 text-foreground rounded-bl-md"
@@ -255,6 +341,11 @@ export function AIAssistantDrawer() {
                       <Markdown className="prose whitespace-pre-wrap break-words">
                         {message.content}
                       </Markdown>
+                      {message.isStreaming && (
+                        <div className="inline-flex ml-1">
+                          <div className="w-1 h-4 bg-primary animate-pulse" />
+                        </div>
+                      )}
                     </div>
                     {message.role === "user" && (
                       <Avatar
@@ -267,7 +358,7 @@ export function AIAssistantDrawer() {
                 ))
               )}
 
-              {loading && (
+              {loading && !isStreaming && (
                 <div className="flex gap-3 justify-start">
                   <Avatar
                     size="sm"
@@ -297,9 +388,10 @@ export function AIAssistantDrawer() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Type your message..."
+                    placeholder={isStreaming ? "AI is responding..." : "Type your message..."}
                     className="w-full resize-none rounded-2xl bg-default-100 border-2 border-transparent focus:border-primary/50 focus:bg-background px-4 py-3 pr-12 text-sm placeholder:text-foreground-400 focus:outline-none transition-colors max-h-[120px] min-h-[48px]"
                     rows={1}
+                    disabled={isStreaming}
                   />
                 </div>
                 <Button
@@ -308,8 +400,8 @@ export function AIAssistantDrawer() {
                   radius="full"
                   color="primary"
                   variant="solid"
-                  isDisabled={!input.trim() || loading}
-                  isLoading={loading}
+                  isDisabled={!input.trim() || loading || isStreaming}
+                  isLoading={loading && !isStreaming}
                   onPress={sendMessage}
                   className="shrink-0"
                 >
