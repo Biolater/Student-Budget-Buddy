@@ -1,10 +1,10 @@
 <h1 align="center">🧠 Student Budget Buddy</h1>
 <p align="center">
-    <i>Track smarter. Save better. Empowering students to take control of their financial journey.</i>
+    <i>Track smarter. Save better. A focused budgeting app tailored for students.</i>
 </p>
 
 <p align="center">
-    <img src="./banner.png" alt="Student Budget Buddy Banner" />
+    <img src="https://private-user-images.githubusercontent.com/86587537/469685833-d6114db6-2c9b-47b8-b9fd-d5033a0b340e.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NTM5NTQ0NTQsIm5iZiI6MTc1Mzk1NDE1NCwicGF0aCI6Ii84NjU4NzUzNy80Njk2ODU4MzMtZDYxMTRkYjYtMmM5Yi00N2I4LWI5ZmQtZDUwMzNhMGIzNDBlLnBuZz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNTA3MzElMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjUwNzMxVDA5MjkxNFomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTU5MGUxZDBlNzY1MzA5ZDU0ODY5ODJkZjhhZjE2YzE5NjIzOGQyMjFjYjg5ZmM2OGVhOTQ2ZDk5MTU3YzQyODQmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.11U8RbvTpYDhl5QE6O16RmFoC5ZhnX5CejBgO-KYmC0" alt="Student Budget Buddy Banner" />
 </p>
 
 <p align="center">
@@ -13,51 +13,32 @@
     <img src="https://img.shields.io/badge/PostgreSQL-Database-blue?style=flat-square&logo=postgresql" />
     <img src="https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma&logoColor=white" />
     <img src="https://img.shields.io/badge/Clerk-Auth-orange?style=flat-square&logo=clerk" />
-    <img src="https://img.shields.io/badge/Status-In%20Progress-yellow?style=flat-square" />
+    <img src="https://img.shields.io/badge/Status-Complete-brightgreen?style=flat-square" />
 </p>
 
 ---
 
-## 🚀 Features
+## ✅ Features
 
-- **Multi-Currency Expense Tracking:** Effortlessly track expenses in multiple currencies, allowing for accurate financial management regardless of location.
-- **Category-Based Budgeting:** Create and manage budgets across various categories (e.g., food, rent, entertainment) to gain a clear understanding of spending habits.
-- **Interactive Insights and Monthly Summaries:** Visualize spending patterns with interactive charts and receive comprehensive monthly summaries to identify areas for potential savings.
-- **AI-Powered Savings Suggestions (Coming Soon):** Receive intelligent, AI-driven recommendations to optimize spending and achieve savings goals (e.g., personalized tips to reduce unnecessary expenses).
-- **Clean, Mobile-First, Student-Focused Design:** Enjoy a user-friendly and intuitive experience with a responsive design optimized for mobile devices.
+- **Expense Tracking:** Record and categorize expenses with support for multiple currencies.
+- **Category-Based Budgeting:** Set budgets per category with custom or preset time periods.
+- **Dashboard Overview:** View total income, expenses, remaining balance, and savings rate. Includes pie charts and trends.
+- **Recurring Transactions:** Define and track recurring financial events (e.g. rent, subscriptions).
+- **Multi-Currency Support:** Manage expenses and budgets across different currencies.
+- **Secure Authentication:** Seamless auth powered by Clerk.
+- **AI Assistant (Beta):** Integrated AI drawer that can respond to user prompts about financial status.
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠 Tech Stack
 
 | Frontend              | Backend           | ORM     | Database   | Auth    | Deployment |
 |----------------------|-------------------|---------|------------|---------|------------|
-| Next.js 15 (App Router) | Node.js, Express | Prisma  | PostgreSQL | Clerk   | Vercel     |
+| Next.js 15 (App Router) | Node.js, Express | Prisma  | PostgreSQL | Clerk   | Vercel (FE) / Render (BE) |
 
 ---
 
-## 📌 Project Status
-
-🚧 Student Budget Buddy is currently under **active development**.
-
-We're focused on refining the core budgeting experience and building out exciting AI-powered features to provide students with intelligent and personalized financial management tools.
-
----
-
-## 🔮 Planned Features
-
-What’s coming next:
-
-- 🤖 **AI-Powered Budget Insights:** Receive smart, personalized feedback on spending habits, enabling data-driven decisions to optimize budget allocation.
-- 💡 **Smart Saving Tips:** Leverage AI to identify and suggest opportunities to reduce wasteful spending and maximize savings potential.
-- 🔁 **Recurring Expense Detection:** Automatically detect recurring expenses to provide a clear overview of fixed costs and facilitate proactive budget adjustments.
-- 🧾 **Receipt Scanning:** Utilize OCR technology to scan receipts and automatically categorize expenses, simplifying expense tracking and reducing manual input.
-- 📲 **PWA Support:** Enable a seamless, installable, and offline-capable mobile experience for convenient access to budgeting tools on the go.
-- 👯 **Shared Budgets:** Facilitate collaborative budgeting and financial management with roommates, partners, or friends.
-
----
-
-## 📸 Screenshots
+## 📈 Screenshots
 
 | Dashboard Overview | Expense Tracker |
 |--------------------|-----------------|
@@ -73,7 +54,7 @@ What’s coming next:
 
 ---
 
-## ⚙️ Getting Started
+## 🚀 Getting Started
 
 ```bash
 # 1. Clone the repo
@@ -97,7 +78,7 @@ npm run dev
 
 ---
 
-## 👤 Author
+## 👨‍💻 Author
 
 Built by [Murad Yusubov](https://github.com/biolater) — passionate about building intelligent web applications that solve real-world problems.
 
@@ -106,5 +87,3 @@ Built by [Murad Yusubov](https://github.com/biolater) — passionate about build
 ## 📬 Feedback
 
 Found a bug or have a suggestion? Feel free to [open an issue](https://github.com/biolater/student-budget-buddy/issues) or reach out directly.
-
----
