@@ -5,7 +5,7 @@ import BenefitsSection from "../components/BenefitsSection/BenefitsSection";
 
 export default function Home() {
   return (
-    <main>
+    <main className="overflow-hidden">
       <HeroSection />
       <AboutSection />
       <FeaturesSection />
