@@ -18,8 +18,10 @@ import {
   PaperAirplaneIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import Markdown from "markdown-to-jsx";
-import { sendAiMessage, sendAiMessageStream } from "@/app/actions/ai.actions";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { useAuth } from "@clerk/nextjs";
+import { sendAiMessage } from "@/app/actions/ai.actions";
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -29,6 +31,7 @@ interface ChatMessage {
 }
 
 export function AIAssistantDrawer() {
+  const { getToken } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -55,99 +58,99 @@ export function AIAssistantDrawer() {
     }
   }, [input]);
 
+  const baseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL ||
+    (process.env.NODE_ENV === "development"
+      ? "http://localhost:3001"
+      : "https://student-budget-buddy-backend.onrender.com");
+
   const sendMessage = async () => {
     const question = input.trim();
     if (!question || loading || isStreaming) return;
 
-    const userMessage: ChatMessage = {
-      role: "user",
-      content: question,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    setLoading(true);
-    setIsStreaming(true);
-
-    // Add empty assistant message for streaming
-    const assistantMessageIndex = messages.length + 1;
-    setStreamingMessageIndex(assistantMessageIndex);
-    setMessages((prev) => [
-      ...prev,
-      {
+    // Prepare user and placeholder assistant messages in one state update to avoid index races
+    let assistantIndex = -1;
+    setMessages((prev) => {
+      const userMsg: ChatMessage = { role: "user", content: question, timestamp: new Date() };
+      const assistantMsg: ChatMessage = {
         role: "assistant",
         content: "",
         timestamp: new Date(),
         isStreaming: true,
-      },
-    ]);
+      };
+      const next = [...prev, userMsg, assistantMsg];
+      assistantIndex = next.length - 1;
+      return next;
+    });
+
+    setInput("");
+    setLoading(true);
+    setIsStreaming(true);
+    setStreamingMessageIndex((prev) => assistantIndex);
 
     try {
-      // Create abort controller for this request
       abortControllerRef.current = new AbortController();
-      
-      const response = await sendAiMessageStream(question);
-      
-      if (!response.body) {
-        throw new Error("No response body");
+
+      const token = await getToken();
+      if (!token) throw new Error("No auth token");
+
+      const response = await fetch(`${baseUrl}/api/v1/ai/assistant/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ message: question }),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
+      if (!response.body) throw new Error("No response body");
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let accumulatedResponse = "";
+      let accumulated = "";
 
       while (true) {
         const { done, value } = await reader.read();
-        
         if (done) break;
-        
+
         const chunk = decoder.decode(value, { stream: true });
-        accumulatedResponse += chunk;
-        
-        // Update the streaming message
-        setMessages((prev) => 
-          prev.map((msg, idx) => 
-            idx === assistantMessageIndex
-              ? { ...msg, content: accumulatedResponse }
-              : msg
-          )
+        accumulated += chunk;
+
+        const idx = assistantIndex;
+        setMessages((prev) =>
+          prev.map((m, i) => (i === idx ? { ...m, content: accumulated } : m))
         );
       }
 
-      // Mark streaming as complete
-      setMessages((prev) => 
-        prev.map((msg, idx) => 
-          idx === assistantMessageIndex
-            ? { ...msg, isStreaming: false }
-            : msg
-        )
+      const idx = assistantIndex;
+      setMessages((prev) =>
+        prev.map((m, i) => (i === idx ? { ...m, isStreaming: false } : m))
       );
-
-    } catch (error) {
-      console.error("Streaming error:", error);
-      
-      // Fallback to regular API if streaming fails
+    } catch (err) {
+      console.error("Streaming error:", err);
+      // Fallback to non-streaming endpoint you already have
       try {
         const res = await sendAiMessage(question);
-        const answer = res.data ?? "Sorry, I couldn't process your request.";
-        
-        setMessages((prev) => 
-          prev.map((msg, idx) => 
-            idx === assistantMessageIndex
-              ? { ...msg, content: answer, isStreaming: false }
-              : msg
-          )
+        const answer = res?.data ?? "Sorry, I couldn't process your request.";
+        const idx = assistantIndex;
+        setMessages((prev) =>
+          prev.map((m, i) => (i === idx ? { ...m, content: answer, isStreaming: false } : m))
         );
-      } catch (fallbackError) {
-        setMessages((prev) => 
-          prev.map((msg, idx) => 
-            idx === assistantMessageIndex
-              ? { 
-                  ...msg, 
-                  content: "I'm having trouble connecting right now. Please try again.", 
-                  isStreaming: false 
+      } catch {
+        const idx = assistantIndex;
+        setMessages((prev) =>
+          prev.map((m, i) =>
+            i === idx
+              ? {
+                  ...m,
+                  content: "I'm having trouble connecting right now. Please try again.",
+                  isStreaming: false,
                 }
-              : msg
+              : m
           )
         );
       }
@@ -165,9 +168,8 @@ export function AIAssistantDrawer() {
   };
 
   const clearChat = () => {
-    // Abort any ongoing streaming
     if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+      abortControllerRef.current.abort(); // cancel ongoing stream
     }
     setMessages([]);
     setIsStreaming(false);
@@ -240,14 +242,14 @@ export function AIAssistantDrawer() {
                     className="bg-gradient-to-r from-primary to-secondary"
                     icon={<SparklesIcon className="h-4 w-4 text-white" />}
                   />
-                  <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${
-                    isStreaming ? 'bg-warning animate-pulse' : 'bg-success'
-                  }`} />
+                  <div
+                    className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background ${
+                      isStreaming ? "bg-warning animate-pulse" : "bg-success"
+                    }`}
+                  />
                 </div>
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground">
-                    AI Assistant
-                  </h2>
+                  <h2 className="text-lg font-semibold text-foreground">AI Assistant</h2>
                   <p className="text-xs text-foreground-500">
                     {isStreaming ? "Typing..." : loading ? "Thinking..." : "Online"}
                   </p>
@@ -280,10 +282,7 @@ export function AIAssistantDrawer() {
           </DrawerHeader>
 
           <DrawerBody className="p-0 flex flex-col h-[calc(100vh-140px)]">
-            <div
-              ref={scrollRef}
-              className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth"
-            >
+            <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scroll-smooth">
               {messages.length === 0 ? (
                 <div className="h-full flex flex-col justify-center items-center text-center space-y-6">
                   <div className="relative">
@@ -293,12 +292,9 @@ export function AIAssistantDrawer() {
                     <div className="absolute -top-1 -right-1 w-5 h-5 bg-success rounded-full animate-pulse border-2 border-background" />
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold text-foreground">
-                      Hello! I'm your AI assistant
-                    </h3>
+                    <h3 className="text-xl font-semibold text-foreground">Hello! I'm your AI assistant</h3>
                     <p className="text-foreground-500 max-w-xs">
-                      I can help you with budgeting, expenses, financial
-                      insights, and more.
+                      I can help you with budgeting, expenses, financial insights, and more.
                     </p>
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center max-w-xs">
@@ -320,14 +316,12 @@ export function AIAssistantDrawer() {
                 messages.map((message, idx) => (
                   <div
                     key={idx}
-                    className={`flex gap-3 ${
-                      message.role === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex gap-3 ${message.role === "user" ? "justify-end" : "justify-start"}`}
                   >
                     {message.role === "assistant" && (
                       <Avatar
                         size="sm"
-                        className="bg-gradient-to-r from-primary to-secondary shrink-0 mt-1"
+                        className="bg-gradient-to-r from-primary to secondary shrink-0 mt-1"
                         icon={<SparklesIcon className="h-3 w-3 text-white" />}
                       />
                     )}
@@ -338,9 +332,18 @@ export function AIAssistantDrawer() {
                           : "bg-default-100 text-foreground rounded-bl-md"
                       }`}
                     >
-                      <Markdown className="prose whitespace-pre-wrap break-words">
-                        {message.content}
-                      </Markdown>
+                      <div className="prose whitespace-pre-wrap break-words prose-invert max-w-none">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({ node, ...props }) => (
+                              <a {...props} target="_blank" rel="noopener noreferrer" />
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      </div>
                       {message.isStreaming && (
                         <div className="inline-flex ml-1">
                           <div className="w-1 h-4 bg-primary animate-pulse" />
