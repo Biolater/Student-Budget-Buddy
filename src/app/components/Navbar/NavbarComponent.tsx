@@ -132,7 +132,7 @@ export const NavbarComponent = () => {
             <NavbarItem key={link.href}>
               <button
                 onClick={() => scrollToSection(link.href)}
-                className="relative transition-colors hover:text-foreground px-3 text-muted-foreground hover:text-foreground rounded-md text-sm cursor-pointer"
+                className="relative transition-colors hover:text-foreground px-3 text-muted-foreground rounded-md text-sm cursor-pointer"
               >
                 {link.label}
               </button>
