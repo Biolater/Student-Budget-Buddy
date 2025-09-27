@@ -17,7 +17,7 @@ export const sendAiMessage = async (message: string) => {
 
     const baseUrl = process.env.NODE_ENV === 'development'
         ? 'http://localhost:3001'
-        : 'https://student-budget-buddy-backend.onrender.com' // This will need to be replaced with actual production URL
+        : 'https://domestic-brigitta-sbbas1-886c7f21.koyeb.app' // This will need to be replaced with actual production URL
 
     return ResponseHandler.execute(async () => {
         const response = await fetch(`${baseUrl}/api/v1/ai/assistant`, {
