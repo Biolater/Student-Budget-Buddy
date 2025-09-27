@@ -62,7 +62,7 @@ export function AIAssistantDrawer() {
     process.env.NEXT_PUBLIC_API_BASE_URL ||
     (process.env.NODE_ENV === "development"
       ? "http://localhost:3001"
-      : "https://student-budget-buddy-backend.onrender.com");
+      : "https://domestic-brigitta-sbbas1-886c7f21.koyeb.app");
 
   const sendMessage = async () => {
     const question = input.trim();
