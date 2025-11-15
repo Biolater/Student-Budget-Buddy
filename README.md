@@ -2,9 +2,17 @@
 <p align="center">
     <i>Track smarter. Save better. A focused budgeting app tailored for students.</i>
 </p>
-
 <p align="center">
     <img src="./public/sbb-banner.png" />
+</p>
+
+<p align="center">
+    <a href="https://student-bugdet-buddy-lyje.vercel.app/" target="_blank">
+        <img src="https://img.shields.io/badge/🔗_Live_Demo-Visit_App-success?style=for-the-badge" />
+    </a>
+    <a href="https://github.com/Biolater/Student-Budget-Buddy-Backend" target="_blank">
+        <img src="https://img.shields.io/badge/📂_Backend_Repo-View_Code-blue?style=for-the-badge" />
+    </a>
 </p>
 
 <p align="center">
@@ -15,6 +23,14 @@
     <img src="https://img.shields.io/badge/Clerk-Auth-orange?style=flat-square&logo=clerk" />
     <img src="https://img.shields.io/badge/Status-Complete-brightgreen?style=flat-square" />
 </p>
+
+---
+
+## 💡 Why I Built This
+
+Students juggle expenses across multiple currencies, struggle with recurring bills, and lack visibility into their spending patterns. Most budgeting apps are either too complex for students or missing critical features like multi-currency support and AI-powered insights.
+
+**Student Budget Buddy** provides a focused, student-friendly platform that makes financial management simple, insightful, and actually useful for everyday student life.
 
 ---
 
@@ -55,10 +71,9 @@
 ---
 
 ## 🚀 Getting Started
-
 ```bash
 # 1. Clone the repo
-git clone https://github.com/muradyusubov/student-budget-buddy.git
+git clone https://github.com/Biolater/student-budget-buddy.git
 
 # 2. Move into the folder
 cd student-budget-buddy
@@ -80,7 +95,7 @@ npm run dev
 
 ## 👨‍💻 Author
 
-Built by [Murad Yusubov](https://github.com/biolater) — passionate about building intelligent web applications that solve real-world problems.
+Built by [Murad Yusubov](https://github.com/biolater), passionate about building intelligent web applications that solve real-world problems.
 
 ---
 
