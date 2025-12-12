@@ -59,14 +59,12 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
     create: {
       mutateAsync: createExpense,
       isPending: createExpenseLoading,
-      error: createExpenseError,
     },
   } = useExpense(userId);
 
   const onSubmit = async (data: ExpenseFormSchemaType) => {
     // Attempt to create the expense
     await createExpense(data);
-
     // Reset form on success
     reset({
       date: now(getLocalTimeZone()),
@@ -106,6 +104,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   onChange={field.onChange}
                   isInvalid={!!errors.date}
                   value={field.value}
+                  variant="faded"
                   maxValue={today(getLocalTimeZone())}
                   isRequired
                 />
@@ -130,6 +129,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   isInvalid={!!errors.currency}
                   selectedKeys={field.value ? [field.value] : []}
                   isRequired
+                  variant="faded"
                 >
                   {currencies!.map((option) => (
                     <SelectItem
@@ -161,6 +161,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   selectedKeys={field.value ? [field.value] : []}
                   isInvalid={!!errors.category}
                   isRequired
+                  variant="faded"
                 >
                   {categories!.map((category) => (
                     <SelectItem
@@ -194,6 +195,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                       : ""
                   }
                   isRequired
+                  variant="faded"
                 />
               )}
             />
@@ -213,6 +215,7 @@ const ExpenseFormV2: FC<ExpenseFormProps> = ({
                   onChange={field.onChange}
                   isInvalid={!!errors.description}
                   value={field.value}
+                  variant="faded"
                 />
               )}
             />

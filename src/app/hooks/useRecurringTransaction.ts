@@ -26,6 +26,7 @@ const useRecurringTransaction = (userId: string | undefined | null) => {
         createRecurringTransaction({
           ...data,
           nextDueDate: data.nextDueDate?.toDate(getLocalTimeZone()),
+          endDate: data.endDate?.toDate(getLocalTimeZone()),
         }),
       mutationKey: userId
         ? RECURRING_TRANSACTION_MUTATION_KEY(userId)
@@ -75,6 +76,7 @@ const useRecurringTransaction = (userId: string | undefined | null) => {
         updateRecurringTransaction(id, {
           ...data,
           nextDueDate: data.nextDueDate?.toDate(getLocalTimeZone()),
+          endDate: data.endDate?.toDate(getLocalTimeZone()),
         }),
       mutationKey: ["updateRecurringTransaction", userId],
       onMutate: async () => {

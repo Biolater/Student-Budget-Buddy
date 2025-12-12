@@ -10,36 +10,23 @@ import {
   TableCell,
   useDisclosure,
   Button,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Spinner,
   type SortDescriptor,
   Link,
-  DateValue,
-  Pagination,
+  Skeleton,
 } from "@heroui/react";
 import { TABLE_HEADERS } from "@/app/constants/expense.constants";
 import { format } from "date-fns";
 import { Pencil, Trash2 } from "lucide-react";
-import EditExpenseForm from "./EditExpenseForm";
 import toast from "react-hot-toast";
 import useExpenses from "@/app/hooks/useExpense";
 import { ClientCurrencyItem } from "@/app/types/currency.types";
 import { ExtendedExpense } from "@/app/types/expense.types";
-import {
-  getLocalTimeZone,
-  now,
-  parseZonedDateTime,
-} from "@internationalized/date";
 import { ExpenseCategoryRef } from "@/app/types/category.types";
 import DeleteExpenseModal from "./DeleteExpenseModal";
 import EditExpenseModal from "./EditExpenseModal";
 
 const DESCRIPTION_TRUNCATE_LENGTH = 40;
-const ITEMS_PER_PAGE = 5;
 
 interface ExpenseItemsProps {
   userId: string | null | undefined;
@@ -50,6 +37,17 @@ interface ExpenseItemsProps {
   currenciesLoading: boolean;
   categoriesLoading: boolean;
 }
+
+// Loading skeleton row component
+const LoadingRow = () => (
+  <TableRow>
+    {TABLE_HEADERS.map((header) => (
+      <TableCell key={header.key}>
+        <Skeleton className="h-4 w-full rounded" />
+      </TableCell>
+    ))}
+  </TableRow>
+);
 
 const ExpenseItems: React.FC<ExpenseItemsProps> = ({
   userId,
@@ -125,20 +123,11 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
     [onEditModalOpen]
   );
 
-  const [page, setPage] = useState(1);
-  const rowsPerPage = 5;
-
-  const pages = Math.ceil(expenses.length / rowsPerPage);
-
-  const items = useMemo(() => {
-    const start = (page - 1) * rowsPerPage;
-    const end = start + rowsPerPage;
-
-    return expenses.slice(start, end);
-  }, [page, expenses]);
-
+  // Sort expenses client-side (since server already handles pagination)
   const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
+    if (!expenses || expenses.length === 0) return [];
+    
+    return [...expenses].sort((a, b) => {
       const first = a[sortDescriptor.column as keyof ExtendedExpense];
       const second = b[sortDescriptor.column as keyof ExtendedExpense];
       if (first == null) return 1;
@@ -146,7 +135,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
       const cmp = first < second ? -1 : first > second ? 1 : 0;
       return sortDescriptor.direction === "descending" ? -cmp : cmp;
     });
-  }, [sortDescriptor, items]);
+  }, [sortDescriptor, expenses]);
 
   return (
     <>
@@ -172,27 +161,24 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
         currenciesLoading={currenciesLoading}
       />
 
-      <div className="space-y-4 w-full">
+      <div className="space-y-4 w-full relative">
+        {/* Loading Overlay */}
+        {expensesLoading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg">
+            <div className="flex flex-col items-center gap-3">
+              <Spinner size="lg" color="primary" />
+              <div className="text-sm text-default-600 font-medium">Loading expenses...</div>
+            </div>
+          </div>
+        )}
+        
         <Table
           sortDescriptor={sortDescriptor}
           onSortChange={setSortDescriptor}
           removeWrapper
-          bottomContent={
-            <div className="flex w-full justify-center">
-              <Pagination
-                isCompact
-                showControls
-                showShadow
-                color="primary"
-                page={page}
-                total={pages}
-                onChange={(page) => setPage(page)}
-              />
-            </div>
-          }
           classNames={{
             base: "w-full overflow-x-auto overflow-y-hidden",
-            table: "min-h-[300px]", // Set your desired min height here
+            table: "min-h-[300px]",
           }}
           aria-label="Expense table"
         >
@@ -205,15 +191,23 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
           </TableHeader>
           <TableBody
             items={sortedItems}
-            loadingContent={<Spinner label="Loading..." />}
-            isLoading={expensesLoading}
+            emptyContent={
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="text-lg text-default-500 mb-2">No expenses found</div>
+                <div className="text-sm text-default-400">
+                  {expenses?.length === 0 ? "Start by adding your first expense above." : "Try adjusting your search or filters."}
+                </div>
+              </div>
+            }
           >
             {sortedItems.map((expense, index) => (
               <TableRow
                 key={expense.id}
                 className={`${
-                  index !== items.length - 1 ? "border-b border-border" : ""
-                } hover:bg-primary/10 transition-colors duration-200 ease-in-out`}
+                  index !== sortedItems.length - 1 ? "border-b border-border" : ""
+                } hover:bg-primary/10 transition-colors duration-200 ease-in-out ${
+                  expensesLoading ? "pointer-events-none opacity-60" : ""
+                }`}
               >
                 <TableCell className="whitespace-nowrap">
                   {format(expense.date, "MMM d, yyyy, h:mm a")}
@@ -241,6 +235,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
                         size="sm"
                         underline="hover"
                         aria-expanded={showDescriptionFor.has(expense.id)}
+                        isDisabled={expensesLoading}
                       >
                         {showDescriptionFor.has(expense.id)
                           ? "Read less"
@@ -258,6 +253,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
                       variant="light"
                       size="sm"
                       onPress={() => handleEditButtonClick(expense)}
+                      isDisabled={expensesLoading}
                     >
                       <Pencil className="h-4 w-4" />
                       <span className="sr-only">Edit</span>
@@ -267,6 +263,7 @@ const ExpenseItems: React.FC<ExpenseItemsProps> = ({
                       onPress={() => handleDeleteButtonClick(expense.id)}
                       color="danger"
                       size="md"
+                      isDisabled={expensesLoading}
                     >
                       <Trash2 className="h-4 w-4" />
                       <span className="sr-only">Delete</span>

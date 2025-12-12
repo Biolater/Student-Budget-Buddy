@@ -33,6 +33,17 @@ const features = [
 ];
 
 export default function HeroSection() {
+  // Smooth scroll function to About section
+  const scrollToAbout = () => {
+    const aboutSection = document.querySelector('#about');
+    if (aboutSection) {
+      aboutSection.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen w-full relative flex items-center justify-center overflow-hidden bg-dot-pattern">
       {/* Grid background with animated gradient overlay */}
@@ -75,8 +86,7 @@ export default function HeroSection() {
                 Get Started
               </Button>
               <Button
-                as={Link}
-                href="/learn-more"
+                onPress={scrollToAbout}
                 size="lg"
                 variant="bordered"
                 color="primary"

@@ -12,12 +12,15 @@ import {
 } from "../types/dashboard.types";
 import { ResponseHandler } from "../lib/ResponseHandler";
 
-export async function fetchFinancialOverviewData(
-  params: FetchFinancialOverviewDataParams
-) {
+export async function fetchFinancialOverview(params: FetchFinancialOverviewDataParams) {
+  const user = await requireUser();
+  const token = await user.getToken();
+
+  if (!token) {
+    throw new Error("Unable to get authentication token");
+  }
+
   return ResponseHandler.execute(async () => {
-    const user = await requireUser();
-    const token = await user.getToken();
     const { timePeriod } = params;
 
     const summary = await apiRequest<SummaryData>({
@@ -27,6 +30,11 @@ export async function fetchFinancialOverviewData(
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        next: {
+          revalidate: 300,
+          tags: ["dashboard", "financial-overview"],
+        },
+        cache: "force-cache",
       },
     });
 
@@ -38,12 +46,15 @@ export async function fetchFinancialOverviewData(
   });
 }
 
-export async function fetchSpendingTrendsData(
-  params: FetchSpendingTrendsDataParams
-) {
+export async function fetchSpendingTrends(params: FetchSpendingTrendsDataParams) {
+  const user = await requireUser();
+  const token = await user.getToken();
+
+  if (!token) {
+    throw new Error("Unable to get authentication token");
+  }
+
   return ResponseHandler.execute(async () => {
-    const user = await requireUser();
-    const token = await user.getToken();
     const { timePeriod } = params;
 
     const trends = await apiRequest<SpendingTrendData[]>({
@@ -53,37 +64,52 @@ export async function fetchSpendingTrendsData(
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        next: {
+          revalidate: 300,
+          tags: ["dashboard", "spending-trends"],
+        },
+        cache: "force-cache",
       },
     });
 
     if (!trends.success || trends.data === null) {
       throw new Error(trends.error?.message || "Data not available");
     }
+
     return trends.data;
   });
 }
 
-export async function fetchSpendingByCategoryData(
-  params: FetchSpendingByCategoryDataParams
-) {
+export async function fetchSpendingByCategory(params: FetchSpendingByCategoryDataParams) {
+  const user = await requireUser();
+  const token = await user.getToken();
+
+  if (!token) {
+    throw new Error("Unable to get authentication token");
+  }
+
   return ResponseHandler.execute(async () => {
-    const user = await requireUser();
-    const token = await user.getToken();
     const { timePeriod } = params;
 
-    const trends = await apiRequest<CategorySpending[]>({
+    const categories = await apiRequest<CategorySpending[]>({
       method: "GET",
       endpoint: `/dashboard/spending-by-category?timePeriod=${timePeriod}`,
       init: {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        next: {
+          revalidate: 300,
+          tags: ["dashboard", "spending-by-category"],
+        },
+        cache: "force-cache",
       },
     });
 
-    if (!trends.success || trends.data === null) {
-      throw new Error(trends.error?.message || "Data not available");
+    if (!categories.success || categories.data === null) {
+      throw new Error(categories.error?.message || "Data not available");
     }
-    return trends.data;
+
+    return categories.data;
   });
 }

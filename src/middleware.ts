@@ -4,37 +4,42 @@ import { NextResponse } from "next/server";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
 const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
   "/",
   "/api(.*)",
 ]);
 
-const isHomeRoute = createRouteMatcher(["/"]);
+const isAuthRoute = createRouteMatcher([
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+]);
 
 export default clerkMiddleware(async (auth, request) => {
-  const { userId, redirectToSignIn } = await auth();
+  const { userId } = await auth();
 
-  // Handle home route
-  if (isHomeRoute(request)) {
-    if (userId) {
+  // If user is logged in
+  if (userId) {
+    // Redirect from home to dashboard
+    if (request.nextUrl.pathname === "/") {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    return NextResponse.next();
-  }
 
-  // Handle protected routes
-  if (!isPublicRoute(request)) {
-    if (!userId) {
-      return redirectToSignIn({
-        returnBackUrl: request.url,
-      });
+    // Redirect from sign-in/sign-up to dashboard (logged-in users shouldn't access auth pages)
+    if (isAuthRoute(request)) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
+
+    // Allow access to all other routes when logged in
     return NextResponse.next();
   }
 
-  // Allow access to public routes
-  return NextResponse.next();
+  // If user is not logged in
+  // Allow access to public routes (home, api) and auth routes (sign-in, sign-up)
+  if (isPublicRoute(request) || isAuthRoute(request)) {
+    return NextResponse.next();
+  }
+
+  // Redirect to sign-in for protected routes when not logged in
+  return NextResponse.redirect(new URL("/sign-in", request.url));
 });
 
 export const config = {

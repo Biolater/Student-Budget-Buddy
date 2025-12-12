@@ -24,35 +24,42 @@ import toast from "react-hot-toast";
 import { useRouter, usePathname } from "next/navigation";
 import { LayoutGroup, motion } from "framer-motion";
 import Link from "next/link";
+import UserSettingsModal from "../Settings/UserSettingsModal";
 
 export const NavbarComponent = () => {
   // State to track if the component is mounted in the client
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isClient, setIsClient] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
-  const router = useRouter();
   const pathname = usePathname();
 
-  // Define your navigation links
+  // Define your navigation links for authenticated users
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
     { href: "/expenses", label: "Expenses" },
     { href: "/recurring-transactions", label: "Recurring Transactions" },
     { href: "/budget", label: "Budget" },
-    { href: "/goals", label: "Goals" },
-    { href: "/analysis", label: "Analysis" },
   ];
 
-  // Set isClient true once the component has mounted
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
+  // Define landing page navigation links for non-authenticated users
+  const landingNavLinks = [
+    { href: "#about", label: "About" },
+    { href: "#features", label: "Features" },
+    { href: "#benefits", label: "Benefits" },
+  ];
 
-  // Prevent server-side rendering issues
-  if (!isClient) {
-    return null;
-  }
+  // Smooth scroll function
+  const scrollToSection = (sectionId: string) => {
+    const element = document.querySelector(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start'
+      });
+    }
+    setIsMenuOpen(false); // Close mobile menu after clicking
+  };
 
   return (
     <Navbar
@@ -118,6 +125,22 @@ export const NavbarComponent = () => {
         </NavbarContent>
       )}
 
+      {/* Navigation links for non-signed in users (landing page) */}
+      {isLoaded && !isSignedIn && (
+        <NavbarContent className="hidden lg:flex gap-4 grow" justify="center">
+          {landingNavLinks.map((link) => (
+            <NavbarItem key={link.href}>
+              <button
+                onClick={() => scrollToSection(link.href)}
+                className="relative transition-colors hover:text-foreground px-3 text-muted-foreground rounded-md text-sm cursor-pointer"
+              >
+                {link.label}
+              </button>
+            </NavbarItem>
+          ))}
+        </NavbarContent>
+      )}
+
       {/* Right side: Theme switcher, auth buttons or user dropdown */}
       <NavbarContent as="div" justify="end">
         <ThemeSwitcher />
@@ -156,8 +179,12 @@ export const NavbarComponent = () => {
                   {user.emailAddresses[0].emailAddress}
                 </p>
               </DropdownItem>
-              <DropdownItem key="settings">My Settings</DropdownItem>
-              <DropdownItem key="help">Help &amp; Support</DropdownItem>
+              <DropdownItem 
+                key="settings" 
+                onPress={() => setIsSettingsOpen(true)}
+              >
+                My Settings
+              </DropdownItem>
               <DropdownItem
                 key="logout"
                 color="danger"
@@ -175,30 +202,31 @@ export const NavbarComponent = () => {
 
       {/* Mobile Menu */}
       <NavbarMenu>
-        {isLoaded &&
-          isSignedIn &&
-          navLinks.map((item, index) => (
-            <NavbarMenuItem
-              onClick={() => setIsMenuOpen(false)}
-              key={`${item.href}-${index}`}
-              isActive={pathname === item.href}
-            >
-              <Link className="w-full" color="foreground" href={item.href}>
-                {item.label}
-              </Link>
-            </NavbarMenuItem>
-          ))}
-        {!isSignedIn && (
+        {isLoaded && isSignedIn && (
           <>
-            {["About", "Features", "Benefits"].map((item) => (
-              <NavbarMenuItem onClick={() => setIsMenuOpen(false)} key={item}>
-                <Link
-                  color="foreground"
-                  className="w-full"
-                  href={`/${item.toLowerCase()}`}
-                >
-                  {item}
+            {navLinks.map((item, index) => (
+              <NavbarMenuItem
+                onClick={() => setIsMenuOpen(false)}
+                key={`${item.href}-${index}`}
+                isActive={pathname === item.href}
+              >
+                <Link className="w-full" color="foreground" href={item.href}>
+                  {item.label}
                 </Link>
+              </NavbarMenuItem>
+            ))}
+          </>
+        )}
+        {isLoaded && !isSignedIn && (
+          <>
+            {landingNavLinks.map((item) => (
+              <NavbarMenuItem key={item.href}>
+                <button
+                  onClick={() => scrollToSection(item.href)}
+                  className="w-full text-left text-foreground"
+                >
+                  {item.label}
+                </button>
               </NavbarMenuItem>
             ))}
             <Divider className="my-2" />
@@ -224,6 +252,14 @@ export const NavbarComponent = () => {
           </>
         )}
       </NavbarMenu>
+      
+      {/* Settings Modal */}
+      {isSignedIn && (
+        <UserSettingsModal 
+          isOpen={isSettingsOpen} 
+          onOpenChange={setIsSettingsOpen} 
+        />
+      )}
     </Navbar>
   );
 };

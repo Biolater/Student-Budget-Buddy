@@ -7,7 +7,6 @@ import {
 } from "@/app/schema/recurring-transactions.schema";
 import { useCategory } from "@/app/hooks/useCategory";
 import { useCurrency } from "@/app/hooks/useCurrency";
-import { useAuth } from "@clerk/nextjs";
 import {
   Input,
   Select,
@@ -16,16 +15,15 @@ import {
   Textarea,
   Button,
   Switch,
+  DateValue,
 } from "@heroui/react";
-import { useEffect } from "react";
-import {
-  getLocalTimeZone,
-  parseDate,
-  parseDateTime,
-  today,
-} from "@internationalized/date";
-/* import useRecurringTransaction from "@/app/hooks/useRecurringTransaction";
- */
+import { useMemo } from "react";
+import { CalendarDate, getLocalTimeZone, today } from "@internationalized/date";
+import useRecurringTransaction from "@/app/hooks/useRecurringTransaction";
+import { useAuth } from "@/app/contexts/AuthContext";
+import CreateBudgetFormSkeleton from "../Budget/CreateBudgetFormSkeleton";
+import { computeMinEndDate, toCalendarDate } from "@/app/utils/recurrence";
+
 interface CreateRecurringTransactionFormProps {
   onSuccess?: () => void;
   defaultCurrency: string;
@@ -36,27 +34,20 @@ const CreateRecurringTransactionForm = ({
   defaultCurrency,
 }: CreateRecurringTransactionFormProps) => {
   const { userId } = useAuth();
-
-  // Move all hooks before any conditional statements
   const {
-    budgetCategoriesQuery: {
-      data: categories,
-      isPending: categoriesLoading,
-      error: categoriesError,
-    },
+    budgetCategoriesQuery: { data: categories, isPending: categoriesLoading },
   } = useCategory();
 
   const {
-    query: {
-      data: currencies,
-      isPending: currenciesLoading,
-      error: currenciesError,
-    },
+    query: { data: currencies, isPending: currenciesLoading },
   } = useCurrency();
 
-  /*   const {
-    create: { mutateAsync: createRecurringTransaction, isPending: createRecurringTransactionLoading },
-  } = useRecurringTransaction(userId); */
+  const {
+    create: {
+      mutateAsync: createRecurringTransaction,
+      isPending: createRecurringTransactionLoading,
+    },
+  } = useRecurringTransaction(userId);
 
   const form = useForm<CreateRecurringTransactionSchemaType>({
     resolver: zodResolver(CreateRecurringTransactionSchema),
@@ -64,26 +55,47 @@ const CreateRecurringTransactionForm = ({
       frequency: "MONTHLY",
       currencyId: defaultCurrency,
       isActive: true,
+      type: "EXPENSE",
+      amount: 0,
+      nextDueDate: today(getLocalTimeZone()),
     },
   });
 
   const {
     control,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = form;
 
+  const activeTransactionType = form.watch("type");
+  const frequencyValue = form.watch("frequency");
+  const interval = form.watch("interval");
+  const intervalUnit = form.watch("intervalUnit");
+  const nextDueDate = form.watch("nextDueDate");
+
+  const minEndDate = computeMinEndDate(
+    frequencyValue,
+    nextDueDate,
+    interval,
+    intervalUnit
+  );
+
+  const minEndDateCalendarDate = minEndDate
+    ? toCalendarDate(minEndDate)
+    : undefined;
+
+  const budgetCategories = useMemo(
+    () => categories?.filter((c) => c.type === activeTransactionType) ?? [],
+    [categories, activeTransactionType]
+  );
+
   const onSubmit = async (data: CreateRecurringTransactionSchemaType) => {
-    /*     await createRecurringTransaction(data);
-     */ onSuccess?.();
+    await createRecurringTransaction(data);
+    onSuccess?.();
   };
 
   if (categoriesLoading || currenciesLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (categoriesError || currenciesError) {
-    return <div>Error loading data</div>;
+    return <CreateBudgetFormSkeleton />;
   }
 
   return (
@@ -107,6 +119,29 @@ const CreateRecurringTransactionForm = ({
         />
         <Controller
           control={control}
+          name="type"
+          render={({ field }) => (
+            <Select
+              variant="faded"
+              label="Transaction Type"
+              labelPlacement="outside"
+              placeholder="Select type"
+              errorMessage={errors.type?.message}
+              onSelectionChange={(keys) => {
+                const selectedKey = Array.from(keys)[0]?.toString();
+                field.onChange(selectedKey);
+              }}
+              isInvalid={!!errors.type}
+              selectedKeys={field.value ? [field.value] : []}
+              isRequired
+            >
+              <SelectItem key="INCOME">Income</SelectItem>
+              <SelectItem key="EXPENSE">Expense</SelectItem>
+            </Select>
+          )}
+        />
+        <Controller
+          control={control}
           name="budgetCategoryId"
           render={({ field }) => (
             <Select
@@ -122,7 +157,7 @@ const CreateRecurringTransactionForm = ({
               isInvalid={!!errors.budgetCategoryId}
               selectedKeys={field.value ? [field.value] : []}
             >
-              {categories!.map((category) => (
+              {budgetCategories!.map((category) => (
                 <SelectItem
                   key={category.id}
                   textValue={`${category.icon} ${category.name}`}
@@ -176,8 +211,7 @@ const CreateRecurringTransactionForm = ({
               isInvalid={!!errors.amount}
               isRequired
               onChange={(e) => {
-                const parsedValue = Number.parseFloat(e.target.value);
-                field.onChange(isNaN(parsedValue) ? undefined : parsedValue);
+                field.onChange(Number(e.target.value));
               }}
             />
           )}
@@ -206,10 +240,66 @@ const CreateRecurringTransactionForm = ({
             </Select>
           )}
         />
+        {/* Custom interval UI */}
+        {frequencyValue === FinancialEventFrequency.Enum.CUSTOM && (
+          <div className="grid grid-cols-2 gap-4">
+            {/* Interval count */}
+            <Controller
+              name="interval"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Input
+                  label="Repeat every"
+                  type="number"
+                  variant="faded"
+                  size="sm"
+                  isRequired
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  value={field.value?.toString() ?? ""}
+                  onChange={(e) => {
+                    const v = Number(e.target.valueAsNumber);
+                    field.onChange(isNaN(v) ? undefined : v);
+                  }}
+                  min={1}
+                />
+              )}
+            />
+
+            {/* Interval unit */}
+            <Controller
+              name="intervalUnit"
+              control={control}
+              render={({ field, fieldState }) => (
+                <Select
+                  label="Unit"
+                  variant="faded"
+                  size="sm"
+                  isRequired
+                  isInvalid={!!fieldState.error}
+                  errorMessage={fieldState.error?.message}
+                  selectedKeys={field.value ? [field.value] : []}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0];
+                    if (selected) {
+                      field.onChange(
+                        selected as "DAY" | "WEEK" | "MONTH" | "YEAR"
+                      );
+                    }
+                  }}
+                >
+                  {["DAY", "WEEK", "MONTH", "YEAR"].map((unit) => (
+                    <SelectItem key={unit}>{unit.toLowerCase()}</SelectItem>
+                  ))}
+                </Select>
+              )}
+            />
+          </div>
+        )}
         <Controller
           control={control}
           name="nextDueDate"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <DatePicker
               variant="faded"
               label="Next Due Date"
@@ -217,14 +307,37 @@ const CreateRecurringTransactionForm = ({
               description="The date this transaction will occur next."
               showMonthAndYearPickers
               value={field.value}
-              onChange={field.onChange}
-              errorMessage={errors.nextDueDate?.message}
+              onChange={(value: CalendarDate | null) => {
+                field.onChange(value ?? undefined); // ✅ Keep CalendarDate, no conversion
+              }}
               minValue={today(getLocalTimeZone())}
-              isInvalid={!!errors.nextDueDate}
+              errorMessage={fieldState.error?.message}
+              isInvalid={!!fieldState.error}
               isRequired
             />
           )}
         />
+        <Controller
+          control={control}
+          name="endDate"
+          render={({ field, fieldState }) => (
+            <DatePicker
+              variant="faded"
+              label="End On"
+              labelPlacement="outside"
+              description="Leave empty to repeat forever, or set a date to stop."
+              showMonthAndYearPickers
+              value={field.value}
+              onChange={(value: CalendarDate | null) => {
+                field.onChange(value ?? undefined); // ✅ Keep CalendarDate, no conversion
+              }}
+              minValue={minEndDateCalendarDate}
+              errorMessage={fieldState.error?.message}
+              isInvalid={!!fieldState.error}
+            />
+          )}
+        />
+
         <Controller
           control={control}
           name="description"
@@ -263,8 +376,7 @@ const CreateRecurringTransactionForm = ({
       <Button
         className="mt-8 w-full md:w-auto md:self-end"
         type="submit"
-        /*         isLoading={isSubmitting || createRecurringTransactionLoading}
-        disabled={isSubmitting || createRecurringTransactionLoading} */
+        isLoading={createRecurringTransactionLoading}
         color="primary"
       >
         Create Recurring Transaction
